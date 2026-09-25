@@ -177,10 +177,13 @@ Keep a maximum of three observations per story. Do not create findings to fill t
 
 Each observation contains:
 
-1. A short factual title
-2. What is visible or missing
-3. Why it matters to the persona or story
-4. An exact reference
+1. A short, plain-language title that states the problem or strength
+2. **What we found:** what is visible or missing, described by name
+3. **Why it matters:** the effect on the persona or the story goal
+4. **Suggested fix:** one concrete change, omitted for strengths
+5. A screen name in words, linked to the exact Figma node
+
+Write every part in plain English (see `SKILL.md` section 9). Keep requirement IDs, node IDs, and layer names in links, not in sentences.
 
 ## Design rationale
 
@@ -212,3 +215,4 @@ Riley needs to avoid contacting blocked identities
 - No scope claim without an approved scope source
 - No flow-order inference from canvas coordinates alone
 - No repeated project-wide finding under every story
+- No jargon, codes, or shorthand that forces the reader to look something up

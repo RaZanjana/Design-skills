@@ -70,8 +70,12 @@ Use this order:
 2. **Overall assessment**
 3. **Key observations**
    - Maximum three
-   - Observation title
+   - Plain-language title that states the problem or strength
+   - Small classification tag, such as “Requirement gap”
+   - “What we found”
    - “Why it matters”
+   - “Suggested fix”, omitted for strengths
+   - Screen name in words, linked to the Figma node
 4. **Design rationale**
    - Intentional design decision
    - Reason it supports the persona or story
@@ -87,6 +91,20 @@ Use this order:
    - Scope decision, when directly relevant
    - Figma flow
    - Relevant screens
+
+## Writing rules
+
+All canvas text follows the plain-English rules in `SKILL.md` section 9. In short:
+
+- Write for someone who has not seen the stories, personas, or Figma file.
+- Use short sentences, everyday words, and active voice.
+- Describe what is on the screen by name: people, buttons, labels, numbers.
+- Keep requirement IDs, node IDs, layer names, and error codes out of sentences. Show them only in links or the References area.
+- Explain any product term the first time it appears.
+- Use bullet lists when comparing two things that should match.
+- Do not use arrow chains, `·`-separated fragments, or abbreviations.
+
+Show screen references as readable names with links, for example “Lead selection screen”, not `suppression-check-excluded · 343:24200`.
 
 ## Visual rules
 
@@ -130,6 +148,13 @@ assessment
 persona
 objective
 observations[]
+  title
+  classification
+  found
+  whyItMatters
+  suggestedFix?
+  screenName
+  screenNodeId
 designDecision
 reason
 considerChanging? 
@@ -144,7 +169,7 @@ figmaScreenReferences[]
 
 ## Final chat response
 
-Do not reproduce the review in chat.
+Do not reproduce the review in chat. Keep the reply in plain English.
 
 Return:
 

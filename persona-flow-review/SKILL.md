@@ -176,7 +176,33 @@ These are story-support labels, not WCAG or overall design-quality scores.
 - Omit findings that would not affect a design decision or walkthrough explanation.
 - Reference every finding with a clear story, Figma section, or screen name.
 
-## 9. Produce the review artifact
+## 9. Write in plain English
+
+Every piece of text in the artifact must make sense to someone who has not read the stories, the personas, or the Figma file. The reader should never have to open another file to understand a finding.
+
+- **Short sentences in everyday words.** Aim for 20 words or fewer. Use active voice: “Riley ticks three leads”, not “Three leads are selected”.
+- **Say what is on the screen.** Name the people, buttons, labels, and numbers the reader would see. Write “The pop-up lists Marijke, Bram and Koen”, not “Modal content diverges from selection state”.
+- **Keep codes out of the body text.** Do not put requirement IDs (FR18, D-30, AD-19), Figma node IDs, layer names (`suppression-check-excluded`), or error codes in sentences. Put them only in the reference links.
+- **Explain product terms once.** If a term like “Copy Variant” or “suppression” is needed, add a short plain explanation the first time it appears.
+- **Use lists for comparisons.** When two things should match but do not, show them as two bullet points.
+- **No shorthand.** Avoid arrow chains (`A → B`), `·`-separated fragments, abbreviations, and jargon such as “affordance”, “state drift”, or “precedence”.
+- **One idea per paragraph.** Split long explanations.
+
+Write each observation in three parts:
+
+1. **What we found:** what is visible or missing, in plain words.
+2. **Why it matters:** the effect on the persona or the story goal.
+3. **Suggested fix:** one concrete change.
+
+Name the screen in words (“the lead selection screen”) and link it. The link carries the node ID.
+
+The same rules apply to project-wide findings, design rationale, Consider changing / Keep, walkthrough notes, and the final chat reply.
+
+Quick test before delivery: could a new team member read any single observation and explain the problem to someone else without opening Figma or the story?
+
+See [examples.md](examples.md) for a before-and-after rewrite.
+
+## 10. Produce the review artifact
 
 Create the organized interactive output described in [canvas-output.md](canvas-output.md).
 
@@ -193,7 +219,7 @@ The output must include:
 - Story filters
 - Persona and objective
 - Assessment
-- Up to three observations with “Why it matters”
+- Up to three observations, each with “What we found”, “Why it matters”, and “Suggested fix”
 - Design rationale
 - Consider changing / Keep
 - Walkthrough notes
@@ -201,8 +227,10 @@ The output must include:
 
 Use muted green for Supports, muted yellow for Partially supports, muted red for Needs attention, and neutral gray for Insufficient evidence. Maintain readable contrast.
 
-## 10. Verify before delivery
+## 11. Verify before delivery
 
+- Every observation passes the plain-English test in section 9.
+- No requirement ID, node ID, layer name, or error code appears in body text.
 - Every reviewed story maps to the correct current story ID.
 - Every persona selection is explainable from the sources.
 - Every factual finding has evidence.

@@ -1,5 +1,52 @@
 # Feedback Examples
 
+## Plain-English observation
+
+### Good
+
+**The pop-up shows different names from the ones Riley ticked**
+
+What we found:
+
+- Riley ticks **Marijke, Erna and Koen**.
+- The confirmation pop-up lists **Marijke, Bram and Koen**.
+
+Why it matters: Riley checks the names before confirming. If they don't match, Riley can't trust what will be saved.
+
+Suggested fix: Make the pop-up show exactly the people Riley ticked.
+
+Screen: [Confirm exception pop-up](https://www.figma.com/design/FILE?node-id=343-24201&m=dev)
+
+### Avoid
+
+**The confirmation lists different leads than were selected** · UX friction · trust
+
+The table selects Marijke de Vries, Erna Visser and Koen Hartman. The confirmation dialog lists Marijke de Vries, Bram Smit and Koen Hartman. Riley confirms an audited exception by name. A mismatch undermines confidence that the recorded exception is the one intended. `Campaign suppression exception-confirm-modal · 343:24201`
+
+Why: the reader has to decode a layer name and node ID, and the comparison is buried in one long paragraph.
+
+---
+
+## Plain-English safety finding
+
+### Good
+
+**Someone who unsubscribed can still be picked for an exception**
+
+What we found: On the lead selection screen, Erna Visser unsubscribed, but her row isn't locked. The “locked” tag is on Lotte Meijer instead, who is blocked for a different reason.
+
+Why it matters: The law says people who unsubscribe must never be contacted again. Riley's biggest worry is messaging them by mistake.
+
+Suggested fix: Lock Erna's row, and don't let anyone tick people who unsubscribed.
+
+### Avoid
+
+Recipient-unsubscribe suppression source not bound to lock affordance (FR23, `OVERRIDE_NOT_ALLOWED_FOR_UNSUBSCRIBE`).
+
+Why: requirement codes, error codes, and jargon replace a plain description of what the reader will see.
+
+---
+
 ## Evidence-based observation
 
 ### Good
@@ -98,11 +145,13 @@ Persona: Riley the Regisseur
 Objective: Control timing, limits, and mandatory stop conditions.
 Assessment: Partially supports
 
-1. Timing and limits are visible
-Why it matters: Riley can understand the sending schedule and protected volume.
+1. Riley can see when each message sends and the daily limits
+Why it matters: Riley knows how fast outreach will go before approving it.
 
-2. Unsubscribe stop rule is missing
-Why it matters: The story requires unsubscribe, handoff, and suppression to stop enrolment.
+2. Unsubscribing does not stop the messages
+What we found: The stop rules list a sales handoff and the suppression list, but not unsubscribing.
+Why it matters: The story says all three must stop messages to that person.
+Suggested fix: Add "The lead unsubscribes" to the stop rules.
 
 Design rationale
 Keeping timing, limits, review status, and mandatory stops together makes automation inspectable rather than unattended.
