@@ -205,12 +205,40 @@ Riley needs to avoid contacting blocked identities
 → Riley can verify the safety boundary before outreach is configured
 ```
 
+## Fixing issues
+
+A review finds issues. Fixing them is a separate, designer-driven step, one issue at a time.
+
+### Which issues can be fixed
+
+| Classification | Fix action | What a fix does |
+| --- | --- | --- |
+| Requirement gap | `figma-screen` or `figma-new-screen` | Adds or corrects the missing behavior, state, or screen |
+| UX friction | `figma-screen` | Clarifies the label, order, emphasis, or feedback |
+| Scope conflict | `figma-screen` | Removes or changes the unapproved behavior. The note card says this may be a product decision. |
+| Mapping drift | `figma-rename` | Renames the Figma section to match the current story. Story files are never edited. |
+| Accessibility concern | `audit-handoff` | Starts a separate accessibility review |
+| Evidence gap or strength | `none` | Nothing to fix |
+
+Use `figma-new-screen` only when the missing behavior needs its own screen or state, such as a missing error state.
+
+### Principles
+
+- **One issue at a time.** Each fix has its own chat, its own copy in Figma, and its own approval.
+- **Safe copy first.** A fix is made on detached copies on the "Fixed issues" page. The Wireflows and Draft pages do not change until the designer approves.
+- **The designer decides.** A designer instruction overrides the suggested fix. Conflicts with the story or scope are recorded, not blocked.
+- **The source is updated, not the copy.** An approved fix is applied to the screen's main component on the Draft page. The Wireflows page then updates through its instances.
+- **The assessment is earned.** After a fix is applied, the story is re-reviewed. Its assessment changes only when the evidence supports it.
+- **Shared screens are flagged.** When the same component appears in other stories, those stories are marked for re-review, not silently re-assessed.
+
 ## Guardrails
 
 - No first-person persona role-play
 - No invented feelings or behavior
 - No design preference without evidence
-- No Figma edits during review
+- No Figma edits in Review mode
+- In Fix mode, no Figma edits outside the "Fixed issues" page
+- No changes to the Draft or Wireflows pages without the designer's approval
 - No WCAG compliance claim
 - No scope claim without an approved scope source
 - No flow-order inference from canvas coordinates alone

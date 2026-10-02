@@ -137,6 +137,67 @@ Why: the missing flow has been filled with an assumption.
 
 ---
 
+## Fix note card
+
+### Good
+
+**Unsubscribing does not stop the messages**
+
+Story: 4.3 Configure multi-step sequence
+
+What we found: The stop rules list a sales handoff and the suppression list, but not unsubscribing.
+
+What changed:
+
+- Added a third stop rule: "The lead unsubscribes".
+- Used the same row style as the two existing rules.
+
+Approach: Suggested fix
+
+Also used in: Story 4.4 Review sequence before launch
+
+Status: Ready for review
+
+Source component: Sequence setup (Drafts page)
+
+### Avoid
+
+Fixed FR27 on `sequence-config-stop-rules` (264:19130). Added row via duplicated instance, detached.
+
+Why: the designer has to decode codes and layer names, and cannot tell what the screen now shows.
+
+---
+
+## Designer instruction that conflicts with the story
+
+### Good
+
+Conflict: You asked to make the unsubscribe rule a toggle that can be turned off. The story says unsubscribing must always stop messages. The fix follows your instruction. Check this with the product owner before approving.
+
+### Avoid
+
+Cannot apply instruction: violates acceptance criteria.
+
+Why: the designer decides. Record the conflict and let them choose.
+
+---
+
+## Fix chat reply
+
+### Good
+
+I added "The lead unsubscribes" as a third stop rule on a copy of the sequence setup screen. [Open the fix in Figma](https://www.figma.com/design/FILE?node-id=900-120&m=dev)
+
+The same screen is also used in story 4.4, so approving will change it there too.
+
+### Avoid
+
+Done. Applied fix 4.3-2 to node 900:120, status ready-for-review.
+
+Why: it does not say what changed or what approving would affect.
+
+---
+
 ## Concise story review
 
 ```text

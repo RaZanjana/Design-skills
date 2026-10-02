@@ -1,6 +1,6 @@
 ---
 name: persona-flow-review
-description: Reviews Figma wireflows against documented personas, user stories, and approved scope, then produces a concise evidence-linked review with design rationale, walkthrough notes, and direct references. Use when a designer asks for a persona flow review, user-story design validation, evidence-based design rationale, or a lightweight pre-walkthrough review.
+description: Reviews Figma wireflows against documented personas, user stories, and approved scope, then produces a concise evidence-linked review with design rationale, walkthrough notes, and direct references. Each issue in the review can then be fixed one at a time on a separate "Fixed issues" Figma page and, after designer approval, applied to the source components. Use when a designer asks for a persona flow review, user-story design validation, evidence-based design rationale, a lightweight pre-walkthrough review, or to fix or apply a fix for an issue from a persona flow review.
 disable-model-invocation: true
 ---
 
@@ -11,6 +11,20 @@ Use documented evidence to answer:
 > Does this flow help the intended user achieve the agreed objective?
 
 This is not persona role-play, usability testing, a visual-quality audit, or a WCAG conformance audit.
+
+## 0. Choose the mode
+
+This skill has three modes. Pick one from the request before doing anything else.
+
+| Request | Mode | Instructions |
+| --- | --- | --- |
+| Review flows, stories, or a Figma file | **Review** | Sections 1 to 11 of this file |
+| "Fix issue [ID]", "Revise fix for issue [ID]", or "Reject fix for issue [ID]" | **Fix** | [fix-mode.md](fix-mode.md) |
+| "Apply approved fix for issue [ID]" | **Apply** | [apply-fix.md](apply-fix.md) |
+
+Fix and Apply requests usually arrive from a button in the review canvas. The canvas file is attached to the chat and holds the issue, its evidence, the Figma links, and the source paths. Read only what the mode file asks for. Do not rerun the full review.
+
+Review mode is read-only. Fix mode writes only to the "Fixed issues" Figma page. Only Apply mode changes the Draft and Wireflows pages, and only after the designer approves the fix.
 
 ## 1. Gather inputs
 
@@ -43,7 +57,7 @@ Accept local folders, individual files, Figma URLs, and user-provided exports.
 - If a mandatory source is unavailable, state exactly what is missing and stop.
 - If Figma access is unavailable, request a PDF or screenshots grouped by story. Do not review an unseen design.
 - Never use an online repository as a substitute for a supplied local source unless the user explicitly permits it.
-- Keep the review read-only. Never edit Figma or source files unless separately requested.
+- Keep the review read-only. Never edit Figma or source files in Review mode. Fixes happen later, one issue at a time, through Fix mode.
 
 ## 3. Establish source precedence
 
@@ -110,7 +124,7 @@ For every matched section:
 - Follow connectors or prototype links for sequence.
 - Do not infer flow order from screen position alone.
 - Inspect Drafts or source components only when the Wireflows instance lacks necessary detail.
-- Record relevant screen node IDs for direct links.
+- Record relevant screen node IDs for direct links. When a screen is an instance inside a wrapper frame, record the instance node ID, so Fix mode can trace it to its source component on the Draft page.
 
 If the title matches but the story ID or content does not, report **source/design mapping drift** separately from a design problem.
 
@@ -162,6 +176,18 @@ Assign one assessment:
 - **Insufficient evidence:** the flow or source material cannot support a defensible assessment.
 
 These are story-support labels, not WCAG or overall design-quality scores.
+
+Give every issue a stable ID and a fix action, so the designer can fix it from the canvas:
+
+- Story issues: `[story ID]-[observation number]`, for example `4.3-2`.
+- Project-wide issues: `pw-[number]`, for example `pw-1`.
+- Fix action by classification:
+  - Requirement gap, UX friction, scope conflict: `figma-screen`, or `figma-new-screen` when the fix needs a screen or state that does not exist yet.
+  - Mapping drift: `figma-rename`, which renames the Figma section only. Story files are never edited.
+  - Accessibility concern: `audit-handoff`.
+  - Evidence gap and strengths: `none`.
+
+See the fix rules in [methodology.md](methodology.md).
 
 ## 8. Keep the review concise
 
@@ -220,6 +246,8 @@ The output must include:
 - Persona and objective
 - Assessment
 - Up to three observations, each with “What we found”, “Why it matters”, and “Suggested fix”
+- A “Fix issue” button on every fixable issue, with a choice between the suggested fix and the designer's own instruction
+- Fix status for every issue, with Approve, Request changes, and Reject buttons once a fix is ready for review
 - Design rationale
 - Consider changing / Keep
 - Walkthrough notes
@@ -240,6 +268,8 @@ Use muted green for Supports, muted yellow for Partially supports, muted red for
 - Local references open the intended persona and story where the platform supports file links.
 - No finding claims observed user behavior.
 - No WCAG conformance claim appears.
+- Every issue has a unique ID and the correct fix action.
+- Every fix prompt names the absolute path of this skill folder, because the skill cannot be invoked automatically in a new chat.
 
 Return only:
 
@@ -250,5 +280,7 @@ Return only:
 
 - Review rules: [methodology.md](methodology.md)
 - Output structure: [canvas-output.md](canvas-output.md)
+- Fixing one issue: [fix-mode.md](fix-mode.md)
+- Applying an approved fix: [apply-fix.md](apply-fix.md)
 - Feedback examples: [examples.md](examples.md)
 - Installation and usage: [README.md](README.md)

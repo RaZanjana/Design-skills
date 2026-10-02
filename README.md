@@ -8,6 +8,8 @@ Reusable AI skills for product and UX design workflows.
 
 Reviews Figma wireflows against approved personas, user stories, and project scope. It produces a concise, evidence-linked review with design rationale, walkthrough notes, and direct references.
 
+Each issue in the review has a "Fix issue" button. The fix is made on a detached copy on a "Fixed issues" Figma page. After the designer approves it, the fix is applied to the source component on the Draft page, and the story is re-reviewed.
+
 ### [Product Copy Refine](product-copy-refine/README.md)
 
 Rewrites the interface copy in Figma so it speaks the target users' language, grounded in the project's PRD, user stories, and personas. It replaces jargon, filler, and vague labels in place without breaking the layout, never uses em dashes, and produces a before-and-after change log.
