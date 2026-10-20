@@ -217,7 +217,7 @@ Required behavior is absent or contradicted.
 
 ### Scope conflict
 
-The design contradicts an explicit exclusion or a business rule, or changes agreed behavior. An addition that no source asks for, but that breaks nothing, is not a scope conflict. It is either worth keeping (see [Client notes](#client-notes)) or ignored.
+The design contradicts an explicit exclusion or a business rule, or changes agreed behavior. An addition that no source asks for, but that breaks nothing, is not a scope conflict. It is either worth keeping (see [Beyond-scope elements](#beyond-scope-elements)) or ignored.
 
 ### Mapping drift
 
@@ -310,16 +310,7 @@ Rank findings by:
 
 Keep a maximum of three issues per story. Do not create issues to fill the quota. Merge duplicates, and report a problem that spans stories once, as a project-wide issue.
 
-Show the rank as a priority label:
-
-- **High:** objective blocked, missing core requirement, scope conflict, or safety or trust risk
-- **Medium:** missing important requirement, or meaningful task friction
-- **Low:** a clarification that still matters
-
-Show how certain the issue is:
-
-- **Confirmed:** the design visibly misses or contradicts a stated requirement.
-- **Potential concern:** the evidence suggests a problem but does not prove it. Examples: a friction risk based on the persona, or a requirement with no agreed measure, such as "large type" when the size is still an assumption. Say what would confirm it.
+Priority and confidence labels are defined in `SKILL.md` section 7. For a potential concern, say what would confirm it.
 
 Each issue contains:
 
@@ -335,35 +326,76 @@ Each issue contains:
 
 Write every part in plain English (see `SKILL.md` section 9). Keep requirement IDs, node IDs, and layer names in links, not in sentences.
 
-## Talking points
+## Design rationale
 
-Build each talking point from this chain, then write it as one or two natural sentences:
+Besides issues, the review finds design decisions worth defending. They reach the client in four forms, all built from the same evidence:
 
-```text
-The user's goal or problem
-→ How the design addresses it
-→ Why that fits the user's context
-→ The business objective it supports
-```
+| Output | Where it lives | What it is for |
+| --- | --- | --- |
+| Figma comments | Beside the feature in Figma | The client's team reviews the design without the designer, and can explain it internally |
+| Beyond-scope annotations | On the screen, in Figma Dev Mode | The client confirms an addition no story asks for |
+| Talking points | The canvas's Client meeting view | The designer presents each story |
+| Walkthrough script | The Client meeting view, on request | The designer presents the whole journey |
 
-Example chain:
+None of them is an issue, and none changes a status. Issues say what is missing. Rationale says why something works, and never turns an assumption into a strength.
 
-```text
-Riley must never message a customer, competitor, or someone who unsubscribed
-→ The suppression check lists everyone excluded, with the reason, before sequence setup
-→ Riley checks lists before any outreach is configured
-→ The business must honour opt-outs and protect customer relationships
-```
+### Which decisions deserve a comment
 
-Talking point:
+Take candidates from Supported and Partially supported stories: the decisions behind "What works", the status reason, the value statements, and scope decisions. A candidate becomes a comment only when it passes all five tests:
 
-> Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which is designed to protect opt-outs and customer relationships.
+1. **It is a decision.** The designer chose it, and it could reasonably have been different: the order of steps, a default, what is shown or hidden, a limit, a state, or a label that sets an expectation. A required element that is simply present is not a decision, and neither is visual polish.
+2. **A reason backs it.** At least one of these, strongest first:
+   - A user need, goal, or pain point that a persona or story documents.
+   - A business objective or rule that a source documents.
+   - A design principle applied to this user and screen, in plain words, with its effect here. "The excluded people are listed before any message exists, so Riley fixes a wrong list while it still costs nothing" counts. "Progressive disclosure" or "best practice" on its own does not.
+   - What follows directly from how the design works, such as "the month total is the sum of the days, so the two always agree".
 
-For Partially supported and Needs attention stories, the talking point covers only what works today. Explain the decision by its user and business reasons, never by an internal source, as [Reasons the client can use](#reasons-the-client-can-use) describes.
+   Domain logic the client's team would accept, such as what an ended placement means, also counts, but a comment that rests on it sets `checkFirst`.
+3. **It is not obvious.** A reviewer could question it, change it, or miss its point. Skip what the screen or its labels already explain, and what most products do, such as a search box on a long list.
+4. **It is safe to praise.** No open issue names its screen, including a potential concern, and the comment does not praise the behavior an issue is about. Other screens of the same story can still get one.
+5. **It is not a repeat.** No other comment or annotation gives the same reason.
 
-## Client notes
+Drop generic praise ("clean", "intuitive", "user-friendly", "modern"), descriptions of the screen that give no reason, and claims that no source or logic supports.
 
-Three outputs help the designer explain the design: Figma comments, beyond-scope annotations, and one walkthrough script. All three reuse the review's evidence. None of them is an issue, and none of them changes a status. The script is written only when the designer asks for it.
+### Rank and limit
+
+List the strongest candidate from every eligible story before choosing. Never stop after the first few good ones. Rank everything that passed, across the whole review, by:
+
+1. **Impact:** it serves the user's main goal or a documented business objective, not a side detail.
+2. **Challenge risk:** the client's team is likely to question it, change it, or misread it. Typical examples are a default, a trade-off, a restriction on who can do what, a rule that works differently from what a reviewer expects, and a state that prevents a wrong reading, such as missing data shown as a message instead of a zero.
+3. **Evidence:** a documented need or objective beats a design principle, and a principle beats what follows from the design alone.
+
+| Limit | Ceiling |
+| --- | --- |
+| Recommended comments per review, counting every reviewed story | 5 for eight stories or fewer, 6 for 9 to 11, 7 for 12 to 14, 8 for 15 or more |
+| Optional comments | Up to the same number, from candidates that passed every test but ranked below the cut |
+| Per screen | 1. A second only for a separate feature with a different benefit. Optional comments count. |
+| Per comment | 25 to 45 words, two or three short sentences, one point. Count words by spaces. |
+
+These are ceilings, not quotas. Comments already in Figma count toward them. Expect about one recommended comment for every two or three stories with a clear strength. There is no minimum. When nothing passes, suggest nothing, and the canvas says so.
+
+Optional comments have `additional: true` and a `question`. They wait, collapsed, until the designer adds them.
+
+### Connect the decision to value
+
+Write each comment as a short chain, in natural sentences:
+
+1. **The decision**, named by what the client sees.
+2. **What it does for the user**, tied to their need.
+3. **What it does for the business**, only when a source documents the objective. Otherwise stop at the user. Never mention that the objective is missing, and never force a business reason.
+4. **What it protects or prevents**, when the logic supports it.
+
+Phrase unverified value as intent: "is designed to", "should help". Never invent numbers or outcomes, and never present a hope as a result.
+
+Record the reasoning in the comment's fields, so the designer sees it beside the wording:
+
+- `userNeed`: the documented need.
+- `businessGoal`: the documented objective, only when a source states it.
+- `principle`: the design principle, in plain words, with its effect here, when it is part of the reason.
+- `question`: what the client's team is likely to ask, in their words and from what they see, such as "Why are targets set per day and not per week?". Required for optional comments, and useful on any comment. It names no internal source, and it is not part of the comment.
+- `checkFirst`: the assumption the designer should confirm before publishing, such as "This assumes an ended placement means the candidate stopped working for the client." The canvas shows it as a warning, and Approve all skips the comment, so the designer approves it on its own.
+- `alsoOn`: other screens where the same reasoning applies, when one comment covers them all.
+- `why`: for the designer, why this decision was picked over the others.
 
 ### Reasons the client can use
 
@@ -375,7 +407,7 @@ Comments, annotations, talking points, and the script are read or heard by the c
 
 1. The user need or business goal a source documents, in plain words.
 2. What follows directly from how the design works, such as "the month total is the sum of the days, so the two always agree".
-3. Basic domain logic the client's own team would accept as true for their business, such as "an ended placement is a candidate who stopped working for a client". Never invent numbers, outcomes, or business practices. When a note relies on this, say so in `why`, so the designer can check it before publishing.
+3. Basic domain logic the client's own team would accept as true for their business, such as "an ended placement is a candidate who stopped working for a client". Never invent numbers, outcomes, or business practices. When a note relies on this, set `checkFirst`, so the designer confirms it before publishing.
 
 **Then say what it protects or prevents:** what would go wrong for the user or the business if the decision changed, when the logic supports it.
 
@@ -390,71 +422,30 @@ For daily targets that replaced weekly ones:
 - Avoid: "Targets are entered per day, as agreed in the story comments."
 - Good: "Targets are entered per person, per day. The week, month and quarter targets are the sum of those days, so all four periods always agree, and a holiday or a new joiner only changes the days it affects."
 
-### Positive comments
+### Edge cases
 
-A comment explains why one in-scope design decision works. The client reads it beside the feature in Figma, often without the designer, so it should help them check the design on their own and explain it to their team. A question answered in Figma is a revision avoided.
-
-**Pick candidates from:** "What works" points, status reasons, user and business value, and scope decisions of Supported and Partially supported stories. Never from Needs attention or Insufficient evidence stories.
-
-**Rank across the whole review:** first list the strongest candidate from every eligible story, then drop those that break a rule in this section, then rank what is left. Never stop after the first few good ones.
-
-**Where an open issue blocks a note:** a comment or annotation never sits on a screen that an open issue names, including a potential concern, and never praises the behavior the issue is about. Other screens of the same story can still get one. The issue stays in the review and the script, where it is named honestly.
-
-**Rank candidates by:**
-
-1. It directly helps the user reach an important goal from the persona or story.
-2. It answers a significant user need, pain point, or requirement.
-3. It supports a documented business objective.
-4. It is a decision the client may question or need to explain to stakeholders.
-5. Its value is not obvious from the screen alone.
-
-Keep a candidate only when its value is specific, meaningful, and backed by a source.
-
-**Volume:**
-
-| Limit | Ceiling |
+| Situation | What to do |
 | --- | --- |
-| Per review, counting every reviewed story | Up to 5 for eight stories or fewer. Up to 6 for 9 to 11 stories, 7 for 12 to 14, and 8 for 15 or more. |
-| Per screen | 1. A second only for a separate feature with a different benefit. Additional comments count toward this. |
-| Per comment | 25 to 45 words, two or three short sentences, one point. Count words by spaces. |
+| The user need and the business need pull apart, such as an approval step that slows the user down | Comment only when the design settles it in a way a source supports, and name both sides plainly: "It adds one check before sending, so nothing leaves without a sign-off." When nothing settles it, it is an open scope question, not a comment. |
+| No business objective is documented | Give the user reason only. |
+| The only support is a design principle or domain logic | Allowed when the principle is applied to this screen. Rank it below documented reasons. Set `checkFirst` when it rests on domain logic. |
+| No support at all | Drop it, however good it looks. |
+| The same reasoning appears on several screens, such as one filter pattern on three lists | One comment, on the screen where it matters most. List the others in `alsoOn`. Never post the same reason twice. |
+| The story is incomplete, such as missing acceptance criteria or a state it does not define | Comment only on what the story or persona documents. When the design fills a gap the story leaves open, never present that choice as agreed. A new element is beyond scope. An interpretation that changes the outcome is an open scope question. |
+| The story is Partially supported | Comment only on what works today, on screens no open issue names. |
+| A scope decision changed the original story | A strong candidate, because reviewers expect the original. Explain why it works this way, never where it was decided. |
+| The design breaks a common pattern on purpose | A strong candidate. Explain the reason for this user. |
+| The comment is already in Figma from an earlier run | Keep it and its ID, as `SKILL.md` section 10 describes. |
 
-These are ceilings, not quotas. Comments already published from an earlier run count toward them. Expect about one for every two or three stories with a clear strength. There is no minimum, and a small flow may need only 1. When several features show the same benefit, keep the strongest one. When two candidates tie, prefer the one the client is more likely to question.
-
-**Each comment:**
+### Writing a comment
 
 - Names the actual feature, section, or interaction.
-- Says the specific user benefit, then the business value when a source supports it. When none is documented, it gives the user benefit only, and does not mention the missing objective.
-- Gives the reason as user and business logic, never as an internal source, as [Reasons the client can use](#reasons-the-client-can-use) describes.
 - Explains any product term in the comment itself, because each comment is read on its own.
 - Uses simple, natural English a non-technical client understands.
-- Phrases unverified business value as intent: "is designed to", "should help".
-- Never mentions implementation details, generic UX principles, visual polish, or metrics no source states.
-- Never repeats what the screen already makes obvious, or what another comment says.
+- Never sounds defensive, and never guesses at a reason.
+- Never mentions implementation details, visual polish, or metrics no source states.
 
 Pin it to the most specific node that shows the feature, such as a card or panel. Use the screen when no smaller node fits. Figma does not accept comments on a layer inside a component instance, so Publish mode pins those to the nearest layer it accepts, at the feature's position.
-
-### Additional comments for client self-review
-
-After the positive comments, suggest more that the designer can add from the canvas. Each one answers a question the client's team is likely to ask when they review the design without the designer. With the answer beside the design, they can check the decision and defend it internally, instead of asking for a change that undoes it.
-
-**Good candidates:**
-
-- A decision that works differently from what a reviewer may expect, such as a scope decision that changed the original story. Explain why it works this way, never where it was agreed.
-- A default or trade-off someone may want to change, such as which period a page opens on.
-- A state that prevents a wrong reading, such as missing data shown as a message instead of a zero.
-- A limit of a source system that explains why something is entered by hand or shown as not available.
-- A role restriction, such as who can change a number.
-
-**Each additional comment:**
-
-- Has a `question`: what the client's team would ask, in their words and from what they see on the screen, such as "Why are targets set per day and not per week?". It names no internal source either. The canvas shows it to the designer. It is not part of the comment.
-- Answers it in 25 to 45 words: the decision, the user or business reason behind it, and what would go wrong if it changed, when the logic supports that.
-- Follows the rules for positive comments: eligible stories only, never on a screen an open issue names, one note per feature, and the same writing rules.
-- Never sounds defensive, never guesses at a reason, and never repeats a point another comment or annotation makes.
-
-**Volume:** up to as many as the ceiling for positive comments. No minimum. Rank them by how likely the client's team is to question the decision, then by the strength of the reason.
-
-They stay suggestions until the designer adds them in the canvas. Once added and approved, they are published like any other comment.
 
 ### Beyond-scope elements
 
@@ -471,6 +462,23 @@ Keep up to 5 per review, one per feature. For each, record what it is, why it is
 **Annotation text:** starts with "Beyond the story:", stays at 40 words or fewer, says what the element does and why it helps, and asks the client to confirm it stays. It goes in a Figma annotation in the "Beyond scope" category, never in a comment.
 
 A feature gets either a comment or an annotation, never both. A separate feature on the same screen can get an annotation while another gets a comment. Annotations do not count toward the per-screen comment limit.
+
+### Talking points
+
+Every story except Insufficient evidence gets one: one or two sentences, at most about 40 words, that the designer can say aloud. Build it from this chain, then write it naturally:
+
+```text
+The user's goal or problem
+→ How the design addresses it
+→ Why that fits the user's context
+→ The business objective it supports, when a source documents one
+```
+
+> Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which is designed to protect opt-outs and customer relationships.
+
+- Use this project's people, screens, and goals. Never reuse a talking point across stories.
+- For Partially supported and Needs attention stories, cover only what works today. Never present a missing capability as done.
+- Avoid empty claims such as "This improves UX" or "This follows best practices".
 
 ### Walkthrough script
 
@@ -491,16 +499,13 @@ Reuse the talking points as raw material, but do not paste them in word for word
 
 ### Quality check
 
-Before showing client notes, check each one:
+Before showing the rationale, check every comment against the five tests and the limits above, and every comment, annotation, talking point, and script stage against these:
 
-- **Relevant:** it explains an important decision for this persona and story.
-- **Evidence:** it traces to a requirement, persona need, or documented business goal, or to domain logic that its `why` names.
 - **Reasons, not sources:** it gives user and business reasons, and names no internal source or who decided.
+- **Honest:** no hope is stated as a result, and every assumption behind a comment is in its `checkFirst`.
 - **Clear:** a client who has not read the stories understands it.
-- **Answers a real question:** each additional comment answers a question the client's team is likely to ask, with a user or business reason.
-- **Unique:** no two comments make the same point, and no two annotations do. No feature gets a second note when it already has one in Figma. The script may cover the same decisions in its own words. Nothing repeats another output word for word.
-- **Still true:** a note already in Figma still describes the current screen. When the design changed, the note gets a `reviewNote`, as `SKILL.md` section 10 describes.
-- **Volume:** the set stays within the limits above.
+- **Still true:** a note already in Figma still describes the current screen. When the design changed, it gets a `reviewNote`, as `SKILL.md` section 10 describes.
+- **Not repeated:** no two notes make the same point, and no feature gets a second note when it already has one in Figma. The script may cover the same decisions in its own words, never word for word.
 
 Drop any note that fails. Fewer strong notes beat many weak ones.
 
@@ -534,28 +539,12 @@ Use `figma-new-screen` only when the missing behavior needs its own screen or st
 
 ## Guardrails
 
-- No first-person persona role-play
-- No invented feelings or behavior
-- No design preference without evidence
-- No issue that fails the "worth flagging" decision rule
-- No English copy, example-figure arithmetic, or typo flagged unless it meets an "Always flag" condition
-- No business benefit without a source, and none presented as a proven result
-- No talking point reused across stories, and none that presents a gap as done
-- No Insufficient evidence status for a design gap
-- No Figma edits in Review mode
-- In Fix mode, no Figma edits outside the "Fixed issues" page
-- No changes to the Draft or Wireflows pages without the designer's approval
-- No WCAG compliance claim
-- No scope claim without an approved scope source
-- No claim that ClickUp, Figma, or a file was reviewed unless its contents were read
-- No silent choice between conflicting sources
-- No generic persona in place of a defined one
-- No PRD content invented when the PRD cannot be found
-- No review of Figma pages other than the one the designer named
-- No flow-order inference from canvas coordinates alone
-- No repeated project-wide finding under every story
-- No jargon, codes, or shorthand that forces the reader to look something up
-- No positive comment that hides a gap or turns an assumption into a strength
-- No comment or annotation published to Figma without the designer's approval
-- No comment shown as published unless the Figma API confirmed it
-- No personal access token in any file, canvas, comment, script, log, or error message
+These hold in every mode:
+
+- **Evidence:** no first-person persona role-play, invented feelings or behavior, or design preference without evidence. No business benefit without a source, and none presented as a proven result. No claim that ClickUp, Figma, or a file was reviewed unless its contents were read.
+- **Scope:** no scope claim without an approved scope source, no silent choice between conflicting sources, no generic persona in place of a defined one, and no PRD content invented when the PRD cannot be found.
+- **Findings:** no issue that fails the "worth flagging" rule, including English copy, example-figure arithmetic, and typos that meet no "Always flag" condition. No Insufficient evidence status for a design gap, no project-wide finding repeated under every story, no flow order taken from canvas coordinates alone, and no WCAG compliance claim.
+- **Figma:** only the page the designer named is reviewed. Review mode changes nothing. Fix mode changes only the "Fixed issues" page. The Draft and Wireflows pages change only after the designer approves.
+- **Rationale:** no note that hides a gap or turns an assumption into a strength, and no talking point reused across stories or presenting a gap as done. Nothing is published or annotated without the designer's approval, and nothing is shown as published unless the Figma API confirmed it.
+- **Secrets:** no personal access token in any file, canvas, comment, script, log, or error message.
+- **Writing:** no jargon, codes, or shorthand that forces the reader to look something up.

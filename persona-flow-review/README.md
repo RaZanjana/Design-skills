@@ -1,7 +1,7 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.8.0
+**Version:** 1.9.0
 
 Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
 
@@ -13,13 +13,13 @@ For each story, it answers three questions:
 2. Does it fulfil the agreed scope and support the business objective behind it?
 3. Can the designer clearly explain to the client why it is a good solution?
 
-Every story status comes with its reason. Supported stories get the user value, the business value, and a sentence to say in the walkthrough. Stories with gaps show what works, what is missing, why it matters, and a **Fix now** button for each issue.
+Every story status comes with its reason. Supported stories get the user value and the business value. Stories with gaps show what works, what is missing, why it matters, and a **Fix now** button for each issue.
 
-For the client meeting, the skill also prepares:
+The skill also picks out the few design decisions worth defending, and prepares:
 
-- **A walkthrough script**, when you ask for it, that follows the user's journey and is honest about open gaps.
-- **Positive Figma comments** that explain the most important design decisions beside the design, with user and business reasons the client can repeat to their team. You approve them, then publish them.
+- **Figma comments** that explain those decisions beside the design, with the user and business reasons the client can repeat to their team. You approve them, then publish them.
 - **Figma annotations** for elements beyond the stories that are worth keeping, after you approve them.
+- **Talking points** for each story, and **a walkthrough script** when you ask for one, that follows the user's journey and is honest about open gaps.
 
 The skill uses personas as documented evidence. It does not pretend to be the persona or replace testing with real users.
 
@@ -67,8 +67,8 @@ persona-flow-review/
 
 - `SKILL.md` — the workflow followed by the AI, and which mode to use
 - `intake.md` — how the skill collects inputs, finds sources, checks access, and reconciles scope before reviewing
-- `methodology.md` — evidence, what to flag, status, classification, and fix rules
-- `canvas-output.md` — the interactive review structure, including the Fix now buttons
+- `methodology.md` — evidence, what to flag, status, classification, fix rules, and how design decisions are picked for comments
+- `canvas-output.md` — the canvas's three views: findings, design rationale, and client meeting
 - `canvas-template.tsx` — the ready-made Cursor Canvas the review fills in, so each run only writes the review data
 - `fix-mode.md` — how one issue is fixed on the "Fixed issues" Figma page
 - `apply-fix.md` — how an approved fix reaches the Draft and Wireflows pages
@@ -179,30 +179,27 @@ When sources disagree and no ClickUp decision settles it, the skill does not cho
 
 ## What the skill produces
 
-The skill generates:
+The canvas has three views, one per purpose. The header shows the story counts, a warning for any source that could not be checked, and a button per view with a one-line summary, such as "3 open issues, 1 ready for your review".
 
-- A status overview and guide, with a note on what is deliberately not flagged
-- Sources checked, including any that could not be accessed
-- Project-wide issues
-- Open scope questions, when sources disagree
-- Story filters
+**Findings** (opens first): what to fix before the meeting.
 
-Each story shows, in this order:
+- **Needs your decision:** fixes ready for your review, and scope questions where the sources disagree. Shown only when something waits on you.
+- Project-wide issues, then story filters and the story list.
+- Each story shows its status and why, the user and business value, what works or what is needed, up to three issues with a **Fix now** button each, resolved issues, a link to its design rationale, and its evidence, collapsed.
+- At the bottom, collapsed: what the labels mean, what is deliberately not flagged, and the sources checked.
 
-1. **Story name and status**
-2. **Why this status**, naming the design behavior behind it
-3. **User and business value** (Supported), **what works** (Partially supported), or **what is needed** (Insufficient evidence)
-4. **What to fix**: up to three issues, each with the affected requirement, user and business impact, the recommended fix, and a **Fix now** button
-5. **A client talking point**: "Say this in the walkthrough" for Supported stories, "Safe to say now" for stories with gaps
-6. **Evidence and sources**, collapsed until needed
+**Design rationale:** the decisions worth defending, and why.
 
-At the top of the canvas, **Review** and **Client meeting** switch between the story review and everything for the client meeting. A callout under the header shows what is ready and opens the meeting view. It has three tabs:
+- The recommended Figma comments, grouped by story. Each shows its wording, the question it answers, and its reasons side by side: the user need, the business objective, and the design principle. A comment whose reason rests on an assumption carries a **Check before publishing** warning.
+- Approve, exclude, edit wording, approve all, and publish. Each comment shows its real Figma status, and **See it in Figma** once Figma confirms it.
+- **Optional comments**, collapsed: more decisions that passed every test and answer questions the client's team may ask. Add them one at a time or all at once.
+- **Beyond the stories:** elements no story asks for that look worth keeping, each with its annotation text and the same controls.
+- **In Figma now** lists every published comment and annotation with its link. Figma has no link that opens a single comment, so a comment link opens the spot where it is pinned. Press C in Figma to show comments there. Annotation links open the screen in Dev Mode. A note Figma hasn't confirmed gets **Check in Figma** instead, and failed or removed notes get no link.
 
+**Client meeting:** what to say.
+
+- **Talking points:** one or two sentences per story. "Say this" for Supported stories, "Safe to say now" for stories with gaps.
 - **Walkthrough script:** a **Generate walkthrough script** button until you ask for one. Then one script in journey order, with each stage's story IDs and Figma flow links, stage navigation, edit, copy, and regenerate. Under each stage are the questions the client may ask, with answers.
-- **Figma comments:** the suggested positive comments, with approve, exclude, edit wording, approve all, and publish. Each shows its real Figma status, and **See it in Figma** once Figma confirms it. Below them, **More comments for client self-review** can be added to the list one at a time or all at once.
-- **Worth keeping:** elements beyond the stories, each with its annotation text, approve, exclude, and edit wording, and **See it in Figma** once it is annotated.
-
-Once anything is in Figma, **In Figma now** at the top of the Client meeting view lists every published comment and annotation with its link. Figma has no link that opens a single comment, so a comment link opens the spot where it is pinned. Press C in Figma to show comments there. Annotation links open the screen in Dev Mode, where annotations show. A note Figma hasn't confirmed gets **Check in Figma** instead, and failed or removed notes get no link.
 
 Cursor uses an interactive Canvas when available.
 
@@ -233,7 +230,23 @@ It still flags a copy or number problem that changes the user's decision, causes
 
 An element that no story asks for is not flagged when it breaks nothing. When it has clear user or business value, it is suggested as worth keeping. When it has none, it is ignored. Only an addition that contradicts an exclusion or a business rule, or changes agreed behavior, is a scope conflict.
 
-## Client notes
+## Design rationale
+
+### Which decisions get a comment
+
+Clients often review a design on their own and share it with their team. A good comment helps them check a decision without you and explain it internally, so a misunderstanding doesn't turn into a revision. A weak one is noise. So a decision gets a comment only when it passes five tests:
+
+1. **It is a decision**: the designer chose it, and it could have been different, such as an order of steps, a default, or what is shown or hidden.
+2. **A reason backs it**: a documented user need, a documented business objective, a design principle applied to this screen in plain words, or what follows directly from how the design works.
+3. **It is not obvious**: someone on the client's team could question it, change it, or miss its point.
+4. **It is safe**: its story does not need attention, and no open issue touches its screen.
+5. **It is not a repeat**: no other comment gives the same reason. When the same reasoning applies on several screens, one comment covers them, and the canvas names the others.
+
+What passes is ranked across every story by impact, how likely the client's team is to question it, and the strength of the evidence. The top ones are recommended: up to 5 for eight stories or fewer, 6 for 9 to 11, 7 for 12 to 14, and 8 for more. The next ones become optional. When nothing passes, the canvas says so instead of filling the view.
+
+Each comment is 25 to 45 words. It names the decision, says what it does for the user, and adds the business value only when a source documents the objective. It never forces a business reason, never states a hope as a result, and never mentions ClickUp, the story, the product owner, or "as agreed", because an internal decision is no argument for the client. When a reason rests on an assumption, such as how the client's business works, the comment says **Check before publishing**, and **Approve all** skips it until you approve it on your own.
+
+The skill also handles the awkward cases: a user need and a business need that pull apart, a story with missing criteria, a decision that changed the original story, and a story that is only partly supported. See `methodology.md`.
 
 ### Walkthrough script
 
@@ -245,17 +258,9 @@ Each stage shows the story IDs it covers, with a link to each story's flow in Fi
 
 Edit any stage in the canvas. **Regenerate** rewrites it from the current review. If you had edits, you choose whether to keep them. A re-run of the review or an applied fix never rewrites the script. When the review changes after the script was written, the canvas warns you and offers **Regenerate**.
 
-### Positive Figma comments
+### Publishing comments
 
-Clients often review a design on their own and share it with their team. The comments help them check it without you and explain it internally, so a misunderstanding doesn't turn into a revision.
-
-The skill ranks candidates across every story and suggests about one comment for every two or three stories with a clear strength: up to 5 for eight stories or fewer, 6 for 9 to 11, 7 for 12 to 14, and 8 for more. Each is 25 to 45 words and explains why an important in-scope decision helps the user and the business.
-
-Comments give reasons, not sources. They never mention ClickUp, the story, the product owner, or "as agreed", because an internal decision is no argument for the client. They explain the decision from the user's and the business's point of view, and what it protects. When a reason rests on domain logic rather than a source, "Why this one" says so, so you can check it before publishing. They never come from a story that needs attention, never sit on a part of the flow with an open issue, and never claim outcomes no source supports.
-
-**More comments for client self-review** sit below the list. Each one answers a question the client's team is likely to ask, such as why targets are set per day or why something is entered by hand, with the user and business reason. Click **Add to comments**, or **Add all**, to move them into the list. Then they publish like the others.
-
-To publish:
+Approved comments are published from the **Design rationale** view. **Optional comments** sit below the list. Click **Add to comments**, or **Add all**, to move them into the list, and they publish like the others.
 
 1. Approve, exclude, or edit each comment in the canvas, or click **Approve all**.
 2. Click **Publish approved**. A new chat opens.

@@ -1,6 +1,6 @@
 # Review Artifact Structure
 
-The canvas is a working tool. It shows designers what to fix, and how to explain the design's value to the client through talking points, a walkthrough script, Figma comments, and annotations. It is not a checklist of design rules.
+The canvas is a working tool with three views: what to fix, which design decisions to defend and why, and what to say in the client meeting. It is not a checklist of design rules.
 
 ## Output priority
 
@@ -14,74 +14,36 @@ Do not require external packages, remote assets, or network requests to render t
 
 ## Information architecture
 
+The canvas separates content by purpose. Each view answers one question for the designer:
+
+| View | The designer's question | What it holds |
+| --- | --- | --- |
+| **Findings** (default) | What do I fix before the meeting? | Decisions waiting on the designer, project-wide issues, and the stories with their issues |
+| **Design rationale** | Which decisions do I defend, and why? | Figma comments, optional comments, and beyond-scope annotations, with their reasons and Figma status |
+| **Client meeting** | What do I say? | Talking points and the walkthrough script |
+
+Keep them apart. Issues and fixes stay in Findings, notes for Figma stay in Design rationale, and spoken text stays in Client meeting. A story's detail links to its rationale instead of repeating it.
+
 ### Header
 
-- Project or feature name, the reviewed Figma page, and the review date
+- Project or feature name, a one-line summary, the reviewed Figma page, the review date, and the number of stories
 - Story totals by status
-- Issue totals by fix status: open, ready for review, applied
-- Client note totals: comments suggested, more for self-review, published, items worth keeping and annotated
-- Two pills, **Review** and **Client meeting**, when there are client notes. In the Review view, a callout under the header: "Ready for the client meeting", with the script's stage count and speaking time, or a note that the script can be generated, the comment counts, and an **Open client meeting** button
-- A warning when ClickUp scope was not checked
+- One warning callout, only when ClickUp scope was not checked or a source could not be reached
+- The view bar: one button per view, each with a one-line summary, such as "3 open issues, 1 ready for your review", "5 comments, 2 optional, 1 beyond the stories. 2 in Figma", or "Script ready, about 3 minutes". Show Client meeting only when a story can be presented. Save the open view in `pfr-view`.
 
-### Status guide
+### Findings view
 
-Show these definitions near the filters:
+In this order:
 
-- **Supported:** The user can reach the goal, and every core requirement is met.
-- **Partially supported:** The user can reach the goal, but an important requirement or state is missing.
-- **Needs attention:** A core requirement or the main goal is missing, contradicted, or blocked.
-- **Insufficient evidence:** The flow or its sources could not be reached.
-
-Add:
-
-> These labels describe story support. They are not WCAG or design-quality scores.
-
-> Not flagged on purpose: English copy (developers handle localization), example figures in mock data, typos, and visual polish. They are raised only when they change what the user can do or break an agreed rule.
-
-### Sources checked
-
-Show a compact panel, collapsed by default when every source was read. Each row shows:
-
-- The source in words, such as "ClickUp task: Confirm suppression" or "PRD"
-- Where it came from: Designer, Discovered, ClickUp, or Figma
-- Its status: Read, Partly read, Not accessible, or Not found
-- What was missing, when anything was
-
-Show a warning callout above the panel when any source is not accessible or not found.
-
-### Project-wide issues
-
-Use one compact notice for issues affecting several stories. Do not repeat these inside every story.
-
-Examples:
-
-- Story names in Figma no longer match the current stories.
-- A state that several stories need, such as an error screen, is missing from a shared screen.
-- A selection or status changes from one story's flow to the next.
-
-### Open scope questions
-
-Show this panel only when there are unresolved conflicts or questions. Each question shows:
-
-- The question in one plain sentence
-- The affected story, when it is not project-wide
-- What each source says, as bullet points
-- Who should decide, when the sources name a product owner
-
-These are not design issues and have no fix button.
-
-### Story navigation
-
-Provide filters for All, then each status that has at least one story: Needs attention, Partially supported, Supported, and Insufficient evidence.
-
-Use a master-detail layout:
-
-- Left: compact story list with ID, title, status, number of open issues, and a "Re-review suggested" tag when set
-- Right: the selected story
+1. **Needs your decision**, only when something waits on the designer:
+   - **Fixes ready for your review**, each with its story and **Open story**, which selects it.
+   - **Scope questions to settle:** each question in one plain sentence, its story, what each source says as bullet points, and who should decide, when the sources name someone. They need a decision, not a design fix, so they have no fix button.
+2. **Project-wide issues:** one compact notice for issues that affect several stories, such as story names in Figma that no longer match, a state several stories need that is missing from a shared screen, or a selection that changes from one flow to the next. Never repeat them inside each story.
+3. **Story filters:** All, then each status with at least one story, each with its count.
+4. **Stories**, as master-detail: on the left, a compact list with ID, title, status, number of open issues, and "Re-review suggested" when set. On the right, the selected story.
+5. **What the labels mean** and **Sources checked**, both collapsed.
 
 ### Story detail
-
-Show parts 1 to 5 by default. Keep part 6 collapsed.
 
 1. **Story name and status**
    - Story ID, title, and status label
@@ -105,79 +67,103 @@ Show parts 1 to 5 by default. Keep part 6 collapsed.
    - Screen name in words, linked to the Figma node
    - "Evidence": the sources as named links, on one small line
    - The **Fix now** button and fix status, described in [Fix now](#fix-now)
-5. **Client talking point**
-   - Label it "Say this in the walkthrough" for Supported stories
-   - Label it "Safe to say now" for Partially supported and Needs attention stories
-   - Omit it for Insufficient evidence
-6. **Evidence and sources**, collapsed by default
+5. **Resolved issues**, collapsed, only when the story has any. Each shows its title, the date applied, and links to the Draft component and the "Fixed issues" row.
+6. **Design rationale link**, only when the story has notes: one line with the number of decisions worth a comment, optional ones, and items beyond the story, and **Open in Design rationale**, which opens that view showing only this story.
+7. **Evidence and sources**, collapsed
    - Scope used: the ClickUp decisions that override the local story or PRD, one plain line each
    - The business objective and its source
    - References: persona, ClickUp task, local story, PRD section, decision records
    - Relevant Figma screens
 
-Show **Resolved issues** as a separate collapsed section, only when the story has any. Each shows its title, the date applied, and links to the Draft component and the "Fixed issues" row.
+The talking point is not part of the story detail. It is in the Client meeting view.
+
+### Status guide and sources
+
+Both are collapsed at the bottom of Findings.
+
+**What the labels mean:**
+
+- **Supported:** The user can reach the goal, and every core requirement is met.
+- **Partially supported:** The user can reach the goal, but an important requirement or state is missing.
+- **Needs attention:** A core requirement or the main goal is missing, contradicted, or blocked.
+- **Insufficient evidence:** The flow or its sources could not be reached.
+
+Then: "These labels describe story support. They are not WCAG or design-quality scores. Not flagged on purpose: English copy (developers handle localization), example figures in mock data, typos, and visual polish. They are raised only when they change what the user can do or break an agreed rule."
+
+**Sources checked:** a row per source, with the source in words, such as "ClickUp task: Confirm suppression" or "PRD", where it came from (Designer, Discovered, ClickUp, or Figma), its status (Read, Partly read, Not accessible, or Not found), and what was missing. The header warning names any source that was not reached, so this list can stay collapsed.
+
+### Design rationale view
+
+The decisions worth defending, so the designer can explain them and the client's team can review them on their own. Show it whenever the review has stories, even with nothing suggested.
+
+- An intro line, then **In Figma now ([N])**, collapsed, when any comment is published or any item is annotated. It lists each one with its feature or title, the kind of note, and its stories, linked to Figma as [Links to notes in Figma](#links-to-notes-in-figma) describes.
+- Opened from a story: "Showing story [ID] only." with **Show all stories**. Counts and buttons act on what is shown. Save the story in `rationale-story`.
+- When nothing was suggested: a neutral callout, "No decision met the bar for a comment", with one sentence on the bar. Never fill the view to look busy.
+- The token note once, at the bottom: "Publishing opens a new chat that asks for a Figma token. On a Mac, you can keep it in the Keychain so it never appears in the chat. A pasted token is saved in that chat's transcript, so give it a short expiry and revoke it afterwards."
+
+**Figma comments**
+
+Above the rows: counts (selected, approved, in Figma), **Approve all**, **Check Figma status** when any comment has a Figma ID or needs a check, and **Publish approved ([N])** as the primary button.
+
+Rows are grouped by story, in review order, under a small heading with the story ID and title. Each row shows:
+
+- The feature in words, and the status.
+- "On:" the target screen, linked to Figma.
+- "Answers:" the `question`, when it has one.
+- The comment text, with "Edit wording". Editing shows a text area and the word count, with a hint when it is over 45 words.
+- The reasons, always visible: "User need", "Business objective", and "Design principle", side by side, each only when set. When `alsoOn` is set: "The same reasoning applies on [screens]. This one comment covers them."
+- **Check before publishing**, a warning with the `checkFirst` text, when set.
+- Approve and Exclude pills, until it is published. **Move back** for an added optional comment, until it has a Figma status.
+- "Why it was picked", collapsed: `why` and the evidence links.
+- After publishing: **See it in Figma**, with "Opens the spot where it is pinned. Press C in Figma to show comments.", plus "Update in Figma" when the wording changed, and "Remove from Figma".
+- The note from the last run, when there is one, such as a failure reason.
+
+Rules for the list:
+
+- It holds the recommended comments and every optional comment the designer added. Counts, Approve all, and Publish approved cover only this list.
+- Approve all skips comments with `checkFirst`, and says so. The designer approves those one by one, after checking.
+- Publish approved skips comments that are already in Figma, still need a check, or have empty wording or wording that looks like a token.
+- "Remove from Figma" also marks the comment Excluded, so a later "Publish approved" never posts it again. The designer can approve it again to republish it.
+
+**Optional comments ([N])**, collapsed, and open by default only when no comment is recommended:
+
+- One line: "Each one answers a question the client's team may ask when they review the design without you. Add the ones worth publishing."
+- A row per suggestion: the question as the title, the story, the feature, "On:" the target screen, the wording, the `checkFirst` warning when set, **Add to comments**, and "See the reasons", collapsed.
+- **Add to comments** approves it and moves it into the list above. **Add all** does the same for every suggestion without `checkFirst`. An optional comment stays in the list above once the designer approves or excludes it, or it has a Figma status. **Move back** returns it here.
+
+**Beyond the stories**
+
+Above the rows: one line saying no story asks for these but they look worth keeping, so approved ones go into Figma as annotations that ask the client to confirm them, with the counts, **Approve all**, and **Add approved annotations ([N])**.
+
+A row per element:
+
+- Title, stories, status, and "On:" the target screen.
+- What it is, and why it is beyond the stories.
+- User value, and business value when a source supports it.
+- The annotation text, with "Edit wording".
+- Approve and Exclude pills, until it is annotated. Then **See it in Figma**, with "Opens the screen in Dev Mode, where annotations show.", plus "Update in Figma" when the wording changed, and "Remove from Figma".
+- "For developers and evidence", collapsed.
 
 ### Client meeting view
 
-Show the client notes in their own "Client meeting" view, so the designer finds the script without scrolling past the stories. It has up to three tabs. Show the script tab whenever a reviewed story can be presented, even before a script exists. Show the other tabs only when they have content. Omit the view and its pills when no tab has anything to show. Save the chosen view in `pfr-view`.
+What the designer says. Two pills: **Talking points ([N])** and **Walkthrough script**. It opens on the script when one exists, otherwise on the talking points, and saves the choice in `meeting-tab`.
 
-Under the view's intro, when any comment is published or any item is annotated, **In Figma now ([N])**, collapsed. It lists each one with its feature or title, the kind of note, and its stories, linked to Figma as "Links to notes in Figma" below describes. The designer can open everything that was added from one place.
+**Talking points**
 
-**Walkthrough script** (default tab)
+- One row per story except Insufficient evidence, in review order: the title, the story ID, "Say this" for Supported or "Safe to say now" otherwise, a link to the flow, the status label, and the talking point.
+- A closing line naming any story that is not ready to present.
+
+**Walkthrough script**
 
 - **Before a script exists:** one line on what the script is, and **Generate walkthrough script**. It opens a new chat that writes the script from the current review. While it runs, show "Generating in a new chat" with "Stop waiting".
 - Stage pills: "Whole script", then one pill per stage, numbered in journey order.
 - Each stage shows its title, a link to its key screen, its story IDs with a link to each story's flow in Figma, and its spoken text.
-- Under each stage, "Questions they may ask": the `question` and wording of each additional comment for the stage's stories, so the designer can answer them in the meeting. They are not copied with the script.
+- Under each stage, "Questions they may ask": the `question` and wording of each comment for the stage's stories that is not excluded, so the designer can answer them in the meeting. They are not copied with the script.
 - The word count of the spoken text and the rough speaking time.
 - **Copy script:** copies the whole script as plain text. For each stage: the numbered title, the spoken text, and a reference line such as "Stories 1.6 and 1.7. Figma: Story 1.6 flow ([link]), Story 1.7 flow ([link])". When the canvas blocks the clipboard, show the full text in a block that selects itself on click, with "Copying is blocked here. Click the text to select it, then copy."
 - **Edit:** turns each shown stage into a text area. Edits are saved in canvas state and marked "Edited". Each edited stage has "Reset to generated".
 - **Regenerate:** opens a new chat that rewrites the script from the current review. While it runs, show "Stop waiting" beside it. When the new version arrives and the designer had edits, show "The script was regenerated after you edited it." with "Use the new script" and "Keep my edits".
 - **Older than the review:** when `REVIEW.updatedAt` is later than `WALKTHROUGH.generatedAt`, show "The review changed after this script was written" with Regenerate, so an older script is never presented as current.
-
-**Figma comments**
-
-A compact row per suggested comment:
-
-- The feature in words, the story, and the status.
-- "On:" the target screen, linked to Figma.
-- The comment text, with "Edit wording". Editing shows a text area and the word count, with a hint when it is over 45 words.
-- Approve and Exclude pills, until it is published.
-- For an added additional comment: "Answers: [question]", and **Move back** until it has a Figma status.
-- "Why this one", collapsed: why it is worth highlighting, the user need, the business objective, and the evidence links.
-- After publishing: **See it in Figma**, with "Opens the spot where it is pinned. Press C in Figma to show comments.", plus "Update in Figma" when the wording changed, and "Remove from Figma".
-- The note from the last run, when there is one, such as a failure reason.
-
-Above the rows:
-
-- One line: "Notes the client reads beside the design in Figma. They help the client review the design on their own and explain it to their team. Nothing is published until you click Publish."
-- Counts: suggested, approved, and published.
-- **Approve all**, then **Publish approved ([N])** as the primary button.
-- **Check Figma status**, when any comment has a Figma ID or needs a check.
-- "Remove from Figma" also marks the comment Excluded, so a later "Publish approved" never posts it again. The designer can approve it again to republish it.
-- Publish approved skips comments that are already in Figma, still need a check, or have empty wording or wording that looks like a token.
-- The list holds the positive comments and every additional comment the designer added. Counts, Approve all, and Publish approved cover only this list.
-- The note: "Publishing opens a new chat that asks for a Figma token. On a Mac, you can keep it in the Keychain so it never appears in the chat. A pasted token is saved in that chat's transcript, so give it a short expiry and revoke it afterwards."
-
-Below the list, when any suggestions are left, **More comments for client self-review ([N])**:
-
-- One line: "Optional. Each one answers a question the client's team may ask when they review the design without you, so they can check it and explain it instead of asking for a change."
-- A row per suggestion: the question as the title, the story, "On:" the target screen, and the wording.
-- **Add to comments** approves it and moves it into the list above. **Add all** does the same for every suggestion. An additional comment stays in the list above once the designer approves or excludes it, or it has a Figma status. **Move back** returns it here.
-- "Why this one", collapsed, as above.
-
-**Worth keeping**
-
-A row per beyond-scope element:
-
-- Title, stories, status, and "On:" the target screen.
-- What it is, and why it is beyond the stories.
-- User value, and business value when a source supports it.
-- "For developers", collapsed, when there is a note.
-- The annotation text, with "Edit wording".
-- Approve and Exclude pills, until it is annotated. Then **See it in Figma**, with "Opens the screen in Dev Mode, where annotations show.", plus "Update in Figma" when the wording changed, and "Remove from Figma".
-
-Above the rows: one line explaining these are additions the stories do not ask for, which go into Figma as annotations, plus **Approve all** and **Add approved annotations ([N])**.
 
 ### Note statuses
 
@@ -302,7 +288,9 @@ The designer's choices live in canvas state, not in the data block:
 | `note-texts` | `{ [noteId]: text }`, only for notes the designer edited |
 | `note-requests` | `{ [noteId]: { action, at, stopped? } }`, the latest request per note |
 | `script-edits` | `{ version, stages: { [stageId]: text } }` |
-| `pfr-view` | `"review"` or `"client"`, the open view |
+| `pfr-view` | `"findings"`, `"rationale"`, or `"meeting"`, the open view. Older values `"review"` and `"client"` open Findings and Client meeting. |
+| `rationale-story` | `"all"` or a story ID, the story the Design rationale view is showing |
+| `meeting-tab` | `"points"` or `"script"`, once the designer picks one |
 
 The parent component reads these once and passes them down, so counts, "Approve all", and "Publish approved" always agree with the rows. The state file sits next to the canvas as `[name].canvas.data.json`. Mode chats rely on the prompt, not on that file.
 
@@ -487,7 +475,7 @@ FIX_STATE[issueId]
   newScreenNodeId?
 ```
 
-### Client notes
+### Design rationale
 
 ```text
 COMMENTS[]
@@ -496,11 +484,14 @@ COMMENTS[]
   feature           the feature in words
   target            { label, nodeId }   the most specific node that shows the feature
   text              25 to 45 words
-  additional?       true for an optional self-review comment
-  question?         additional only: the question the client's team may ask
-  why               why it is worth highlighting, for the designer
-  userNeed?
+  additional?       true for an optional comment
+  question?         the question the client's team may ask. Required when additional
+  why               why this decision was picked, for the designer
+  userNeed?         the documented user need
   businessGoal?     only when a source documents it
+  principle?        the design principle in plain words, with its effect here
+  checkFirst?       the assumption the designer confirms before publishing
+  alsoOn?[]         { label, nodeId }   other screens with the same reasoning
   evidence[]        { label, url or path, line? }
   reviewNote?       set on a re-run when a published comment no longer fits
 
@@ -543,5 +534,7 @@ Created the persona flow review: [Open review]
 
 [Sources that could not be accessed, and the number of open scope questions. Omit when there are none.]
 
-[N] suggested comments, [N] more for client self-review, and [N] items worth keeping are ready in the canvas. Generate the walkthrough script there when you need it. Nothing goes to Figma until you approve it.
+[N] design decisions are ready to share as Figma comments in the "Design rationale" view, with [N] optional and [N] items beyond the stories. Talking points are in "Client meeting", where you can generate the walkthrough script when you need it. Nothing goes to Figma until you approve it.
 ```
+
+When no decision met the bar for a comment, say so in the last line instead of giving zeros.

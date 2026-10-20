@@ -147,10 +147,13 @@ type CommentSuggestion = {
   why: string;
   userNeed?: string;
   businessGoal?: string;
+  principle?: string;
+  question?: string;
+  checkFirst?: string;
+  alsoOn?: ScreenRef[];
   evidence: Ref[];
   reviewNote?: string;
   additional?: boolean;
-  question?: string;
 };
 
 type BeyondScopeItem = {
@@ -448,9 +451,11 @@ const COMMENTS: CommentSuggestion[] = [
     feature: "Excluded people, each with a reason",
     target: { label: "Suppression check", nodeId: "20:2" },
     text: "Before Riley sets up any messages, this list shows everyone who is left out and why. Riley can confirm the campaign is safe in one place, which is designed to protect opt-outs and customer relationships.",
-    why: "Clients often ask why a separate check comes before the messages. This explains it.",
+    why: "It serves the story's main goal and a documented rule, and a reviewer may see the separate step as extra work.",
     userNeed: "Riley must never message a customer, a competitor, or someone who opted out.",
     businessGoal: "Never contact customers, competitors, or people who opted out.",
+    principle: "The check comes before any message exists, so Riley fixes a wrong list while it still costs nothing.",
+    question: "Why is there a separate check before the messages?",
     evidence: [
       { label: "PRD goals", path: "docs/prd.md", line: 40 },
       { label: "Story S.1", path: "docs/stories/s-1.md" },
@@ -462,9 +467,10 @@ const COMMENTS: CommentSuggestion[] = [
     feature: "Schedule and daily limit before approval",
     target: { label: "Sequence timeline", nodeId: "30:2" },
     text: "Riley sees when every message goes out, and the daily limit, before approving anything. The pace is easy to check at a glance, which should help keep sending within safe limits for the domain.",
-    why: "The value of showing the whole schedule up front is not obvious from the screen alone.",
+    why: "It ties to a documented goal, and its value is not obvious from the screen alone.",
     userNeed: "Riley needs to control the pace of sending.",
     businessGoal: "Send outreach at a safe pace that protects the sending domain.",
+    principle: "The schedule and the limit sit side by side, so Riley judges the pace in one look instead of counting messages per day.",
     evidence: [{ label: "PRD goals", path: "docs/prd.md", line: 44 }],
   },
   {
@@ -475,9 +481,23 @@ const COMMENTS: CommentSuggestion[] = [
     text: "People who unsubscribed get their own reason, separate from customers and competitors. Riley can see they chose to stop hearing from the company, so they are never contacted again and the opt-out promise is kept.",
     why: "A reviewer may ask to merge unsubscribed people into another reason. This explains why they stay separate.",
     userNeed: "Riley must never message someone who opted out.",
+    question: "Why are unsubscribed people listed as a separate reason?",
     evidence: [{ label: "ClickUp comment, 12 Oct 2026", url: "https://app.clickup.com/t/SAMPLE1" }],
     additional: true,
-    question: "Why are unsubscribed people listed as a separate reason?",
+  },
+  {
+    id: "c-4",
+    storyId: "S.2",
+    feature: "Daily limit per mailbox",
+    target: { label: "Daily limit setting", nodeId: "30:5" },
+    text: "The daily limit counts messages per sending mailbox, not per campaign. Campaigns that share a mailbox share its limit, so starting another campaign never pushes a mailbox past a safe pace.",
+    why: "A reviewer may expect a limit per campaign and ask to change it.",
+    userNeed: "Riley needs to control the pace of sending.",
+    question: "Why is the limit set per mailbox and not per campaign?",
+    checkFirst: "This assumes the client sends more than one campaign from the same mailbox.",
+    alsoOn: [{ label: "Campaign settings", nodeId: "30:6" }],
+    evidence: [{ label: "PRD goals", path: "docs/prd.md", line: 44 }],
+    additional: true,
   },
 ];
 
@@ -1134,14 +1154,25 @@ function ValueBlock({ story }: { story: StoryReview }) {
   return null;
 }
 
-function TalkingPoint({ story }: { story: StoryReview }) {
-  if (!story.talkingPoint || story.assessment === "Insufficient evidence") return null;
-  const title =
-    story.assessment === "Supported" ? "Say this in the walkthrough" : "Safe to say now";
+function RationaleLink({ story, onOpen }: { story: StoryReview; onOpen: () => void }) {
+  const comments = COMMENTS.filter((c) => c.storyId === story.id && !c.additional).length;
+  const optional = COMMENTS.filter((c) => c.storyId === story.id && c.additional).length;
+  const beyond = BEYOND_SCOPE.filter((b) => b.storyIds.includes(story.id)).length;
+  const parts = [
+    comments > 0 && `${comments} ${comments === 1 ? "decision" : "decisions"} worth a comment`,
+    optional > 0 && `${optional} optional`,
+    beyond > 0 && `${beyond} beyond the story`,
+  ].filter(Boolean);
+  if (parts.length === 0) return null;
   return (
-    <Callout tone="neutral" title={title}>
-      “{story.talkingPoint}”
-    </Callout>
+    <Row gap={10} align="center" wrap>
+      <Text size="small" tone="secondary">
+        Design rationale: {parts.join(", ")}.
+      </Text>
+      <Button variant="ghost" onClick={onOpen}>
+        Open in Design rationale
+      </Button>
+    </Row>
   );
 }
 
@@ -1196,7 +1227,13 @@ function EvidenceSection({ story }: { story: StoryReview }) {
   );
 }
 
-function StoryDetail({ story }: { story: StoryReview }) {
+function StoryDetail({
+  story,
+  onOpenRationale,
+}: {
+  story: StoryReview;
+  onOpenRationale: () => void;
+}) {
   return (
     <Stack gap={18}>
       <div>
@@ -1249,8 +1286,6 @@ function StoryDetail({ story }: { story: StoryReview }) {
         </section>
       )}
 
-      <TalkingPoint story={story} />
-
       {story.resolved.length > 0 && (
         <CollapsibleSection title="Resolved issues" count={story.resolved.length} defaultOpen={false}>
           <Stack gap={8}>
@@ -1260,6 +1295,8 @@ function StoryDetail({ story }: { story: StoryReview }) {
           </Stack>
         </CollapsibleSection>
       )}
+
+      <RationaleLink story={story} onOpen={onOpenRationale} />
 
       <EvidenceSection story={story} />
     </Stack>
@@ -1309,12 +1346,34 @@ function StoryListItem({
   );
 }
 
+const UNREACHED_SOURCES = SOURCES.filter(
+  (s) => s.status === "Not accessible" || s.status === "Not found",
+);
+
+function SourceWarning() {
+  const lines: string[] = [];
+  if (!REVIEW.clickupChecked) {
+    lines.push("ClickUp scope was not checked. The local story files defined the scope.");
+  }
+  if (UNREACHED_SOURCES.length > 0) {
+    lines.push(`Could not be reached: ${UNREACHED_SOURCES.map((s) => s.source).join(", ")}.`);
+  }
+  if (lines.length === 0) return null;
+  return (
+    <Callout tone="warning" title="Not every source was checked">
+      <Stack gap={2}>
+        {lines.map((line) => (
+          <Text key={line} size="small">
+            {line}
+          </Text>
+        ))}
+      </Stack>
+    </Callout>
+  );
+}
+
 function SourcesPanel() {
   const theme = useHostTheme();
-  const unreachable = SOURCES.filter(
-    (s) => s.status === "Not accessible" || s.status === "Not found",
-  );
-  const anyGap = SOURCES.some((s) => s.status !== "Read");
   const statusColor = (status: SourceRow["status"]) =>
     status === "Read"
       ? theme.category.green
@@ -1322,75 +1381,129 @@ function SourcesPanel() {
         ? theme.category.yellow
         : theme.category.red;
   return (
-    <Stack gap={8}>
-      {!REVIEW.clickupChecked && (
-        <Callout tone="warning" title="ClickUp scope was not checked">
-          The local story files defined the scope for this review.
-        </Callout>
-      )}
-      {unreachable.length > 0 && (
-        <Callout tone="warning" title="Some sources could not be reached">
-          {unreachable.map((s) => s.source).join(", ")}.
-        </Callout>
-      )}
-      <CollapsibleSection title="Sources checked" count={SOURCES.length} defaultOpen={anyGap}>
-        <Stack gap={6}>
-          {SOURCES.map((s) => (
-            <Grid key={s.source} columns="minmax(200px, 1.5fr) 100px 120px 2fr" gap={10}>
-              <Text size="small">{s.source}</Text>
-              <Text size="small" tone="tertiary">
-                {s.origin}
+    <CollapsibleSection title="Sources checked" count={SOURCES.length} defaultOpen={false}>
+      <Stack gap={6}>
+        {SOURCES.map((s) => (
+          <Grid key={s.source} columns="minmax(200px, 1.5fr) 100px 120px 2fr" gap={10}>
+            <Text size="small">{s.source}</Text>
+            <Text size="small" tone="tertiary">
+              {s.origin}
+            </Text>
+            <Row gap={6} align="center">
+              <Dot color={statusColor(s.status)} />
+              <Text as="span" size="small" tone="secondary">
+                {s.status}
               </Text>
-              <Row gap={6} align="center">
-                <Dot color={statusColor(s.status)} />
-                <Text as="span" size="small" tone="secondary">
-                  {s.status}
-                </Text>
-              </Row>
-              <Text size="small" tone="tertiary">
-                {s.gap ?? ""}
-              </Text>
-            </Grid>
-          ))}
-        </Stack>
-      </CollapsibleSection>
-    </Stack>
+            </Row>
+            <Text size="small" tone="tertiary">
+              {s.gap ?? ""}
+            </Text>
+          </Grid>
+        ))}
+      </Stack>
+    </CollapsibleSection>
   );
 }
 
-function OpenQuestions() {
-  if (OPEN_QUESTIONS.length === 0) return null;
+function StatusGuide() {
   return (
-    <section>
-      <H3>Open scope questions</H3>
-      <Text size="small" tone="secondary" style={{ marginTop: 4 }}>
-        The sources disagree on these. They need a decision, not a design fix.
-      </Text>
-      <Grid columns={2} gap={18} style={{ marginTop: 10 }}>
-        {OPEN_QUESTIONS.map((q) => (
-          <div key={q.id}>
-            <Text weight="semibold">{q.question}</Text>
-            {q.storyId && (
-              <Text size="small" tone="tertiary">
-                Story {q.storyId}
-              </Text>
-            )}
-            <Stack gap={3} style={{ marginTop: 6 }}>
-              {q.positions.map((p) => (
-                <Text key={p.source} size="small">
-                  • {p.source}: {p.says}
-                </Text>
-              ))}
-            </Stack>
-            {q.decideBy && (
-              <Text size="small" tone="tertiary" style={{ marginTop: 4 }}>
-                Who should decide: {q.decideBy}
-              </Text>
-            )}
+    <CollapsibleSection title="What the labels mean" defaultOpen={false}>
+      <Grid columns={4} gap={14}>
+        {STATUS_ORDER.map((status) => (
+          <div key={status}>
+            <StatusLabel status={status} />
+            <Text size="small" tone="secondary" style={{ marginTop: 3 }}>
+              {STATUS_HELP[status]}
+            </Text>
           </div>
         ))}
       </Grid>
-    </section>
+      <Text size="small" tone="tertiary" style={{ marginTop: 8 }}>
+        These labels describe story support. They are not WCAG or design-quality scores. Not
+        flagged on purpose: English copy (developers handle localization), example figures in
+        mock data, typos, and visual polish. They are raised only when they change what the user
+        can do or break an agreed rule.
+      </Text>
+    </CollapsibleSection>
+  );
+}
+
+type ReadyFix = { issue: Issue; storyId?: string };
+
+function readyFixes(): ReadyFix[] {
+  const ready = (i: Issue) => FIX_STATE[i.issueId]?.status === "ready-for-review";
+  return [
+    ...PROJECT_ISSUES.filter(ready).map((issue) => ({ issue })),
+    ...STORIES.flatMap((s) => s.issues.filter(ready).map((issue) => ({ issue, storyId: s.id }))),
+  ];
+}
+
+function DecisionsNeeded({ onOpenStory }: { onOpenStory: (id: string) => void }) {
+  const fixes = readyFixes();
+  if (fixes.length === 0 && OPEN_QUESTIONS.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>Needs your decision</CardHeader>
+      <CardBody>
+        <Stack gap={16}>
+          {fixes.length > 0 && (
+            <Stack gap={6}>
+              <Label>{`Fixes ready for your review (${fixes.length})`}</Label>
+              {fixes.map(({ issue, storyId }) => (
+                <Row key={issue.issueId} justify="space-between" align="center" gap={12} wrap>
+                  <Text size="small">
+                    {issue.title}
+                    <Text as="span" size="small" tone="tertiary">
+                      {" "}
+                      {storyId ? `Story ${storyId}` : "Project-wide, shown below"}
+                    </Text>
+                  </Text>
+                  {storyId && (
+                    <Button variant="ghost" onClick={() => onOpenStory(storyId)}>
+                      Open story
+                    </Button>
+                  )}
+                </Row>
+              ))}
+            </Stack>
+          )}
+          {OPEN_QUESTIONS.length > 0 && (
+            <Stack gap={8}>
+              <div>
+                <Label>{`Scope questions to settle (${OPEN_QUESTIONS.length})`}</Label>
+                <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
+                  The sources disagree on these. They need a decision, not a design fix.
+                </Text>
+              </div>
+              <Grid columns={2} gap={18}>
+                {OPEN_QUESTIONS.map((q) => (
+                  <div key={q.id}>
+                    <Text weight="semibold">{q.question}</Text>
+                    {q.storyId && (
+                      <Text size="small" tone="tertiary">
+                        Story {q.storyId}
+                      </Text>
+                    )}
+                    <Stack gap={3} style={{ marginTop: 6 }}>
+                      {q.positions.map((p) => (
+                        <Text key={p.source} size="small">
+                          • {p.source}: {p.says}
+                        </Text>
+                      ))}
+                    </Stack>
+                    {q.decideBy && (
+                      <Text size="small" tone="tertiary" style={{ marginTop: 4 }}>
+                        Who should decide: {q.decideBy}
+                      </Text>
+                    )}
+                  </div>
+                ))}
+              </Grid>
+            </Stack>
+          )}
+        </Stack>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -1608,6 +1721,7 @@ type NoteRowProps = {
   reviewNote?: string;
   question?: string;
   body?: UiNode;
+  reasons?: UiNode;
   moreLabel: string;
   more: UiNode;
   onMoveBack?: () => void;
@@ -1632,7 +1746,7 @@ function NoteRow(p: NoteRowProps) {
           <div>
             <Text weight="semibold">{p.title}</Text>
             <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
-              {p.meta}. On: <Link href={figmaUrl(p.target.nodeId)}>{p.target.label}</Link>
+              {p.meta ? `${p.meta}. ` : ""}On: <Link href={figmaUrl(p.target.nodeId)}>{p.target.label}</Link>
             </Text>
           </div>
           <NoteStatusLabel status={p.status} />
@@ -1703,6 +1817,7 @@ function NoteRow(p: NoteRowProps) {
             </Text>
           )}
         </div>
+        {p.reasons}
         <Row gap={8} align="center" wrap>
           {!p.live && !p.busy && (
             <Pill active={p.decision === "approved"} onClick={() => p.onDecide("approved")}>
@@ -1821,12 +1936,49 @@ function inCommentList(c: CommentSuggestion, decision: NoteDecision, entry?: Com
   return !c.additional || decision !== "suggested" || !!entry;
 }
 
-function CommentWhy({ c }: { c: CommentSuggestion }) {
+function CheckFirst({ text }: { text: string }) {
+  return (
+    <Callout tone="warning" title="Check before publishing">
+      {text}
+    </Callout>
+  );
+}
+
+function CommentReasons({ c, withCheck = true }: { c: CommentSuggestion; withCheck?: boolean }) {
+  const reasons: { label: string; text: string }[] = [];
+  if (c.userNeed) reasons.push({ label: "User need", text: c.userNeed });
+  if (c.businessGoal) reasons.push({ label: "Business objective", text: c.businessGoal });
+  if (c.principle) reasons.push({ label: "Design principle", text: c.principle });
+  return (
+    <Stack gap={8}>
+      {reasons.length > 0 && (
+        <Grid columns={reasons.length} gap={14}>
+          {reasons.map((r) => (
+            <Para key={r.label} label={r.label} text={r.text} />
+          ))}
+        </Grid>
+      )}
+      {c.alsoOn && c.alsoOn.length > 0 && (
+        <Text size="small" tone="tertiary">
+          The same reasoning applies on{" "}
+          {c.alsoOn.map((s, i) => (
+            <span key={s.nodeId}>
+              {i > 0 ? ", " : ""}
+              <Link href={figmaUrl(s.nodeId)}>{s.label}</Link>
+            </span>
+          ))}
+          . This one comment covers them.
+        </Text>
+      )}
+      {withCheck && c.checkFirst && <CheckFirst text={c.checkFirst} />}
+    </Stack>
+  );
+}
+
+function CommentDetails({ c }: { c: CommentSuggestion }) {
   return (
     <Stack gap={6}>
-      <Para label="Why highlight it" text={c.why} />
-      {c.userNeed && <Para label="User need" text={c.userNeed} />}
-      {c.businessGoal && <Para label="Business objective" text={c.businessGoal} />}
+      <Para label="Why this decision was picked" text={c.why} />
       <Text size="small">
         <Text as="span" size="small" tone="tertiary">
           Evidence:{" "}
@@ -1837,7 +1989,38 @@ function CommentWhy({ c }: { c: CommentSuggestion }) {
   );
 }
 
-function MoreCommentRow({ c, text, onAdd }: { c: CommentSuggestion; text: string; onAdd: () => void }) {
+function storyOrder(id: string): number {
+  const index = STORIES.findIndex((s) => s.id === id);
+  return index < 0 ? STORIES.length : index;
+}
+
+function groupByStory<T>(items: T[], storyOf: (item: T) => string): { storyId: string; items: T[] }[] {
+  const groups: { storyId: string; items: T[] }[] = [];
+  const sorted = [...items].sort((a, b) => storyOrder(storyOf(a)) - storyOrder(storyOf(b)));
+  for (const item of sorted) {
+    const id = storyOf(item);
+    const last = groups[groups.length - 1];
+    if (last && last.storyId === id) last.items.push(item);
+    else groups.push({ storyId: id, items: [item] });
+  }
+  return groups;
+}
+
+function StoryHeading({ id }: { id: string }) {
+  const story = STORIES.find((s) => s.id === id);
+  return (
+    <Row gap={8} align="center" wrap style={{ marginTop: 16, marginBottom: 2 }}>
+      <Text size="small" weight="semibold" tone="secondary">
+        STORY {id}
+      </Text>
+      <Text size="small" tone="tertiary">
+        {story ? story.title : "Not part of this review"}
+      </Text>
+    </Row>
+  );
+}
+
+function OptionalCommentRow({ c, text, onAdd }: { c: CommentSuggestion; text: string; onAdd: () => void }) {
   const theme = useHostTheme();
   const [open, setOpen] = useCanvasState<boolean>(`note-more:${c.id}`, false);
   return (
@@ -1849,22 +2032,31 @@ function MoreCommentRow({ c, text, onAdd }: { c: CommentSuggestion; text: string
           <Link href={figmaUrl(c.target.nodeId)}>{c.target.label}</Link>
         </Text>
         <Text size="small">“{text}”</Text>
+        {c.checkFirst && <CheckFirst text={c.checkFirst} />}
         <Row gap={8} align="center" wrap>
           <Button variant="secondary" disabled={!canSend(text)} onClick={onAdd}>
             Add to comments
           </Button>
           <Button variant="ghost" onClick={() => setOpen(!open)}>
-            {open ? "Hide details" : "Why this one"}
+            {open ? "Hide reasons" : "See the reasons"}
           </Button>
         </Row>
-        {open && <CommentWhy c={c} />}
+        {open && (
+          <Stack gap={8}>
+            <CommentReasons c={c} withCheck={false} />
+            <CommentDetails c={c} />
+          </Stack>
+        )}
       </Stack>
     </div>
   );
 }
 
-function CommentsTab({ notes }: { notes: NotesState }) {
-  const all = COMMENTS.map((c) => {
+const TOKEN_NOTE =
+  "Publishing opens a new chat that asks for a Figma token. On a Mac, you can keep it in the Keychain so it never appears in the chat. A pasted token is saved in that chat's transcript, so give it a short expiry and revoke it afterwards.";
+
+function CommentsSection({ notes, comments }: { notes: NotesState; comments: CommentSuggestion[] }) {
+  const all = comments.map((c) => {
     const entry = COMMENT_STATE[c.id];
     const decision = notes.decisionOf(c.id);
     const busy = notes.isBusy(c.id, entry?.updatedAt);
@@ -1887,22 +2079,26 @@ function CommentsTab({ notes }: { notes: NotesState }) {
   const checkable = rows.filter(
     (r) => !r.busy && (inFigma(r.entry) || r.entry?.status === "needs-check" || r.stopped),
   );
+  const held = rows.filter((r) => r.c.checkFirst && r.decision === "suggested" && !r.entry).length;
+  const heldOptional = moreRows.filter((r) => r.c.checkFirst).length;
 
   return (
-    <Stack gap={10}>
-      <Text size="small" tone="secondary">
-        Notes the client reads beside the design in Figma. They help the client review the design
-        on their own and explain it to their team. Nothing is published until you click Publish.
-      </Text>
+    <section>
       <Row justify="space-between" align="center" gap={12} wrap>
-        <Text size="small" tone="tertiary">
-          {rows.length} suggested, {approved} approved, {published.length} published.
-        </Text>
+        <div>
+          <H3>Figma comments</H3>
+          <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
+            {rows.length} selected, {approved} approved, {published.length} in Figma.
+          </Text>
+        </div>
         <Row gap={8} wrap>
           <Button
             variant="ghost"
+            disabled={rows.length === 0}
             onClick={() =>
-              notes.approveAll(rows.filter((r) => r.entry?.status !== "published").map((r) => r.c.id))
+              notes.approveAll(
+                rows.filter((r) => r.entry?.status !== "published" && !r.c.checkFirst).map((r) => r.c.id),
+              )
             }
           >
             Approve all
@@ -1944,13 +2140,28 @@ function CommentsTab({ notes }: { notes: NotesState }) {
           </Button>
         </Row>
       </Row>
-      <div>
-        {rows.map(({ c, entry, decision, busy, stopped, text }) => (
+      {held > 0 && (
+        <Text size="small" tone="tertiary" style={{ marginTop: 6 }}>
+          Approve all skips {held === 1 ? "the comment" : `the ${held} comments`} marked “Check
+          before publishing”. Approve {held === 1 ? "it" : "each one"} on its own once you have
+          checked.
+        </Text>
+      )}
+      {rows.length === 0 && (
+        <Text size="small" tone="secondary" style={{ marginTop: 8 }}>
+          No decision here met the bar for a recommended comment.
+          {moreRows.length > 0 ? " The optional ones below are still available." : ""}
+        </Text>
+      )}
+      {groupByStory(rows, (r) => r.c.storyId).map((group) => (
+        <div key={group.storyId}>
+          <StoryHeading id={group.storyId} />
+          {group.items.map(({ c, entry, decision, busy, stopped, text }) => (
           <NoteRow
             key={c.id}
             id={c.id}
             title={c.feature}
-            meta={`Story ${c.storyId}`}
+            meta=""
             target={c.target}
             textLabel="Comment"
             text={text}
@@ -1962,9 +2173,10 @@ function CommentsTab({ notes }: { notes: NotesState }) {
             busy={busy}
             figmaLink={busy ? undefined : commentLink(entry)}
             reviewNote={c.reviewNote}
-            question={c.additional ? c.question : undefined}
-            moreLabel="Why this one"
-            more={<CommentWhy c={c} />}
+            question={c.question}
+            reasons={<CommentReasons c={c} />}
+            moreLabel="Why it was picked"
+            more={<CommentDetails c={c} />}
             onMoveBack={
               c.additional && !entry && !busy ? () => notes.setDecision(c.id, "suggested") : undefined
             }
@@ -1992,43 +2204,53 @@ function CommentsTab({ notes }: { notes: NotesState }) {
             }}
             onCancel={() => notes.cancel(c.id)}
           />
-        ))}
-      </div>
-      <Text size="small" tone="tertiary">
-        Publishing opens a new chat that asks for a Figma token. On a Mac, you can keep it in the
-        Keychain so it never appears in the chat. A pasted token is saved in that chat's
-        transcript, so give it a short expiry and revoke it afterwards.
-      </Text>
+          ))}
+        </div>
+      ))}
       {moreRows.length > 0 && (
-        <Stack gap={6} style={{ marginTop: 10 }}>
-          <Row justify="space-between" align="center" gap={12} wrap>
-            <H3>More comments for client self-review ({moreRows.length})</H3>
-            <Button variant="secondary" onClick={() => notes.approveAll(moreRows.map((r) => r.c.id))}>
-              Add all
-            </Button>
-          </Row>
-          <Text size="small" tone="secondary">
-            Optional. Each one answers a question the client's team may ask when they review the
-            design without you, so they can check it and explain it instead of asking for a change.
-          </Text>
-          <div>
-            {moreRows.map((r) => (
-              <MoreCommentRow
-                key={r.c.id}
-                c={r.c}
-                text={r.text}
-                onAdd={() => notes.setDecision(r.c.id, "approved")}
-              />
-            ))}
-          </div>
-        </Stack>
+        <div style={{ marginTop: 18 }}>
+          <CollapsibleSection
+            title="Optional comments"
+            count={moreRows.length}
+            defaultOpen={rows.length === 0}
+          >
+            <Stack gap={6}>
+              <Row justify="space-between" align="center" gap={12} wrap>
+                <Text size="small" tone="secondary" style={{ maxWidth: 720 }}>
+                  Each one answers a question the client's team may ask when they review the
+                  design without you. Add the ones worth publishing.
+                  {heldOptional > 0 ? " Add all skips the ones marked “Check before publishing”." : ""}
+                </Text>
+                <Button
+                  variant="secondary"
+                  disabled={moreRows.every((r) => r.c.checkFirst)}
+                  onClick={() =>
+                    notes.approveAll(moreRows.filter((r) => !r.c.checkFirst).map((r) => r.c.id))
+                  }
+                >
+                  Add all
+                </Button>
+              </Row>
+              <div>
+                {moreRows.map((r) => (
+                  <OptionalCommentRow
+                    key={r.c.id}
+                    c={r.c}
+                    text={r.text}
+                    onAdd={() => notes.setDecision(r.c.id, "approved")}
+                  />
+                ))}
+              </div>
+            </Stack>
+          </CollapsibleSection>
+        </div>
       )}
-    </Stack>
+    </section>
   );
 }
 
-function KeepTab({ notes }: { notes: NotesState }) {
-  const rows = BEYOND_SCOPE.map((b) => {
+function BeyondScopeSection({ notes, items }: { notes: NotesState; items: BeyondScopeItem[] }) {
+  const rows = items.map((b) => {
     const entry = ANNOTATION_STATE[b.id];
     const decision = notes.decisionOf(b.id);
     const busy = notes.isBusy(b.id, entry?.updatedAt);
@@ -2042,15 +2264,16 @@ function KeepTab({ notes }: { notes: NotesState }) {
   const annotated = rows.filter((r) => r.entry?.status === "annotated").length;
 
   return (
-    <Stack gap={10}>
-      <Text size="small" tone="secondary">
-        These elements are in the design but no story asks for them. They look worth keeping, so
-        they go into Figma as annotations, after you approve them.
-      </Text>
+    <section>
       <Row justify="space-between" align="center" gap={12} wrap>
-        <Text size="small" tone="tertiary">
-          {rows.length} worth keeping, {annotated} annotated.
-        </Text>
+        <div>
+          <H3>Beyond the stories</H3>
+          <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
+            No story asks for these, but they look worth keeping. Approved ones go into Figma as
+            annotations that ask the client to confirm them. {rows.length} worth keeping,{" "}
+            {annotated} annotated.
+          </Text>
+        </div>
         <Row gap={8} wrap>
           <Button
             variant="ghost"
@@ -2142,7 +2365,7 @@ function KeepTab({ notes }: { notes: NotesState }) {
           />
         ))}
       </div>
-    </Stack>
+    </section>
   );
 }
 
@@ -2178,7 +2401,10 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
   const shown = selected ? [selected] : stages;
   const index = selected ? stages.indexOf(selected) : -1;
   const questionsFor = (s: ScriptStage) =>
-    COMMENTS.filter((c) => c.additional && c.question && s.storyIds.includes(c.storyId));
+    COMMENTS.filter(
+      (c) =>
+        c.question && s.storyIds.includes(c.storyId) && notes.decisionOf(c.id) !== "excluded",
+    );
 
   const setStageText = (id: string, text: string | null) => {
     setCopyState("idle");
@@ -2425,12 +2651,21 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
   );
 }
 
-type NotesTab = "script" | "comments" | "keep";
-type View = "review" | "client";
+type View = "findings" | "rationale" | "meeting";
+type MeetingTab = "points" | "script";
 
-const CAN_PRESENT =
-  WALKTHROUGH.stages.length > 0 || STORIES.some((s) => s.assessment !== "Insufficient evidence");
-const HAS_CLIENT_NOTES = CAN_PRESENT || COMMENTS.length > 0 || BEYOND_SCOPE.length > 0;
+const VIEW_ALIASES: Record<string, View> = {
+  findings: "findings",
+  review: "findings",
+  rationale: "rationale",
+  meeting: "meeting",
+  client: "meeting",
+};
+
+const PRESENTABLE = STORIES.filter(
+  (s) => s.assessment !== "Insufficient evidence" && !!s.talkingPoint,
+);
+const CAN_PRESENT = WALKTHROUGH.stages.length > 0 || PRESENTABLE.length > 0;
 const EXTRA_COMMENTS = COMMENTS.filter((c) => c.additional).length;
 
 function InFigmaNow() {
@@ -2480,90 +2715,225 @@ function InFigmaNow() {
   );
 }
 
-function ClientNotes() {
-  const notes = useNotesState();
-  const [tab, setTab] = useCanvasState<NotesTab>("notes-tab", "script");
-  const tabs: { id: NotesTab; label: string }[] = [];
-  if (CAN_PRESENT) tabs.push({ id: "script", label: "Walkthrough script" });
-  if (COMMENTS.length > 0) {
-    const core = COMMENTS.length - EXTRA_COMMENTS;
-    tabs.push({
-      id: "comments",
-      label:
-        EXTRA_COMMENTS > 0
-          ? `Figma comments (${core} + ${EXTRA_COMMENTS} more)`
-          : `Figma comments (${core})`,
-    });
-  }
-  if (BEYOND_SCOPE.length > 0) tabs.push({ id: "keep", label: `Worth keeping (${BEYOND_SCOPE.length})` });
-  if (tabs.length === 0) return null;
-  const active = tabs.some((t) => t.id === tab) ? tab : tabs[0].id;
-
+function RationaleView({
+  notes,
+  focus,
+  onFocus,
+}: {
+  notes: NotesState;
+  focus: string;
+  onFocus: (storyId: string) => void;
+}) {
+  const shown = (storyIds: string[]) => focus === "all" || storyIds.includes(focus);
+  const comments = COMMENTS.filter((c) => shown([c.storyId]));
+  const beyond = BEYOND_SCOPE.filter((b) => shown(b.storyIds));
+  const empty = COMMENTS.length === 0 && BEYOND_SCOPE.length === 0;
   return (
-    <section>
-      <H2>Client meeting</H2>
-      <Text size="small" tone="secondary" style={{ marginTop: 4 }}>
-        Present the design with the walkthrough script. Comments and annotations help the client
-        review the design on their own and explain it to their team. They go into Figma only
-        after you approve them.
-      </Text>
-      <InFigmaNow />
-      <Row gap={6} wrap style={{ marginTop: 12 }}>
-        {tabs.map((t) => (
-          <Pill key={t.id} active={active === t.id} onClick={() => setTab(t.id)}>
-            {t.label}
-          </Pill>
-        ))}
-      </Row>
-      <Card size="lg" style={{ marginTop: 12 }}>
-        <CardBody>
-          {active === "script" && <ScriptPanel notes={notes} />}
-          {active === "comments" && <CommentsTab notes={notes} />}
-          {active === "keep" && <KeepTab notes={notes} />}
-        </CardBody>
-      </Card>
-    </section>
+    <Stack gap={18}>
+      <div>
+        <H2>Design rationale</H2>
+        <Text size="small" tone="secondary" style={{ marginTop: 4, maxWidth: 820 }}>
+          The decisions in this design worth defending, with the user and business reasons behind
+          them. Approved comments go into Figma beside the feature, so the client's team can review
+          the design on their own and explain it internally. Nothing reaches Figma until you
+          publish it.
+        </Text>
+        <InFigmaNow />
+      </div>
+      {focus !== "all" && (
+        <Row gap={8} align="center" wrap>
+          <Text size="small" tone="secondary">
+            Showing story {focus} only.
+          </Text>
+          <Button variant="ghost" onClick={() => onFocus("all")}>
+            Show all stories
+          </Button>
+        </Row>
+      )}
+      {empty ? (
+        <Callout tone="neutral" title="No decision met the bar for a comment">
+          A decision gets a comment only when the designer chose it, a documented need or a clear
+          design reason backs it, and the client's team could question or miss its point. Nothing
+          in this review passed all of those, so nothing is suggested.
+        </Callout>
+      ) : (
+        <Card size="lg">
+          <CardBody>
+            <Stack gap={24}>
+              {(comments.length > 0 || focus === "all") && (
+                <CommentsSection notes={notes} comments={comments} />
+              )}
+              {beyond.length > 0 && <BeyondScopeSection notes={notes} items={beyond} />}
+              <Text size="small" tone="tertiary">
+                {TOKEN_NOTE}
+              </Text>
+            </Stack>
+          </CardBody>
+        </Card>
+      )}
+    </Stack>
   );
 }
 
-function MeetingCallout({ onOpen }: { onOpen: () => void }) {
-  const stages = WALKTHROUGH.stages.length;
-  const minutes = Math.max(1, Math.round(wordCount(WALKTHROUGH.stages.map((s) => s.text).join(" ")) / 140));
-  const core = COMMENTS.length - EXTRA_COMMENTS;
-  const parts: string[] = [];
-  if (stages > 0 && isAfter(REVIEW.updatedAt, WALKTHROUGH.generatedAt)) {
-    parts.push("The walkthrough script was written before the latest review changes.");
-  } else if (stages > 0) {
-    parts.push(
-      `A walkthrough script in ${stages} ${stages === 1 ? "stage" : "stages"}, about ${minutes} ${minutes === 1 ? "minute" : "minutes"} spoken.`,
-    );
-  } else if (CAN_PRESENT) {
-    parts.push("You can generate a walkthrough script when you need one.");
-  }
-  if (COMMENTS.length > 0) {
-    parts.push(
-      `${core} Figma ${core === 1 ? "comment" : "comments"}${EXTRA_COMMENTS > 0 ? `, plus ${EXTRA_COMMENTS} more for client self-review` : ""}.`,
-    );
-  }
-  if (BEYOND_SCOPE.length > 0) parts.push(`${BEYOND_SCOPE.length} worth keeping.`);
+function TalkingPoints() {
+  const theme = useHostTheme();
+  const notReady = STORIES.filter((s) => s.assessment === "Insufficient evidence");
   return (
-    <Callout tone="info" title="Ready for the client meeting">
-      <Text size="small">{parts.join(" ")}</Text>
-      <Row style={{ marginTop: 8 }}>
-        <Button variant="secondary" onClick={onOpen}>
-          Open client meeting
-        </Button>
-      </Row>
-    </Callout>
+    <Stack gap={0}>
+      <Text size="small" tone="secondary" style={{ marginBottom: 10 }}>
+        One or two sentences per story, to say aloud. “Say this” stories are ready to present.
+        “Safe to say now” stories still have open issues, so their point covers only what works
+        today.
+      </Text>
+      {PRESENTABLE.map((s) => (
+        <div key={s.id} style={{ padding: "12px 0", borderTop: `1px solid ${theme.stroke.tertiary}` }}>
+          <Row justify="space-between" align="start" gap={12}>
+            <div>
+              <Text weight="semibold">{s.title}</Text>
+              <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
+                Story {s.id}. {s.assessment === "Supported" ? "Say this" : "Safe to say now"}.{" "}
+                <Link href={figmaUrl(s.figmaFlow.nodeId)}>{s.figmaFlow.label}</Link>
+              </Text>
+            </div>
+            <StatusLabel status={s.assessment} />
+          </Row>
+          <Text style={{ marginTop: 6, lineHeight: 1.6 }}>“{s.talkingPoint}”</Text>
+        </div>
+      ))}
+      {notReady.length > 0 && (
+        <Text
+          size="small"
+          tone="tertiary"
+          style={{ paddingTop: 12, borderTop: `1px solid ${theme.stroke.tertiary}` }}
+        >
+          Not ready to present: {storyList(notReady.map((s) => s.id))}. The review could not reach{" "}
+          {notReady.length === 1 ? "its flow or sources" : "their flows or sources"}.
+        </Text>
+      )}
+    </Stack>
   );
+}
+
+function MeetingView({ notes }: { notes: NotesState }) {
+  const [tab, setTab] = useCanvasState<MeetingTab | "">("meeting-tab", "");
+  const active: MeetingTab =
+    tab || (WALKTHROUGH.stages.length > 0 || PRESENTABLE.length === 0 ? "script" : "points");
+  return (
+    <Stack gap={12}>
+      <div>
+        <H2>Client meeting</H2>
+        <Text size="small" tone="secondary" style={{ marginTop: 4, maxWidth: 820 }}>
+          What to say when you present the design. Talking points are ready now. The walkthrough
+          script is written only when you ask for it, and names every open issue honestly.
+        </Text>
+      </div>
+      <Row gap={6} wrap>
+        {PRESENTABLE.length > 0 && (
+          <Pill active={active === "points"} onClick={() => setTab("points")}>
+            {`Talking points (${PRESENTABLE.length})`}
+          </Pill>
+        )}
+        <Pill active={active === "script"} onClick={() => setTab("script")}>
+          Walkthrough script
+        </Pill>
+      </Row>
+      <Card size="lg">
+        <CardBody>
+          {active === "points" && PRESENTABLE.length > 0 ? <TalkingPoints /> : <ScriptPanel notes={notes} />}
+        </CardBody>
+      </Card>
+    </Stack>
+  );
+}
+
+function ViewTab({
+  active,
+  title,
+  summary,
+  onClick,
+}: {
+  active: boolean;
+  title: string;
+  summary: string;
+  onClick: () => void;
+}) {
+  const theme = useHostTheme();
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      style={{
+        width: "100%",
+        textAlign: "left",
+        padding: "10px 14px",
+        border: `1px solid ${active ? theme.accent.primary : theme.stroke.tertiary}`,
+        borderRadius: 6,
+        background: active ? theme.fill.secondary : theme.bg.editor,
+        color: theme.text.primary,
+        cursor: "pointer",
+      }}
+    >
+      <Text as="span" weight="semibold">
+        {title}
+      </Text>
+      <Text size="small" tone="secondary" style={{ marginTop: 2 }}>
+        {summary}
+      </Text>
+    </button>
+  );
+}
+
+function plural(n: number, one: string, many: string): string {
+  return `${n} ${n === 1 ? one : many}`;
+}
+
+function rationaleSummary(): string {
+  if (COMMENTS.length === 0 && BEYOND_SCOPE.length === 0) return "No decision met the bar for a comment";
+  const core = COMMENTS.length - EXTRA_COMMENTS;
+  const parts = [plural(core, "comment", "comments")];
+  if (EXTRA_COMMENTS > 0) parts.push(`${EXTRA_COMMENTS} optional`);
+  if (BEYOND_SCOPE.length > 0) parts.push(`${BEYOND_SCOPE.length} beyond the stories`);
+  const live =
+    Object.values(COMMENT_STATE).filter((e) => e.status === "published").length +
+    Object.values(ANNOTATION_STATE).filter((e) => e.status === "annotated").length;
+  return `${parts.join(", ")}${live > 0 ? `. ${live} in Figma` : ""}`;
+}
+
+function meetingSummary(): string {
+  const stages = WALKTHROUGH.stages;
+  if (stages.length > 0 && isAfter(REVIEW.updatedAt, WALKTHROUGH.generatedAt)) {
+    return "The script is older than the review";
+  }
+  if (stages.length > 0) {
+    const minutes = Math.max(1, Math.round(wordCount(stages.map((s) => s.text).join(" ")) / 140));
+    return `Script ready, about ${plural(minutes, "minute", "minutes")}`;
+  }
+  return `${plural(PRESENTABLE.length, "talking point", "talking points")}. Script on request`;
 }
 
 export default function PersonaFlowReview() {
   const theme = useHostTheme();
   const [filter, setFilter] = useCanvasState<Filter>("pfr-filter", "All");
   const [selectedId, setSelectedId] = useCanvasState<string>("pfr-story", STORIES[0]?.id ?? "");
-  const [view, setView] = useCanvasState<View>("pfr-view", "review");
-  const activeView: View = HAS_CLIENT_NOTES && view === "client" ? "client" : "review";
+  const [view, setView] = useCanvasState<string>("pfr-view", "findings");
+  const [focus, setFocus] = useCanvasState<string>("rationale-story", "all");
+  const notes = useNotesState();
+  const aliased = VIEW_ALIASES[view] ?? "findings";
+  const activeView: View = aliased === "meeting" && !CAN_PRESENT ? "findings" : aliased;
+  const activeFocus =
+    focus !== "all" &&
+    (COMMENTS.some((c) => c.storyId === focus) || BEYOND_SCOPE.some((b) => b.storyIds.includes(focus)))
+      ? focus
+      : "all";
+  const openStory = (id: string) => {
+    setFilter("All");
+    setSelectedId(id);
+  };
+  const openRationale = (id: string) => {
+    setFocus(id);
+    setView("rationale");
+  };
 
   const count = (s: Assessment) => STORIES.filter((x) => x.assessment === s).length;
   const filters: Filter[] = ["All", ...STATUS_ORDER.filter((s) => count(s) > 0)];
@@ -2588,31 +2958,30 @@ export default function PersonaFlowReview() {
     ...STORIES.flatMap((s) => s.resolved.map((r) => r.issueId)),
   ]).size;
 
+  const findingParts = [
+    openCount === 0 ? "No open issues" : plural(openCount, "open issue", "open issues"),
+  ];
+  if (readyCount > 0) findingParts.push(`${readyCount} ready for your review`);
+  if (appliedCount > 0) findingParts.push(`${appliedCount} fixed`);
+  if (OPEN_QUESTIONS.length > 0) {
+    findingParts.push(plural(OPEN_QUESTIONS.length, "scope question", "scope questions"));
+  }
+
   return (
     <Stack
       gap={22}
       style={{ maxWidth: 1260, margin: "0 auto", padding: 24, color: theme.text.primary }}
     >
       <Row justify="space-between" align="start" gap={20} wrap>
-        <div style={{ maxWidth: 640 }}>
+        <div style={{ maxWidth: 680 }}>
           <H1>{REVIEW.title}</H1>
           <Text tone="secondary" style={{ marginTop: 5 }}>
             {REVIEW.summary}
           </Text>
           <Text size="small" tone="tertiary" style={{ marginTop: 8 }}>
-            Reviewed {REVIEW.date} on the “{REVIEW.wireflowsPage.name}” page. Issues:{" "}
-            {openCount} open, {readyCount} ready for review, {appliedCount} applied.
+            Reviewed {REVIEW.date} on the “{REVIEW.wireflowsPage.name}” page.{" "}
+            {plural(STORIES.length, "story", "stories")}.
           </Text>
-          {(COMMENTS.length > 0 || BEYOND_SCOPE.length > 0) && (
-            <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
-              Client notes: {COMMENTS.length - EXTRA_COMMENTS} comments suggested
-              {EXTRA_COMMENTS > 0 ? `, ${EXTRA_COMMENTS} more for self-review` : ""},{" "}
-              {Object.values(COMMENT_STATE).filter((e) => e.status === "published").length}{" "}
-              published. {BEYOND_SCOPE.length} worth keeping,{" "}
-              {Object.values(ANNOTATION_STATE).filter((e) => e.status === "annotated").length}{" "}
-              annotated.
-            </Text>
-          )}
         </div>
         <Row gap={18}>
           <Stat value={String(count("Supported"))} label="Supported" tone="success" />
@@ -2628,55 +2997,44 @@ export default function PersonaFlowReview() {
         </Row>
       </Row>
 
-      {HAS_CLIENT_NOTES && (
-        <Row gap={6} wrap>
-          <Pill active={activeView === "review"} onClick={() => setView("review")}>
-            Review
-          </Pill>
-          <Pill active={activeView === "client"} onClick={() => setView("client")}>
-            Client meeting
-          </Pill>
-        </Row>
-      )}
+      <SourceWarning />
 
-      {activeView === "client" && <ClientNotes />}
+      <Grid columns={CAN_PRESENT ? 3 : 2} gap={10}>
+        <ViewTab
+          active={activeView === "findings"}
+          title="Findings"
+          summary={findingParts.join(", ")}
+          onClick={() => setView("findings")}
+        />
+        <ViewTab
+          active={activeView === "rationale"}
+          title="Design rationale"
+          summary={rationaleSummary()}
+          onClick={() => {
+            setFocus("all");
+            setView("rationale");
+          }}
+        />
+        {CAN_PRESENT && (
+          <ViewTab
+            active={activeView === "meeting"}
+            title="Client meeting"
+            summary={meetingSummary()}
+            onClick={() => setView("meeting")}
+          />
+        )}
+      </Grid>
 
-      {activeView === "review" && HAS_CLIENT_NOTES && (
-        <MeetingCallout onOpen={() => setView("client")} />
-      )}
-
-      {activeView === "review" && (
+      {activeView === "findings" && (
         <>
-          <section>
-            <H3>What the labels mean</H3>
-            <Grid columns={4} gap={14} style={{ marginTop: 8 }}>
-              {STATUS_ORDER.map((status) => (
-                <div key={status}>
-                  <StatusLabel status={status} />
-                  <Text size="small" tone="secondary" style={{ marginTop: 3 }}>
-                    {STATUS_HELP[status]}
-                  </Text>
-                </div>
-              ))}
-            </Grid>
-            <Text size="small" tone="tertiary" style={{ marginTop: 8 }}>
-              These labels describe story support. They are not WCAG or design-quality scores.
-              Not flagged on purpose: English copy (developers handle localization), example
-              figures in mock data, typos, and visual polish. They are raised only when they
-              change what the user can do or break an agreed rule.
-            </Text>
-          </section>
-
-          <SourcesPanel />
+          <DecisionsNeeded onOpenStory={openStory} />
 
           <ProjectIssues />
-
-          <OpenQuestions />
 
           <Row gap={8} wrap>
             {filters.map((item) => (
               <Pill key={item} active={activeFilter === item} onClick={() => setFilter(item)}>
-                {item}
+                {`${item} (${item === "All" ? STORIES.length : count(item)})`}
               </Pill>
             ))}
           </Row>
@@ -2694,15 +3052,28 @@ export default function PersonaFlowReview() {
                 ))}
               </Stack>
               <Card size="lg" style={{ alignSelf: "start" }}>
-                <CardHeader trailing={selectedStory.assessment}>Story {selectedStory.id}</CardHeader>
                 <CardBody>
-                  <StoryDetail story={selectedStory} />
+                  <StoryDetail
+                    story={selectedStory}
+                    onOpenRationale={() => openRationale(selectedStory.id)}
+                  />
                 </CardBody>
               </Card>
             </Grid>
           )}
+
+          <Stack gap={8}>
+            <StatusGuide />
+            <SourcesPanel />
+          </Stack>
         </>
       )}
+
+      {activeView === "rationale" && (
+        <RationaleView notes={notes} focus={activeFocus} onFocus={setFocus} />
+      )}
+
+      {activeView === "meeting" && <MeetingView notes={notes} />}
 
       <Divider />
       <Text size="small" tone="tertiary">

@@ -1,6 +1,6 @@
 # Publish Mode
 
-Publish the designer's approved positive comments to Figma. Later, update, remove, or check them.
+Publish the designer's approved design-rationale comments to Figma. Later, update, remove, or check them.
 
 The Figma MCP cannot create comments, so this mode uses the Figma REST API with a personal access token from the designer. The REST API can list, post, and delete comments. It cannot edit them.
 

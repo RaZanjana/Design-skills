@@ -1,6 +1,6 @@
 ---
 name: persona-flow-review
-description: Reviews a chosen Figma page's story flows against the project's personas, the agreed ClickUp story scope including comments, local user stories, and the PRD. Answers three questions per story - does the design support the user's goal, does it meet the agreed scope and business objective, and can the designer explain it to the client. Starts from a short prompt, asks only for missing inputs, flags only meaningful gaps, and produces a canvas with explained story statuses, a Fix now button per issue, an on-request client walkthrough script, positive Figma comments, backed by user and business reasons, that help the client self-review and defend the design, published after approval, and Figma annotations for worthwhile elements beyond the stories. Fixes are made on a "Fixed issues" Figma page and applied only after approval. Use for a persona flow review, user-story design validation, or client walkthrough preparation, or to fix an issue, publish comments, or add annotations from a persona flow review.
+description: Reviews a chosen Figma page's story flows against the project's personas, the agreed ClickUp story scope including comments, local user stories, and the PRD. Answers three questions per story - does the design support the user's goal, does it meet the agreed scope and business objective, and can the designer explain it to the client. Starts from a short prompt, asks only for missing inputs, flags only meaningful gaps, and produces a canvas in three views - findings with explained statuses and a Fix now button, design rationale with the few decisions worth defending as Figma comments backed by user and business reasons, and annotations for worthwhile additions, published after approval, and client talking points with an on-request walkthrough script. Fixes are made on a "Fixed issues" Figma page and applied only after approval. Use for a persona flow review, user-story design validation, or client walkthrough preparation, or to fix an issue, publish comments, or add annotations from a persona flow review.
 disable-model-invocation: true
 ---
 
@@ -331,105 +331,38 @@ Write each issue in these parts:
 
 Name the screen in words (“the lead selection screen”) and link it. The link carries the node ID.
 
-### Client talking points
-
-- One or two sentences, at most about 40 words, that the designer can say aloud.
-- Cover the user's goal or problem, how the design addresses it, why that fits the user's context, and the business objective it supports.
-- Use this project's people, screens, and goals. Never reuse a talking point across stories.
-- Avoid empty claims such as "This improves UX" or "This follows best practices".
-- For Partially supported and Needs attention stories, present only what works today. Never present a missing capability as done.
-- Explain the decision by its user and business reasons. Never name an internal source or who decided it, as section 10 describes.
-
-Example: "The confirmation step lets customers check their order before they submit it. That helps prevent avoidable mistakes and supports a more reliable checkout."
-
-The same rules apply to status reasons, value statements, project-wide issues, and the final chat reply.
+These rules apply to every status reason, value statement, project-wide issue, talking point, comment, annotation, script stage, and the final chat reply.
 
 Quick test before delivery: could a new team member read any single issue and explain the problem to someone else without opening Figma or the story?
 
 See [examples.md](examples.md) for before-and-after rewrites.
 
-## 10. Prepare client notes and the walkthrough script
+## 10. Select the design rationale
 
-Build the comments and annotations from the review you just did. Reuse its statuses, reasons, value statements, "What works" points, talking points, issues, and screenshots. Do not open new sources or re-analyze the flows. The walkthrough script follows the same rules, but is written only when the designer asks for it.
+Besides issues, the review finds the design decisions worth defending: Figma comments that help the client's team review the design on their own and explain it internally, annotations for worthwhile additions beyond the stories, and a talking point per story. Build them from the review you just did. Reuse its statuses, reasons, value statements, "What works" points, scope decisions, issues, and screenshots. Do not open new sources or re-analyze the flows.
 
-Keep them apart from the issues. Issues say what is missing. Client notes say why something works, and never turn an assumption into a strength.
+The rules are in [methodology.md](methodology.md#design-rationale). Apply them in this order:
 
-### Reasons the client can use
+1. **List candidates** from every Supported and Partially supported story. Never from a Needs attention or Insufficient evidence story.
+2. **Test each one** against the five tests in [Which decisions deserve a comment](methodology.md#which-decisions-deserve-a-comment). Drop every one that fails.
+3. **Rank and cut** across the whole review, as [Rank and limit](methodology.md#rank-and-limit) describes. The top ones, up to the ceiling, are recommended. The next ones that passed become optional, each with a `question`.
+4. **Write each comment** as [Connect the decision to value](methodology.md#connect-the-decision-to-value) describes: reasons in `userNeed`, `businessGoal`, and `principle`, and any assumption in `checkFirst`. Handle the [edge cases](methodology.md#edge-cases) there.
+5. **Pick beyond-scope annotations**, as [Beyond-scope elements](methodology.md#beyond-scope-elements) describes.
+6. **Write a talking point** for every story except Insufficient evidence, as [Talking points](methodology.md#talking-points) describes.
+7. **Run the [quality check](methodology.md#quality-check)**, and drop what fails.
 
-The client reads comments and annotations, and hears the script and talking points. Explain every decision by what it does for the user and the business, so the client and the designer can defend it with logic. Never explain it by who decided it or where.
-
-- **Keep internal sources out of client-facing text.** Never mention ClickUp, the story or its comments, the product owner, the PRD, internal discussions, or phrases such as "as agreed" or "as requested". They prove the decision to the designer, so they stay in the evidence and the `why` field.
-- **Give the logic instead:** the user need or business goal a source documents, what follows directly from how the design works, or basic domain logic the client's own team would accept as true. Never invent numbers, outcomes, or business practices. When a reason rests on domain logic rather than a source, say so in `why`, so the designer can check it.
-- **Then say what it protects or prevents** for the user or the business, when the logic supports it.
-- A beyond-scope annotation, or a script line that asks the client to confirm an addition, may say it goes beyond the agreed scope, because that is the client's decision. It still gives the user reason, and names no internal source.
-
-Details and examples are in [methodology.md](methodology.md#reasons-the-client-can-use).
-
-A comment or annotation never sits on a screen that an open issue names, including a potential concern, and never praises the behavior an issue is about. Other screens of the same story can still get one. The script is different: it names each open issue honestly.
-
-### Positive Figma comments
-
-Suggest comments that explain the most important in-scope design decisions, pinned to the feature or screen they describe. Comments are for the client reviewing the design without you. Each one should help them check the design on their own and explain it to their team, so a misunderstanding doesn't turn into a revision.
-
-- Take candidates only from Supported and Partially supported stories: a "What works" point, the status reason, the user and business value, or a scope decision. Never from a Needs attention or Insufficient evidence story.
-- Give the user and business reasons for the decision, as "Reasons the client can use" above describes.
-- Rank across the whole review. First list the strongest candidate from every eligible story, then drop the ones that break a rule below, then rank what is left. Never stop after the first few good ones.
-- Keep the strongest. Up to 5 for a review of eight stories or fewer, counting every reviewed story. Up to 6 for 9 to 11 stories, 7 for 12 to 14, and 8 for 15 or more. These are ceilings, not targets. Expect about one for every two or three stories with a clear strength. A small flow may need only 1.
-- One comment per screen. Allow a second only for a separate feature with a different benefit.
-- One point per comment, 25 to 45 words, in two or three short sentences. Count words by spaces, as the canvas does.
-- When several features share a benefit, comment on the strongest one only.
-- When no business objective is documented, give the user benefit only. Do not mention the missing objective in the comment.
-- Leave a screen without a comment when it has no decision worth explaining.
-
-### Additional comments for client self-review
-
-After choosing the comments above, suggest more that the designer can add. Each additional comment answers a question the client's team is likely to ask when they go through the design without you. With the answer beside the design, they can check it and defend it internally instead of sending a change request.
-
-- **Good candidates:** a decision that works differently from what a reviewer may expect, such as a scope decision that changed the original story; a default or trade-off someone may want to change; a state that prevents a wrong reading, such as missing data shown as a message instead of a zero; a limit of a source system; a role restriction.
-- **Write the question first**, in the client team's words and from what they see on the screen, such as "Why are targets set per day and not per week?". Then write the comment: the decision, the user or business reason behind it, and what would go wrong if it changed, when the logic supports that. Never mention where or by whom it was decided. Never sound defensive or guess at a reason.
-- The rules for positive comments apply: eligible stories only, never on a screen an open issue names, 25 to 45 words, one note per feature. Never repeat a point another comment, annotation, or this list already makes.
-- Up to as many as the ceiling for positive comments. No minimum. When nothing qualifies, suggest none.
-- They are suggestions only. Nothing is published unless the designer adds it in the canvas and publishes it.
-
-### Beyond-scope annotations
-
-Some designs include elements no source asks for that are worth keeping. Suggest a Figma annotation for each one that meets all of these:
-
-- No ClickUp task, story, or PRD section asks for it.
-- It does not contradict an exclusion or business rule, and does not change agreed behavior. Otherwise it is a scope conflict issue.
-- Its value ties to the persona or a documented business goal.
-
-Ignore additions with no evidence of value. Do not annotate, list, or flag them, and leave no trace of them in the canvas. Keep up to 5 per review, one per feature. Each annotation starts with "Beyond the story:", stays at 40 words or fewer, and asks the client to confirm the element stays.
-
-A feature gets either a comment or an annotation, never both. A separate feature on the same screen, such as a download link beside a list, can get an annotation while the list gets a comment. Annotations do not count toward the one-comment-per-screen limit.
+Explain every decision by what it does for the user and the business, never by who decided it or where. Client-facing text never mentions ClickUp, the story or its comments, the product owner, the PRD, or "as agreed". See [Reasons the client can use](methodology.md#reasons-the-client-can-use).
 
 ### Walkthrough script
 
-Write the script only when the designer asks for it, with the Generate button in the canvas or in a chat. A review run never writes one. On a first run, set `WALKTHROUGH` to `{ version: 0, generatedAt: "", stages: [] }`, and the canvas offers to generate it.
-
-When asked, write one script for the whole review, in journey order, split into stages by journey step or screen. Each stage is about 50 to 100 words. A typical review comes to 300 to 500 words, about two to four minutes spoken. A small review is shorter. Never pad it to reach a length. For each stage, in two to four sentences, cover:
-
-1. What the user is trying to do.
-2. How the design helps, naming the screen.
-3. Why the key decision makes sense for this user, when a persona source supports it. Otherwise skip this part.
-4. The business objective it supports, when a source documents one.
-
-Then add, on top of those sentences:
-
-- One honest sentence for each open issue that affects the stage, with the next step.
-- One sentence for each beyond-scope element, asking the client to confirm it.
-- For a story with Insufficient evidence, one neutral closing sentence, such as "We'll walk through approval once we can review it." It is not a stage.
-- Never contradict a story's status or present a gap as done.
-- Explain decisions by their user and business reasons, as "Reasons the client can use" above describes.
-
-Each stage lists, in `storyIds`, every story it presents. The canvas shows them with a link to each story's flow in Figma, and copies them with the script, so the designer can find the flow behind every stage. No introduction or closing is needed beyond that.
+Write the script only when the designer asks for it, with the Generate button in the canvas or in a chat. A review run never writes one. On a first run, set `WALKTHROUGH` to `{ version: 0, generatedAt: "", stages: [] }`, and the canvas offers to generate it. When asked, follow [Walkthrough script](methodology.md#walkthrough-script) and [Generate the script](canvas-output.md#generate-the-script). Unlike a comment, the script names each open issue honestly.
 
 ### Notes already in Figma
 
 On a re-run, the canvas already holds notes from earlier runs (see section 11). Start from them:
 
 1. **One note per feature.** Match each new candidate to the earlier notes by target screen and feature. When it matches, keep the earlier note and its ID. Never add a second note for a feature that already has a comment or annotation in Figma, even with better wording. Give new notes new IDs that continue the numbering.
-2. **The limits include what is in Figma.** Count published comments and annotated items toward the ceilings above. A published additional comment counts toward the additional limit and keeps `additional: true`.
+2. **The limits include what is in Figma.** Count published comments and annotated items toward the limits. A published optional comment counts toward the optional limit and keeps `additional: true`.
 3. **Check that each note in Figma still fits.** For every published comment and annotated item:
    - Confirm its node still exists, and read back each annotation, in one read-only `use_figma` call for all notes. Change nothing. A comment's node is the `nodeId` in `COMMENT_STATE`. Figma returns annotation labels HTML-escaped, so decode them as [annotate-figma.md](annotate-figma.md#2-write-and-verify-in-one-call) does before comparing.
    - Compare its wording with the current screen and this review. The feature must still be there and still work as described. No open issue may name the screen. Its story must not be Needs attention or Insufficient evidence.
@@ -444,8 +377,6 @@ On a re-run, the canvas already holds notes from earlier runs (see section 11). 
 
    When the read-back shows an annotation is missing, also set its `ANNOTATION_STATE` entry to `needs-check` with the same reason. Review mode never sets any other status, and never changes Figma. It cannot list comments, because it has no token. The designer confirms comments with "Check Figma status".
 
-The rules for selection, wording, and quality checks are in [methodology.md](methodology.md#client-notes).
-
 ## 11. Produce the review artifact
 
 Build the review from [canvas-template.tsx](canvas-template.tsx), following [canvas-output.md](canvas-output.md).
@@ -456,34 +387,28 @@ Default output:
 - Otherwise, a self-contained interactive HTML file with no external dependencies.
 - If interactive file creation is unavailable, use the same hierarchy in concise Markdown.
 
-The output must include:
+The header shows the status counts, a warning for any source that was not checked, and three views, one per purpose, each with a one-line summary:
 
-- A status overview and status guide, with the note on what is not flagged
-- Sources checked, with any source that could not be accessed
-- Project-wide issues
-- Open scope questions
-- Story filters
-- For each story, in this order:
+- **Findings** (default): what to fix. "Needs your decision" (fixes ready for review and open scope questions), project-wide issues, story filters, and the story list. The selected story shows, in this order:
   1. Story name and status
   2. Why this status
   3. User and business value, what works, or what is needed
-  4. Issues, each with its impact, recommended fix, and Fix now button
-  5. Client talking point
-  6. Evidence and sources, collapsed by default
-- Fix status for every issue, with Approve, Request changes, and Reject buttons once a fix is ready for review
-- A "Client meeting" view, opened from the top of the canvas, with three tabs, each shown only when it has content:
-  - **Walkthrough script:** a Generate button until the designer asks for a script. Then stage navigation, each stage's story IDs and flow links, the questions each stage may raise, edit, copy, and regenerate
-  - **Figma comments:** approve, exclude, edit, approve all, publish, and the real Figma status of each comment, with a link to it once Figma confirms it, plus the additional self-review comments the designer can add
-  - **Worth keeping:** beyond-scope elements, each with its annotation text, approve, exclude, edit, and the real Figma status, with a link to it once Figma confirms it
-  - **In Figma now:** every published comment and annotated item in one collapsed list, linked to Figma
+  4. Issues, each with its impact, recommended fix, Fix now button, and fix status, with Approve, Request changes, and Reject once a fix is ready for review
+  5. Resolved issues, collapsed
+  6. A link to the story's design rationale, when it has any
+  7. Evidence and sources, collapsed
+
+  Below the stories, the status guide with what is not flagged, and the sources checked, both collapsed.
+- **Design rationale:** the decisions worth defending. Recommended Figma comments, grouped by story, each with its wording, its reasons, any "Check before publishing" warning, approve, exclude, edit, publish, and the real Figma status with a link once Figma confirms it. Then the optional comments, collapsed, and the beyond-scope annotations with the same controls. "In Figma now" lists every note already in Figma.
+- **Client meeting:** a talking point per presentable story, and the walkthrough script: a Generate button until the designer asks for one, then stages with story IDs and flow links, edit, copy, and regenerate.
 
 Use muted green for Supported, muted yellow for Partially supported, muted red for Needs attention, and neutral gray for Insufficient evidence. Maintain readable contrast.
 
 ### Re-runs update the same canvas
 
-On a re-run for the same Figma file and page, update the most recent earlier canvas in place. Find it in the canvases folder by `REVIEW.figmaFileKey` and `REVIEW.wireflowsPage.nodeId`. Keep its file name, and rebuild the whole file from the current [canvas-template.tsx](canvas-template.tsx) with the new data block. Never keep the earlier file's code: it may come from an older template without client notes or the walkthrough script. The designer's approvals, edited wording, and script edits are saved next to the canvas and keyed by note and stage IDs, so they carry over. Use a new canvas only for a different file or page. When the designer wants to keep the earlier review as a record, copy the canvas first.
+On a re-run for the same Figma file and page, update the most recent earlier canvas in place. Find it in the canvases folder by `REVIEW.figmaFileKey` and `REVIEW.wireflowsPage.nodeId`. Keep its file name, and rebuild the whole file from the current [canvas-template.tsx](canvas-template.tsx) with the new data block. Never keep the earlier file's code: it may come from an older template with a different layout, or without comments or the walkthrough script. The designer's approvals, edited wording, and script edits are saved next to the canvas and keyed by note and stage IDs, so they carry over. Use a new canvas only for a different file or page. When the designer wants to keep the earlier review as a record, copy the canvas first.
 
-Set `REVIEW.updatedAt` to the current time on every review run. Carry over from the earlier data block. When it has no client notes yet, start them fresh:
+Set `REVIEW.updatedAt` to the current time on every review run. Carry over from the earlier data block. When it has no comments or annotations yet, start them fresh:
 
 - `COMMENT_STATE`, `ANNOTATION_STATE`, and `FIX_STATE` entries, unchanged apart from the annotation check in section 10.
 - Every note that has a state entry, with its ID. For a published comment, set `text` to its `publishedText`. For an annotated item, use its `annotatedText`.
@@ -520,27 +445,23 @@ Never remove anything from Figma in Review mode.
 - Every finding based on ClickUp cites the task or comment it relies on.
 - Every inaccessible or missing source appears in "Sources checked".
 - Unresolved conflicts appear in "Open scope questions", not as confirmed design issues.
-- Every comment and annotation names a real screen, ties to a source, and stays within the volume and length limits.
-- No comment or annotation sits on a screen that an open issue names, and no feature has both.
+- Every comment passed the five tests in methodology, was ranked across every eligible story, and fits the limits, counting what is already in Figma.
+- Every comment and annotation names a real screen. None sits on a screen an open issue names, and no feature has two notes.
 - No new comment comes from a Needs attention or Insufficient evidence story. A published comment carried over from an earlier review may stay, with a `reviewNote`.
-- No feature has two notes in Figma, and published comments and annotated items count toward the limits.
-- Positive comments were ranked across every eligible story, not just the first few.
-- Each additional comment has a `question` the client's team is likely to ask, answers it with a user or business reason, and repeats no other note.
-- No comment, annotation, talking point, or script line names an internal source or who decided, such as ClickUp, the story, the product owner, or "as agreed". Each decision is explained by its user and business reasons, and any reason that rests on domain logic is named in `why`.
-- The canvas was built from the current template, including on a re-run.
+- Every optional comment has a `question`, and every assumption is in `checkFirst`.
+- No comment, annotation, talking point, or script line names an internal source or who decided, such as ClickUp, the story, the product owner, or "as agreed".
 - Every published comment and annotated item links to its node in Figma. No link is shown for a note Figma has not confirmed, apart from "Check in Figma" for one that needs a check.
 - On a re-run, every published comment and annotated item was checked against the current screen, and each one that no longer fits has a `reviewNote`.
 - The review run left `WALKTHROUGH` as it was, or empty on a first run, and set `REVIEW.updatedAt`.
 - When a script exists, it follows the journey order, matches every story status, mentions each open journey issue and beyond-scope element, and every stage lists its story IDs.
-- No two comments make the same point, and no two annotations do. The script may cover the same decisions, in its own words. Nothing repeats another output word for word.
-- No sample data from the template remains.
+- The canvas was built from the current template, including on a re-run, and no sample data remains.
 
 Return only:
 
 1. A link to the review artifact.
 2. One sentence with the counts, such as "4 supported, 2 partially supported, 1 needs attention."
 3. One sentence naming any source that could not be accessed and the number of open scope questions. Omit it when there are none.
-4. One sentence saying [N] suggested comments, [N] more for client self-review, and [N] items worth keeping are ready in the canvas's "Client meeting" view, that the walkthrough script can be generated there when needed, and that nothing is published to Figma until the designer approves it.
+4. One sentence saying [N] design decisions are ready to share as Figma comments in the canvas's "Design rationale" view, with [N] optional and [N] items beyond the stories, that talking points and an on-request walkthrough script are in "Client meeting", and that nothing goes to Figma until the designer approves it. When no decision met the bar, say so instead.
 
 ## Additional resources
 

@@ -118,9 +118,9 @@ Follow `SKILL.md` sections 4 to 9 for this story alone:
 - Give new issues new IDs that continue the story's numbering. Never reuse an ID.
 - Keep the limit of three open issues, and apply the "worth flagging" test to any new one.
 - When the status changes, rewrite the status reason, the value or "what works" block, and the talking point to match.
-- Keep the client notes consistent with the new review:
+- Keep the design rationale consistent with the new review:
   - Leave `WALKTHROUGH` unchanged. The script changes only when the designer asks for it. When one exists, the newer `REVIEW.updatedAt` makes the canvas warn that it is older than the review, and the designer can regenerate it.
-  - When the fix makes a new strength worth a comment, add it to `COMMENTS` within the volume limits.
+  - When the fix creates a decision that passes the five comment tests in [methodology.md](methodology.md#which-decisions-deserve-a-comment), add it to `COMMENTS` within the limits.
   - When the story now needs attention, remove its unpublished comments. For a published one, set `reviewNote` to suggest removing it.
   - Check every published comment and annotated item on a screen this fix changed, including those of other stories that use the same component. When its wording no longer describes the fixed screen, set `reviewNote`: "The fix changed this screen: [what changed]. Update the wording, or remove it."
   - A screen that no longer has an open issue can now get a comment. Never add a second note for a feature that already has one in Figma.

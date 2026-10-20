@@ -184,7 +184,7 @@ When no objective is documented, write: "No business objective is documented for
 
 ---
 
-## Positive Figma comment
+## Figma comment
 
 ### Good
 
@@ -192,13 +192,23 @@ On the suppression check list:
 
 > Before Riley sets up any messages, this list shows everyone who is left out and why. Riley can confirm the campaign is safe in one place, which is designed to protect opt-outs and customer relationships.
 
-It names the feature, the user benefit, and the documented business goal, in 35 words. The business value is phrased as intent.
+It names the decision, the user benefit, and the documented business goal, in 35 words, and phrases the business value as intent. The canvas shows its reasons beside it:
 
-### Avoid
+- **User need:** Riley must never message a customer, a competitor, or someone who opted out.
+- **Business objective:** Never contact customers, competitors, or people who opted out.
+- **Design principle:** The check comes before any message exists, so Riley fixes a wrong list while it still costs nothing.
+
+### Avoid: generic praise
 
 > Great clean layout with clear hierarchy and consistent spacing. This intuitive design will boost conversions and reduce churn.
 
-Why: it praises visual polish, uses UX jargon, names no user goal, and claims outcomes no source states.
+Why: it praises visual polish, names no decision or user goal, and claims outcomes no source states.
+
+### Avoid: a principle with no effect here
+
+> The stop rules use progressive disclosure, following UX best practice.
+
+Why: it names a principle but not what it does for Riley on this screen. Say what the user gains, or leave the principle out.
 
 ### Avoid: hides a gap
 
@@ -210,25 +220,26 @@ Why: an open issue touches this screen. A comment must never present a gap as do
 
 ---
 
-## Choosing which comments to keep
+## Choosing which decisions get a comment
 
-Seven candidates across four stories:
+Eight candidates across four stories, tested, then ranked:
 
-| Candidate | Keep? | Why |
+| Candidate | Result | Why |
 | --- | --- | --- |
-| Excluded people listed with reasons, before sequencing | Yes | Answers a core user need and a documented business rule. Clients often ask why the step exists. |
-| Schedule and daily limit shown before approval | Yes | Its value is not obvious from the screen alone, and it ties to a documented goal. |
-| Locked Continue button until the list is confirmed | No | Same benefit as the first comment. Keep the stronger one. |
-| Friendly empty state on the reply list | No | Nice, but no requirement or business goal depends on it. |
-| Consistent card style across screens | No | Visual polish. Not a decision the client needs explained. |
-| Campaign review summary on one page | No | Its story needs attention. No comments from Needs attention stories. |
-| Second comment on the timeline screen, about the daily limit | No | Same screen and same point. One comment per screen. |
+| Excluded people listed with reasons, before sequencing | Recommended | A decision backed by a documented need and rule. It serves the story's main goal, and a reviewer may see the separate step as extra work. |
+| Schedule and daily limit shown before approval | Recommended | Backed by a documented goal, and its value is not obvious from the screen alone. |
+| Unsubscribed as a separate exclusion reason | Optional | Passes every test but ranks below the first two. It answers a question the client's team is likely to ask. |
+| Daily limit per mailbox, not per campaign | Optional, check first | A default a reviewer may want to change. The reason rests on how the client sends, so `checkFirst` asks the designer to confirm it. |
+| Locked Continue button until the list is confirmed | Dropped: a repeat | The same reason as the first comment. |
+| Search box on the reply list | Dropped: obvious | Most long lists have one. Nobody will question it. |
+| Consistent card style across screens | Dropped: not a decision | Visual polish. |
+| Campaign review summary on one page | Dropped: not safe | Its story needs attention. |
 
-Two strong comments beat seven weak ones.
+Two recommended and two optional comments beat eight weak ones.
 
 ---
 
-## Additional comment for client self-review
+## Optional comment
 
 ### Good
 
@@ -238,13 +249,13 @@ Question: "Why are unsubscribed people listed as a separate reason?"
 
 It answers a question a reviewer is likely to ask, with the user reason and the business reason. The client can repeat it to their team without opening a ticket or asking the designer.
 
-### Good: domain logic
+### Good: rests on an assumption
 
 Question: "Why is the target for ended placements zero, when every other KPI aims higher?"
 
 > Ended placements are measured against a limit, not a goal, because each one is a candidate who stopped working for a client. The limit is zero, so any number here points to placements worth looking into, not progress.
 
-No source spells out why fewer is better, so the reason rests on what an ended placement means for a recruitment business. The `why` field says so, and the designer confirms it before publishing.
+No source spells out why fewer is better, so the reason rests on what an ended placement means for a recruitment business. `checkFirst` says so: "This assumes an ended placement means the candidate stopped working for the client." The canvas shows it as a warning, and Approve all skips it until the designer approves it on its own.
 
 ### Avoid: names an internal source
 
@@ -262,7 +273,33 @@ Why: it sounds defensive, gives no reason, and leaves the client nothing to tell
 
 > The Continue button is placed at the bottom right, where people expect it.
 
-Why: nobody on the client's team is likely to question it, and it is a generic UX principle with no source.
+Why: nobody on the client's team is likely to question it, so it fails the "not obvious" test.
+
+---
+
+## Rationale edge cases
+
+### The user need and the business need pull apart
+
+When the approval screen exists, and the story asks for one approval per campaign:
+
+> Riley approves the campaign once, on a summary of who gets messages and when. It adds one check before sending, so nothing leaves without a sign-off, and Riley never approves leads one by one.
+
+It names both sides and shows how the design keeps the extra step small. When no source says how approval should work, this is an open scope question, not a comment.
+
+### The same reasoning on several screens
+
+Three lists use the same filter bar, which remembers the last filter.
+
+- Good: one comment on the lead list, where Riley filters most, with `alsoOn` naming the other two lists.
+- Avoid: three comments that say the same thing.
+
+### An incomplete story
+
+The story says "show the campaign status" but not which statuses exist. The design shows Draft, Scheduled, Sending, and Paused.
+
+- Good: no comment presents the four statuses as agreed. When the choice changes what Riley can do, it goes to "Open scope questions".
+- Avoid: "The four statuses match the agreed campaign lifecycle."
 
 ---
 
