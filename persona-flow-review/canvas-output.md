@@ -121,6 +121,8 @@ Show **Resolved issues** as a separate collapsed section, only when the story ha
 
 Show the client notes in their own "Client meeting" view, so the designer finds the script without scrolling past the stories. It has up to three tabs. Show the script tab whenever a reviewed story can be presented, even before a script exists. Show the other tabs only when they have content. Omit the view and its pills when no tab has anything to show. Save the chosen view in `pfr-view`.
 
+Under the view's intro, when any comment is published or any item is annotated, **In Figma now ([N])**, collapsed. It lists each one with its feature or title, the kind of note, and its stories, linked to Figma as "Links to notes in Figma" below describes. The designer can open everything that was added from one place.
+
 **Walkthrough script** (default tab)
 
 - **Before a script exists:** one line on what the script is, and **Generate walkthrough script**. It opens a new chat that writes the script from the current review. While it runs, show "Generating in a new chat" with "Stop waiting".
@@ -143,7 +145,7 @@ A compact row per suggested comment:
 - Approve and Exclude pills, until it is published.
 - For an added additional comment: "Answers: [question]", and **Move back** until it has a Figma status.
 - "Why this one", collapsed: why it is worth highlighting, the user need, the business objective, and the evidence links.
-- After publishing: "Update in Figma" when the wording changed, and "Remove from Figma".
+- After publishing: **See it in Figma**, with "Opens the spot where it is pinned. Press C in Figma to show comments.", plus "Update in Figma" when the wording changed, and "Remove from Figma".
 - The note from the last run, when there is one, such as a failure reason.
 
 Above the rows:
@@ -173,7 +175,7 @@ A row per beyond-scope element:
 - User value, and business value when a source supports it.
 - "For developers", collapsed, when there is a note.
 - The annotation text, with "Edit wording".
-- Approve and Exclude pills, until it is annotated. Then "Update in Figma" when the wording changed, and "Remove from Figma".
+- Approve and Exclude pills, until it is annotated. Then **See it in Figma**, with "Opens the screen in Dev Mode, where annotations show.", plus "Update in Figma" when the wording changed, and "Remove from Figma".
 
 Above the rows: one line explaining these are additions the stories do not ask for, which go into Figma as annotations, plus **Approve all** and **Add approved annotations ([N])**.
 
@@ -377,6 +379,17 @@ https://www.figma.com/design/[file-key]/[file-name]?node-id=[node-id]&m=dev
 ```
 
 Link both the complete story section and the specific screen supporting an issue or a strength.
+
+### Links to notes in Figma
+
+Figma has no link that opens a single comment thread. Even its own "Copy link" on a comment only opens the spot where the comment is pinned. Annotations have no link of their own either. So link each note to its node, and say how to see it:
+
+| Note | Link | Shown when |
+| --- | --- | --- |
+| Comment | `COMMENT_STATE.nodeId`, the node it is pinned to, in the entry's `fileKey`, without `&m=dev`. Hint: "Press C in Figma to show comments." Add "turn on resolved comments in the comments panel" when it has `resolvedAt`, and "the latest wording is a reply in the same thread" when it has `replyIds`. | `published` |
+| Annotation | `ANNOTATION_STATE.nodeId`, with `&m=dev`, because Dev Mode shows annotations | `annotated` |
+
+A note with status `needs-check` gets **Check in Figma** instead, with "Figma has not confirmed this comment" or "annotation", so the canvas never shows an unconfirmed note as present. Failed, removed, and unpublished notes get no link. Never label a link as opening the comment itself.
 
 ### Local sources
 

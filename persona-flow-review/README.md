@@ -1,7 +1,7 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.7.0
+**Version:** 1.8.0
 
 Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
 
@@ -199,8 +199,10 @@ Each story shows, in this order:
 At the top of the canvas, **Review** and **Client meeting** switch between the story review and everything for the client meeting. A callout under the header shows what is ready and opens the meeting view. It has three tabs:
 
 - **Walkthrough script:** a **Generate walkthrough script** button until you ask for one. Then one script in journey order, with each stage's story IDs and Figma flow links, stage navigation, edit, copy, and regenerate. Under each stage are the questions the client may ask, with answers.
-- **Figma comments:** the suggested positive comments, with approve, exclude, edit wording, approve all, and publish. Each shows its real Figma status. Below them, **More comments for client self-review** can be added to the list one at a time or all at once.
-- **Worth keeping:** elements beyond the stories, each with its annotation text, approve, exclude, and edit wording.
+- **Figma comments:** the suggested positive comments, with approve, exclude, edit wording, approve all, and publish. Each shows its real Figma status, and **See it in Figma** once Figma confirms it. Below them, **More comments for client self-review** can be added to the list one at a time or all at once.
+- **Worth keeping:** elements beyond the stories, each with its annotation text, approve, exclude, and edit wording, and **See it in Figma** once it is annotated.
+
+Once anything is in Figma, **In Figma now** at the top of the Client meeting view lists every published comment and annotation with its link. Figma has no link that opens a single comment, so a comment link opens the spot where it is pinned. Press C in Figma to show comments there. Annotation links open the screen in Dev Mode, where annotations show. A note Figma hasn't confirmed gets **Check in Figma** instead, and failed or removed notes get no link.
 
 Cursor uses an interactive Canvas when available.
 

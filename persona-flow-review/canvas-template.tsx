@@ -1453,6 +1453,49 @@ function inFigma(entry?: CommentEntry): boolean {
   return !!entry?.figmaCommentId && entry.status !== "removed";
 }
 
+type FigmaLink = { href: string; label: string; hint: string };
+
+function figmaNodeLink(nodeId: string, fileKey: string, devMode: boolean): string {
+  const name = fileKey === REVIEW.figmaFileKey ? `/${REVIEW.figmaFileName}` : "";
+  const node = encodeURIComponent(nodeId.replace(/:/g, "-"));
+  return `https://www.figma.com/design/${fileKey}${name}?node-id=${node}${devMode ? "&m=dev" : ""}`;
+}
+
+function commentLink(entry?: CommentEntry): FigmaLink | undefined {
+  if (!entry?.figmaCommentId || !entry.nodeId) return undefined;
+  const href = figmaNodeLink(entry.nodeId, entry.fileKey || REVIEW.figmaFileKey, false);
+  if (entry.status === "published") {
+    const hints = ["Opens the spot where it is pinned. Press C in Figma to show comments."];
+    if (entry.resolvedAt) hints.push("It is resolved, so turn on resolved comments in the comments panel.");
+    if (entry.replyIds?.length) hints.push("The latest wording is a reply in the same thread.");
+    return { href, label: "See it in Figma", hint: hints.join(" ") };
+  }
+  if (entry.status === "needs-check") {
+    return {
+      href,
+      label: "Check in Figma",
+      hint: "Figma has not confirmed this comment. Look where it should be pinned, or use Check Figma status.",
+    };
+  }
+  return undefined;
+}
+
+function annotationLink(entry?: AnnotationEntry): FigmaLink | undefined {
+  if (!entry?.nodeId) return undefined;
+  const href = figmaNodeLink(entry.nodeId, REVIEW.figmaFileKey, true);
+  if (entry.status === "annotated") {
+    return { href, label: "See it in Figma", hint: "Opens the screen in Dev Mode, where annotations show." };
+  }
+  if (entry.status === "needs-check") {
+    return {
+      href,
+      label: "Check in Figma",
+      hint: "Figma has not confirmed this annotation. Look at the screen in Dev Mode.",
+    };
+  }
+  return undefined;
+}
+
 function notePrompt(request: string, file: string, lines: string[]): string {
   return [
     `Persona flow review: ${request}`,
@@ -1561,6 +1604,7 @@ type NoteRowProps = {
   live: boolean;
   liveText?: string;
   busy: boolean;
+  figmaLink?: FigmaLink;
   reviewNote?: string;
   question?: string;
   body?: UiNode;
@@ -1593,6 +1637,15 @@ function NoteRow(p: NoteRowProps) {
           </div>
           <NoteStatusLabel status={p.status} />
         </Row>
+        {p.figmaLink && (
+          <Text size="small" tone="secondary">
+            <Link href={p.figmaLink.href}>{p.figmaLink.label}</Link>
+            <Text as="span" size="small" tone="tertiary">
+              {" "}
+              {p.figmaLink.hint}
+            </Text>
+          </Text>
+        )}
         {p.status.note && (
           <Text size="small" tone="secondary">
             {p.status.note}
@@ -1907,6 +1960,7 @@ function CommentsTab({ notes }: { notes: NotesState }) {
             live={inFigma(entry)}
             liveText={entry?.publishedText}
             busy={busy}
+            figmaLink={busy ? undefined : commentLink(entry)}
             reviewNote={c.reviewNote}
             question={c.additional ? c.question : undefined}
             moreLabel="Why this one"
@@ -2040,6 +2094,7 @@ function KeepTab({ notes }: { notes: NotesState }) {
             live={entry?.status === "annotated"}
             liveText={entry?.annotatedText}
             busy={busy}
+            figmaLink={busy ? undefined : annotationLink(entry)}
             reviewNote={b.reviewNote}
             body={
               <Grid columns={2} gap={14}>
@@ -2378,6 +2433,53 @@ const CAN_PRESENT =
 const HAS_CLIENT_NOTES = CAN_PRESENT || COMMENTS.length > 0 || BEYOND_SCOPE.length > 0;
 const EXTRA_COMMENTS = COMMENTS.filter((c) => c.additional).length;
 
+function InFigmaNow() {
+  const [open, setOpen] = useCanvasState<boolean>("pfr-in-figma", false);
+  const items = [
+    ...COMMENTS.flatMap((c) => {
+      const entry = COMMENT_STATE[c.id];
+      const link = commentLink(entry);
+      return link && entry?.status === "published"
+        ? [{ id: c.id, kind: "Comment", title: c.feature, storyIds: [c.storyId], href: link.href }]
+        : [];
+    }),
+    ...BEYOND_SCOPE.flatMap((b) => {
+      const entry = ANNOTATION_STATE[b.id];
+      const link = annotationLink(entry);
+      return link && entry?.status === "annotated"
+        ? [{ id: b.id, kind: "Annotation", title: b.title, storyIds: b.storyIds, href: link.href }]
+        : [];
+    }),
+  ];
+  if (items.length === 0) return null;
+  return (
+    <Stack gap={6} style={{ marginTop: 10 }}>
+      <Row>
+        <Button variant="ghost" onClick={() => setOpen(!open)}>
+          {open ? "Hide what is in Figma" : `In Figma now (${items.length})`}
+        </Button>
+      </Row>
+      {open && (
+        <Stack gap={4}>
+          {items.map((item) => (
+            <Text key={item.id} size="small">
+              <Link href={item.href}>{item.title}</Link>
+              <Text as="span" size="small" tone="tertiary">
+                {" "}
+                {item.kind}, {storyList(item.storyIds)}
+              </Text>
+            </Text>
+          ))}
+          <Text size="small" tone="tertiary">
+            Figma has no link to a single comment, so comments open where they are pinned. Press C
+            in Figma to show them. Annotations open in Dev Mode.
+          </Text>
+        </Stack>
+      )}
+    </Stack>
+  );
+}
+
 function ClientNotes() {
   const notes = useNotesState();
   const [tab, setTab] = useCanvasState<NotesTab>("notes-tab", "script");
@@ -2405,6 +2507,7 @@ function ClientNotes() {
         review the design on their own and explain it to their team. They go into Figma only
         after you approve them.
       </Text>
+      <InFigmaNow />
       <Row gap={6} wrap style={{ marginTop: 12 }}>
         {tabs.map((t) => (
           <Pill key={t.id} active={active === t.id} onClick={() => setTab(t.id)}>

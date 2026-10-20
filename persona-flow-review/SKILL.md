@@ -473,8 +473,9 @@ The output must include:
 - Fix status for every issue, with Approve, Request changes, and Reject buttons once a fix is ready for review
 - A "Client meeting" view, opened from the top of the canvas, with three tabs, each shown only when it has content:
   - **Walkthrough script:** a Generate button until the designer asks for a script. Then stage navigation, each stage's story IDs and flow links, the questions each stage may raise, edit, copy, and regenerate
-  - **Figma comments:** approve, exclude, edit, approve all, publish, and the real Figma status of each comment, plus the additional self-review comments the designer can add
-  - **Worth keeping:** beyond-scope elements, each with its annotation text, approve, exclude, edit, and the real Figma status
+  - **Figma comments:** approve, exclude, edit, approve all, publish, and the real Figma status of each comment, with a link to it once Figma confirms it, plus the additional self-review comments the designer can add
+  - **Worth keeping:** beyond-scope elements, each with its annotation text, approve, exclude, edit, and the real Figma status, with a link to it once Figma confirms it
+  - **In Figma now:** every published comment and annotated item in one collapsed list, linked to Figma
 
 Use muted green for Supported, muted yellow for Partially supported, muted red for Needs attention, and neutral gray for Insufficient evidence. Maintain readable contrast.
 
@@ -527,6 +528,7 @@ Never remove anything from Figma in Review mode.
 - Each additional comment has a `question` the client's team is likely to ask, answers it with a user or business reason, and repeats no other note.
 - No comment, annotation, talking point, or script line names an internal source or who decided, such as ClickUp, the story, the product owner, or "as agreed". Each decision is explained by its user and business reasons, and any reason that rests on domain logic is named in `why`.
 - The canvas was built from the current template, including on a re-run.
+- Every published comment and annotated item links to its node in Figma. No link is shown for a note Figma has not confirmed, apart from "Check in Figma" for one that needs a check.
 - On a re-run, every published comment and annotated item was checked against the current screen, and each one that no longer fits has a `reviewNote`.
 - The review run left `WALKTHROUGH` as it was, or empty on a first run, and set `REVIEW.updatedAt`.
 - When a script exists, it follows the journey order, matches every story status, mentions each open journey issue and beyond-scope element, and every stage lists its story IDs.

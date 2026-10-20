@@ -266,8 +266,8 @@ Check the canvas TypeScript result.
 
 Reply in plain English:
 
-- One line per comment: Published, Already in Figma, Failed with the reason, Not published, or Needs check.
-- A link to the Figma file.
+- One line per comment: Published, Already in Figma, Failed with the reason, Not published, or Needs check. Link each published comment to the node it is pinned to, without `&m=dev`, as [canvas-output.md](canvas-output.md#links-to-notes-in-figma) describes.
+- "Figma opens the spot where each comment is pinned. Press C there to show comments. Figma has no link to a single comment thread. The canvas has the same links, under See it in Figma and In Figma now."
 - "Figma can't edit comments. Update in Figma posts a new comment, or a reply when the client has already replied. Only the Figma account that posted a comment can remove it."
 - For a pasted token: "I've cleared the token from this chat's shell. It is still in this chat's transcript, so revoke it in Figma now."
 - For a Keychain token: "Your token stays in the Keychain for the next button press. When you're done, revoke it in Figma, and delete it with: `security delete-generic-password -a "$USER" -s persona-flow-review-figma`"
