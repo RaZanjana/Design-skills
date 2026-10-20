@@ -6,7 +6,7 @@ Load the `figma-use` skill before every `use_figma` call. The snippets below are
 
 ## Rules
 
-- **No confirmation before writing.** The designer's click on "Fix issue" is the go-ahead. Write the fix straight away.
+- **No confirmation before writing.** The designer's click on "Fix now" is the go-ahead. Write the fix straight away.
 - **Write only to the "Fixed issues" page.** Use one page with that exact name. Create it if it is missing. Never create a second one.
 - **No instances on the "Fixed issues" page.** Detach every copy completely, including nested components. Then no edit on this page can reach a main component.
 - **Never edit a main component, style, or variable in this mode.** Reading them is fine.
@@ -26,14 +26,14 @@ The prompt from the canvas names one of these:
 
 The prompt also names the approach:
 
-- **Suggested fix:** apply the observation's suggested fix.
+- **Suggested fix:** apply the issue's recommended fix.
 - **Designer instruction:** apply the quoted instruction instead.
 
 ## 1. Read the issue
 
 From the attached canvas file, read:
 
-- The issue: ID, title, classification, what we found, why it matters, suggested fix, fix action, and screen node IDs.
+- The issue: ID, title, classification, affected requirement, what we found, user and business impact, recommended fix, fix action, and screen node IDs.
 - The review details: Figma file key, Wireflows page, and source paths.
 - The current entry for this issue in `FIX_STATE`.
 
@@ -155,7 +155,7 @@ Fixed issues (page)
   - Story: ID and title
   - What we found
   - What changed, as a short list
-  - Approach: "Suggested fix" or "Designer instruction: [text]"
+  - Approach: "Recommended fix" or "Designer instruction: [text]"
   - Conflict with the story or scope, when there is one
   - Also used in: other stories that use the same screen
   - Status
@@ -189,7 +189,7 @@ Edit only the Fixed copy. Make the smallest change that resolves the issue.
 
 - **Reuse what is there.** To add a row, duplicate a sibling row in the Fixed copy. Use the text styles, color styles, and variables the screen already uses.
 - **New components.** When the fix needs a component the screen does not contain, insert an instance of it from the Draft page or the library. Set its properties, record its source in `addedElements`, then detach it right away.
-- **Copy.** Write interface text in the approved product language, using the words the story's scope record uses.
+- **Copy.** Write interface text in the language the design already uses, usually English, with the words the story's scope record uses. Do not translate the design.
 - **Layout.** Keep the screen size unless the fix needs more room. Do not move unrelated layers.
 
 By fix action:

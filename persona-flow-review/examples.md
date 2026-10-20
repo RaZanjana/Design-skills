@@ -1,6 +1,6 @@
 # Feedback Examples
 
-## Plain-English observation
+## Plain-English issue
 
 ### Good
 
@@ -11,11 +11,13 @@ What we found:
 - Riley ticks **Marijke, Erna and Koen**.
 - The confirmation pop-up lists **Marijke, Bram and Koen**.
 
-Why it matters: Riley checks the names before confirming. If they don't match, Riley can't trust what will be saved.
+User impact: Riley checks the names before confirming. If they don't match, Riley can't trust what will be saved.
 
-Suggested fix: Make the pop-up show exactly the people Riley ticked.
+Recommended fix: Make the pop-up show exactly the people Riley ticked.
 
 Screen: [Confirm exception pop-up](https://www.figma.com/design/FILE?node-id=343-24201&m=dev)
+
+This is flagged because the names drive Riley's decision. It is not a sample-data slip.
 
 ### Avoid
 
@@ -27,7 +29,7 @@ Why: the reader has to decode a layer name and node ID, and the comparison is bu
 
 ---
 
-## Observation with evidence
+## Issue with evidence
 
 ### Good
 
@@ -35,11 +37,13 @@ Why: the reader has to decode a layer name and node ID, and the comparison is bu
 
 Tags: High priority, Confirmed
 
+Affected requirement: Export is not part of this story.
+
 What we found: The campaign overview screen shows an "Export to CSV" button. A ClickUp comment removed export from this story.
 
-Why it matters: Riley may expect an export that the team will not build.
+User impact: Riley may expect an export that the team will not build.
 
-Suggested fix: Remove the "Export to CSV" button from the campaign overview screen.
+Recommended fix: Remove the "Export to CSV" button from the campaign overview screen.
 
 Evidence: [ClickUp comment, 12 Oct 2026](https://app.clickup.com/t/TASK), [Story file](docs/stories/4-1.md)
 
@@ -48,6 +52,43 @@ Evidence: [ClickUp comment, 12 Oct 2026](https://app.clickup.com/t/TASK), [Story
 Export present but descoped (see ClickUp).
 
 Why: the reader cannot tell which comment removed it, or when.
+
+---
+
+## Not flagged
+
+Each of these fails the decision rule, so it gets no issue, no fix, and no effect on the status.
+
+| What the reviewer noticed | Why it is not flagged |
+| --- | --- |
+| The team's monthly total is lower than one account manager's total. | Example figures in mock data. The rule on the screen is correct. |
+| The week target shows 8, but four days at 1.6 a day make 6.4. | Example figures again. Developers build from the stated rule. |
+| Every screen is in English, but the product ships in Dutch. | Figma designs are made in English. Developers handle localization. |
+| The Dutch translation of "Pause campaign" is missing. | Translation is an implementation task here. |
+| A button says "Recieve updates". | A typo. It does not change the task. |
+| "What if Riley imports 10,000 leads at once?" | No source says this case matters for this project. |
+| A secondary label's contrast looks low. | No accessibility requirement is in scope, and the label is not needed to finish the task. |
+
+## Flagged even though it looks minor
+
+**The summary promises 3 follow-ups, but the timeline shows 5**
+
+What we found:
+
+- The summary says "Messages stop after 3 follow-ups".
+- The timeline below it shows 5 follow-up messages.
+
+User impact: Riley approves the sequence based on the summary, so Riley could send more messages than intended.
+
+Business impact: Extra follow-ups go beyond the agreed contact limit.
+
+This is flagged because the rule itself is contradicted, and it changes what Riley approves.
+
+**The Dutch invoice layout is missing**
+
+What we found: The ClickUp task asks for a Dutch layout check of the invoice screen, because Dutch labels are longer. Only the English layout exists.
+
+This is flagged because the agreed scope makes the Dutch layout a design deliverable.
 
 ---
 
@@ -71,26 +112,79 @@ Why: the sources disagree. The design cannot be judged wrong until someone decid
 
 ---
 
-## Intake question
+## Status reason
 
 ### Good
 
-I found the story files in `_bmad-output/epics/` and Riley's persona in `docs/personas/riley.md`. Should I use them?
+**Supported:** Riley can see every excluded person with the reason, and Continue stays locked until Riley confirms the list.
 
-Two things are still missing:
+**Partially supported:** Riley can set the schedule and daily limit, but one required stop rule is missing.
 
-- What is the ClickUp URL for these stories? A sprint or list URL, or one task URL per story, both work.
-- What is the Figma file URL, and the exact name of the page to review?
+**Needs attention:** The story needs a final approval before sending, but the flow goes straight from review to sending.
 
 ### Avoid
 
-Please provide: persona source, user-story source, scope source, Figma file, Wireflows page, story selection, known changes, output name.
+The design meets the story requirements.
 
-Why: it asks for things the skill already found, and it reads like a form.
+Why: it names no screen or behavior, so the designer cannot defend it or act on it.
 
 ---
 
-## Plain-English safety finding
+## Client talking points
+
+### Supported, good
+
+Say this in the walkthrough:
+
+> Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which protects customer relationships and the opt-out promise.
+
+### Supported, avoid
+
+> This screen improves the UX and follows best practices.
+
+Why: it could describe any screen. It names no user goal, design choice, or business reason.
+
+### Partially supported, good
+
+Safe to say now:
+
+> Riley sees the whole sending schedule and the daily limit before approving. The fixed stop rules show that a handoff or a blocked contact always ends the sequence.
+
+It presents what works today, and does not claim the missing unsubscribe rule is there.
+
+### Needs attention, good
+
+Safe to say now:
+
+> The review screen already brings the leads, messages, and schedule together on one page. The final approval step is still being designed.
+
+### Needs attention, avoid
+
+> Riley reviews and approves the campaign before anything is sent.
+
+Why: the approval step does not exist yet, so this presents a gap as done.
+
+---
+
+## Business value
+
+### Good
+
+Business value: It should keep opt-outs and customer relationships safe, which the PRD names as a must.
+
+It names the documented objective and presents the benefit as expected.
+
+### Avoid
+
+Business value: This will increase reply rates by 20% and cut sending costs.
+
+Why: no source states these figures or goals. They are invented results.
+
+When no objective is documented, write: "No business objective is documented for this story."
+
+---
+
+## Plain-English safety issue
 
 ### Good
 
@@ -98,9 +192,11 @@ Why: it asks for things the skill already found, and it reads like a form.
 
 What we found: On the lead selection screen, Erna Visser unsubscribed, but her row isn't locked. The “locked” tag is on Lotte Meijer instead, who is blocked for a different reason.
 
-Why it matters: The law says people who unsubscribe must never be contacted again. Riley's biggest worry is messaging them by mistake.
+User impact: Riley's biggest worry is messaging someone who opted out by mistake, and this screen allows it.
 
-Suggested fix: Lock Erna's row, and don't let anyone tick people who unsubscribed.
+Business impact: The law says people who unsubscribe must never be contacted again.
+
+Recommended fix: Lock Erna's row, and don't let anyone tick people who unsubscribed.
 
 ### Avoid
 
@@ -110,35 +206,19 @@ Why: requirement codes, error codes, and jargon replace a plain description of w
 
 ---
 
-## Evidence-based observation
+## Evidence-based issue
 
 ### Good
 
 **Manual selection conflicts with the agreed rule**
 
-Screen `scoring-with-threshold` lets Riley select additional leads. Story 2.5 excludes per-lead approval and below-threshold overrides, so this control conflicts with the agreed campaign-level rule.
+The lead scoring screen lets Riley select extra leads by hand. Story 2.5 rules out approving single leads or overriding the score threshold, so this control conflicts with the agreed campaign-level rule.
 
 ### Avoid
 
 Riley probably will not like selecting leads manually.
 
 Why: this invents a reaction and does not identify the requirement.
-
----
-
-## Design rationale
-
-### Good
-
-**Design decision:** Show excluded identities and reasons before sequence configuration.
-
-**Reason:** Riley is accountable for avoiding customers, competitors, and unsubscribed recipients. Showing the exclusion result before sequence work lets Riley verify the safety boundary before outreach is prepared.
-
-### Avoid
-
-The suppression table is a good design.
-
-Why: this states an opinion without connecting it to persona evidence or the story.
 
 ---
 
@@ -160,13 +240,15 @@ Why: the designer must search for the referenced screen.
 
 ### Good
 
-**Project-wide:** All reviewed screens use English, while the approved scope requires Dutch product copy. This applies to every reviewed story and is recorded once.
+**Project-wide:** The shared lead table has no error state, and stories 2.2, 2.5, and 4.2 all need one. This is recorded once.
 
 ### Avoid
 
-Repeat “The screen is not Dutch” under every story.
+Repeat “The lead table has no error state” under every story.
 
 Why: repetition hides story-specific insight.
+
+Never raise English copy as a project-wide issue unless the scope makes localization a design deliverable.
 
 ---
 
@@ -188,15 +270,34 @@ Why: the behavior may be valid but attached to an outdated story ID.
 
 ### Good
 
-**Assessment: Insufficient evidence**
+**Status: Insufficient evidence**
 
-Only the campaign-details screen is available. The target-segment, validation, save, and error states are not visible, so the complete story cannot be assessed.
+The Figma connector could not open the “Monitor replies” section, and no export was supplied. The story can be reviewed once the section is shared or exported.
 
 ### Avoid
 
-The flow probably supports campaign creation.
+**Status: Insufficient evidence.** Only the campaign-details screen exists, so the story can't be assessed.
 
-Why: the missing flow has been filled with an assumption.
+Why: the design was reachable. A missing screen or state is a design gap, so the story is Partially supported or Needs attention.
+
+---
+
+## Intake question
+
+### Good
+
+I found the story files in `_bmad-output/epics/` and Riley's persona in `docs/personas/riley.md`. Should I use them?
+
+Two things are still missing:
+
+- What is the ClickUp URL for these stories? A sprint or list URL, or one task URL per story, both work.
+- What is the Figma file URL, and the exact name of the page to review?
+
+### Avoid
+
+Please provide: persona source, user-story source, scope source, Figma file, Wireflows page, story selection, known changes, output name.
+
+Why: it asks for things the skill already found, and it reads like a form.
 
 ---
 
@@ -215,7 +316,7 @@ What changed:
 - Added a third stop rule: "The lead unsubscribes".
 - Used the same row style as the two existing rules.
 
-Approach: Suggested fix
+Approach: Recommended fix
 
 Also used in: Story 4.4 Review sequence before launch
 
@@ -266,26 +367,29 @@ Why: it does not say what changed or what approving would affect.
 ```text
 Story 4.3 — Configure Multi-Step Sequence
 Persona: Riley the Regisseur
-Objective: Control timing, limits, and mandatory stop conditions.
-Scope used: ClickUp task, plus one comment that added a daily send limit.
-Assessment: Partially supports
+Goal: Control timing, limits, and mandatory stop conditions.
+Status: Partially supported
 
-1. Riley can see when each message sends and the daily limits
-Why it matters: Riley knows how fast outreach will go before approving it.
+Why this status
+Riley can set the schedule and daily limit, but unsubscribing does not stop the messages.
 
-2. Unsubscribing does not stop the messages
-Priority: High. Confidence: Confirmed.
-What we found: The stop rules list a sales handoff and the suppression list, but not unsubscribing.
-Why it matters: The story says all three must stop messages to that person.
-Suggested fix: Add "The lead unsubscribes" to the stop rules.
-Evidence: ClickUp task description, story file.
+What works
+- Riley sees when each message sends and the daily limit, before approving.
+- The handoff and suppression stop rules can't be turned off.
 
-Design rationale
-Keeping timing, limits, review status, and mandatory stops together makes automation inspectable rather than unattended.
+What to fix
+1. Unsubscribing does not stop the messages
+   High priority. Confirmed.
+   Affected requirement: Messages stop when a person unsubscribes.
+   What we found: The stop rules list a sales handoff and the suppression list, but not unsubscribing.
+   User impact: Riley can't confirm that people who opt out stop getting messages.
+   Business impact: Messaging someone after they opt out breaks the opt-out promise.
+   Recommended fix: Add "The lead unsubscribes" to the stop rules.
+   [Fix now]
 
-Consider changing
-Add unsubscribe to the visible mandatory stop rules.
+Safe to say now
+"Riley sees the whole sending schedule and the daily limit before approving. The fixed stop rules show that a handoff or a blocked contact always ends the sequence."
 
-Keep
-Keep the cumulative timeline, send limits, and non-toggleable safety rules.
+Evidence and sources (collapsed)
+ClickUp task, story file, PRD goals, sequence setup screen.
 ```

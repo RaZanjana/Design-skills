@@ -1,44 +1,44 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.2.0
+**Version:** 1.3.0
 
 Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
 
 Designers start it with a short prompt. The skill finds what it can in the project and asks only for what is missing.
 
-It produces a lightweight, walkthrough-ready review that explains:
+For each story, it answers three questions:
 
-- What the intended user needs
-- Whether the flow supports that objective
-- What evidence supports the design
-- Which important gaps need consideration
-- What the designer can confidently explain to stakeholders
+1. Does the design support the user's goal and the intended journey?
+2. Does it fulfil the agreed scope and support the business objective behind it?
+3. Can the designer clearly explain to the client why it is a good solution?
+
+Every story status comes with its reason. Supported stories get the user value, the business value, and a sentence to say in the walkthrough. Stories with gaps show what works, what is missing, why it matters, and a **Fix now** button for each issue.
 
 The skill uses personas as documented evidence. It does not pretend to be the persona or replace testing with real users.
 
-Designers can then fix each issue from the review, one at a time. The fix is made on a safe copy in Figma first, and reaches the real design only after the designer approves it.
+Fixes happen one issue at a time. Each fix is made on a safe copy in Figma first, and reaches the real design only after the designer approves it.
 
 ## Why this skill matters
 
 Design reviews often become either subjective critiques or lengthy audit reports.
 
-This skill provides a smaller, more defensible review:
+This skill gives a smaller, more defensible review:
 
 ```text
-Persona need
-→ User-story requirement
+User goal and business objective
+→ Agreed story scope
 → Design decision
-→ Reason
+→ Explained status, issue, or talking point
 ```
 
 This helps designers:
 
 - Prepare for client and stakeholder walkthroughs
-- Explain decisions without relying on personal preference
+- Explain decisions in terms of user value and business relevance
+- Fix the gaps that matter, straight from the review
 - Detect story, scope, and Figma mismatches early
-- Keep reviews consistent across projects
-- Focus on meaningful issues instead of documenting everything
+- Skip noise such as English copy, sample-figure arithmetic, and typos
 
 It is separate from a full accessibility or design-quality audit.
 
@@ -51,6 +51,7 @@ persona-flow-review/
 ├── intake.md
 ├── methodology.md
 ├── canvas-output.md
+├── canvas-template.tsx
 ├── fix-mode.md
 ├── apply-fix.md
 └── examples.md
@@ -58,8 +59,9 @@ persona-flow-review/
 
 - `SKILL.md` — the workflow followed by the AI, and which mode to use
 - `intake.md` — how the skill collects inputs, finds sources, checks access, and reconciles scope before reviewing
-- `methodology.md` — evidence, assessment, classification, and fix rules
-- `canvas-output.md` — the interactive review structure, including the fix buttons
+- `methodology.md` — evidence, what to flag, status, classification, and fix rules
+- `canvas-output.md` — the interactive review structure, including the Fix now buttons
+- `canvas-template.tsx` — the ready-made Cursor Canvas the review fills in, so each run only writes the review data
 - `fix-mode.md` — how one issue is fixed on the "Fixed issues" Figma page
 - `apply-fix.md` — how an approved fix reaches the Draft and Wireflows pages
 - `examples.md` — examples of useful and unhelpful feedback
@@ -167,41 +169,56 @@ When sources disagree and no ClickUp decision settles it, the skill does not cho
 
 The skill generates:
 
-- An assessment guide
+- A status overview and guide, with a note on what is deliberately not flagged
 - Sources checked, including any that could not be accessed
-- Project-wide findings
+- Project-wide issues
 - Open scope questions, when sources disagree
 - Story filters
-- Persona, user objective, and the scope used
-- Supports / Partially supports / Needs attention / Insufficient evidence
-- Up to three evidence-based observations per story, each with a priority, a confidence label, and its sources
-- Design rationale
-- Consider changing / Keep
-- Walkthrough notes
-- Direct references to persona, story, Figma flow, and relevant screens
-- A "Fix issue" button on every fixable issue, with its fix status
+
+Each story shows, in this order:
+
+1. **Story name and status**
+2. **Why this status**, naming the design behavior behind it
+3. **User and business value** (Supported), **what works** (Partially supported), or **what is needed** (Insufficient evidence)
+4. **What to fix**: up to three issues, each with the affected requirement, user and business impact, the recommended fix, and a **Fix now** button
+5. **A client talking point**: "Say this in the walkthrough" for Supported stories, "Safe to say now" for stories with gaps
+6. **Evidence and sources**, collapsed until needed
 
 Cursor uses an interactive Canvas when available.
 
 On platforms without Cursor Canvas, the skill produces an equivalent self-contained interactive HTML review. If interactive file creation is unavailable, it falls back to concise Markdown.
 
-## Assessment labels
+## Status labels
 
-- **Supports:** The main user objective and story requirements are covered.
-- **Partially supports:** The flow works, but an important gap remains.
-- **Needs attention:** A core requirement is missing or contradicted.
-- **Insufficient evidence:** The available material cannot support a reliable assessment.
+- **Supported:** The user can reach the goal, and every core requirement is met.
+- **Partially supported:** The user can reach the goal, but an important requirement or state is missing.
+- **Needs attention:** A core requirement or the main goal is missing, contradicted, or blocked.
+- **Insufficient evidence:** The flow or its sources could not be reached. It is never used for a design gap.
 
-These labels describe story and persona support. They are not WCAG or overall design-quality scores.
+These labels describe story support. They are not WCAG or design-quality scores.
+
+## What the skill does not flag
+
+Before raising anything, the skill asks: is this a meaningful, evidence-backed gap between the agreed requirements and the design, or does it stop the user from reaching their goal? If not, it is left out.
+
+It does not flag:
+
+- English copy on a product that ships in another language. Developers handle localization.
+- Example figures in mock data that don't add up.
+- Typos, small wording differences, and visual polish.
+- Edge cases with no evidence that they matter.
+- Generic design advice, and accessibility or design-system rules with no real user impact.
+
+It still flags a copy or number problem that changes the user's decision, causes a wrong record, breaks a business rule, or breaks a flow. It also flags localization work that the agreed scope makes a design deliverable.
 
 ## Fixing issues
 
-Each issue in the review canvas has its own "Fix issue" button. Fixes happen one issue at a time.
+Each issue in the review canvas has its own **Fix now** button. Fixes happen one issue at a time.
 
 ### 1. Start a fix
 
-1. Click **Fix issue** on an observation.
-2. Choose **Use suggested fix**, or **Use my own instruction** and type what you want.
+1. Click **Fix now** on an issue.
+2. Choose **Use recommended fix**, or **Use my own instruction** and type what you want.
 3. Click **Start fix**. A new chat opens with the review attached.
 
 The AI makes the fix straight away, without asking first. This is safe because it works only on a page called **Fixed issues**:
@@ -228,7 +245,7 @@ After you approve, the AI does the rest without further questions:
 1. It compares the Original and Fixed copies to get the exact changes, including your manual edits.
 2. It applies those changes to the screen's main component on the Draft page.
 3. It checks the Wireflows page shows the fix. If a Wireflows screen has its own local edit on a changed layer, it updates that layer too.
-4. It re-reviews that story and updates the canvas. The story's assessment changes only if the evidence supports it.
+4. It re-reviews that story and updates the canvas. The story's status changes only if the evidence supports it.
 5. Other stories that use the same screen are marked **Re-review suggested**.
 
 When a fix needs a new screen or state, the AI creates a new component on the Draft page. It places it in the story's Wireflows section next to the related screen and connects it.
@@ -254,6 +271,7 @@ The skill will not:
 - Guess when mandatory sources are inaccessible
 - Claim it reviewed a source it could not read
 - Pick silently between conflicting sources
+- Claim business benefits that no source supports
 
 Use a separate accessibility or design-audit workflow for WCAG, visual consistency, component quality, and formal conformance checks.
 

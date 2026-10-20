@@ -6,9 +6,9 @@ Reusable AI skills for product and UX design workflows.
 
 ### [Persona Flow Review](persona-flow-review/README.md)
 
-Reviews a Figma page's story flows against the project's personas, the agreed ClickUp story scope including comments, local user stories, and the PRD. Start it with a short prompt such as "review [story names]". It finds what it can in the project, asks only for what is missing, and checks every source before reviewing. It produces a concise, evidence-linked review with design rationale, walkthrough notes, and direct references.
+Reviews a Figma page's story flows against the project's personas, the agreed ClickUp story scope including comments, local user stories, and the PRD. Start it with a short prompt such as "review [story names]". It finds what it can in the project, asks only for what is missing, and checks every source before reviewing. It explains every story status with user and business value, flags only meaningful gaps, and gives a client walkthrough talking point for each story.
 
-Each issue in the review has a "Fix issue" button. The fix is made on a detached copy on a "Fixed issues" Figma page. After the designer approves it, the fix is applied to the source component on the Draft page, and the story is re-reviewed.
+Each issue in the review has a "Fix now" button. The fix is made on a detached copy on a "Fixed issues" Figma page. After the designer approves it, the fix is applied to the source component on the Draft page, and the story is re-reviewed.
 
 ### [Product Copy Refine](product-copy-refine/README.md)
 

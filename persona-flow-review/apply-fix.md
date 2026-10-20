@@ -113,10 +113,11 @@ Follow `SKILL.md` sections 4 to 9 for this story alone:
 
 - Use the source paths and the story's `scope` record from the canvas. Read only this story and its persona. Do not rerun the intake.
 - Run both review passes against the updated Wireflows flow.
-- Reassign the assessment based on the evidence. Do not upgrade it just because a fix was applied.
+- Reassign the status based on the evidence. Do not upgrade it just because a fix was applied.
 - Move the fixed issue into the story's `resolved` list.
-- Give new findings new IDs that continue the story's numbering. Never reuse an ID.
-- Keep the limit of three open observations.
+- Give new issues new IDs that continue the story's numbering. Never reuse an ID.
+- Keep the limit of three open issues, and apply the "worth flagging" test to any new one.
+- When the status changes, rewrite the status reason, the value or "what works" block, and the talking point to match.
 
 ## 7. Update Figma and the canvas
 
@@ -127,7 +128,7 @@ On the "Fixed issues" page:
 In the attached canvas:
 
 - In `FIX_STATE`, set `status: "applied"`, `appliedAt`, `updatedAt`, and the final `changes[]`. Add `draftComponentNodeId`, and `newScreenNodeId` when a screen was added.
-- Update the story: assessment, observations with their priority, confidence, and evidence, `resolved`, rationale, and walkthrough notes.
+- Update the story: `assessment`, `statusReason`, `userValue`, `businessValue`, `whatWorks`, `issues`, `resolved`, and `talkingPoint`.
 - Set `reReviewSuggested: true` on each story in `otherStories`.
 - Update the summary counts in the header.
 - Check the canvas TypeScript result.
@@ -138,6 +139,6 @@ Keep it short and in plain English:
 
 - What changed on the Draft page, with a link to the component.
 - Whether the Wireflows flow now shows the fix, with a link to the story section.
-- The story's new assessment.
+- The story's new status.
 - Other stories marked for re-review, when there are any.
 - A link to the canvas.

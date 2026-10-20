@@ -1,16 +1,18 @@
 ---
 name: persona-flow-review
-description: Reviews a chosen Figma page's story flows against the project's defined personas, the agreed ClickUp story scope including task comments, local user story files, and the referenced PRD. Starts from a short prompt such as "review [story names]", asks only for missing inputs, checks every source before reviewing, then produces a concise evidence-linked review with design rationale, walkthrough notes, and direct references. Each issue in the review can then be fixed one at a time on a separate "Fixed issues" Figma page and, after designer approval, applied to the source components. Use when a designer asks for a persona flow review, user-story design validation, evidence-based design rationale, a lightweight pre-walkthrough review, or to fix or apply a fix for an issue from a persona flow review.
+description: Reviews a chosen Figma page's story flows against the project's defined personas, the agreed ClickUp story scope including task comments, local user stories, and the PRD. Answers three questions for each story - does the design support the user's goal, does it meet the agreed scope and business objective, and can the designer explain it to the client. Starts from a short prompt, asks only for missing inputs, flags only meaningful gaps, and produces a canvas that explains every story status with user and business value, client walkthrough talking points, and a Fix now button per issue. Fixes are made on a separate "Fixed issues" Figma page and applied to source components only after designer approval. Use when a designer asks for a persona flow review, user-story design validation, client walkthrough preparation, evidence-based design rationale, or to fix or apply a fix for an issue from a persona flow review.
 disable-model-invocation: true
 ---
 
 # Persona Flow Review
 
-Use documented evidence to answer:
+Use documented evidence to answer three questions for each story:
 
-> Does this flow help the intended user achieve the agreed objective?
+1. Does the design support the user's goal and the intended journey?
+2. Does it fulfil the agreed story scope and support the business objective behind it?
+3. Can the designer clearly explain to the client why it is a good solution?
 
-This is not persona role-play, usability testing, a visual-quality audit, or a WCAG conformance audit.
+This is not persona role-play, usability testing, a visual-quality audit, a design-system audit, or a WCAG conformance audit.
 
 ## 0. Choose the mode
 
@@ -43,12 +45,19 @@ Follow [intake.md](intake.md) before reviewing. It:
 
 Do not start the review until intake reaches its source summary and any critical questions are answered.
 
-## 2. Keep Review mode read-only
+## 2. Keep Review mode read-only and lean
 
 - Never edit Figma, ClickUp, or project files in Review mode. Fixes happen later, one issue at a time, through Fix mode.
 - Review only the Figma page the designer named.
 - Never claim a source was reviewed unless its contents were read.
 - Never use an online repository as a substitute for a supplied local source unless the designer explicitly permits it.
+
+Respect the designer's time and keep token use low:
+
+- Reuse what intake gathered. Do not search for or read the same source twice.
+- Read only the reviewed stories, their direct dependencies, the PRD's goals, and the PRD sections the stories reference. Do not read whole documents to be safe.
+- In Figma, read the named page's story sections. Take screenshots only of screens tied to a requirement, a strength you will cite, or an issue.
+- Build the canvas from [canvas-template.tsx](canvas-template.tsx). Replace only its data block.
 
 ## 3. Establish source precedence
 
@@ -56,7 +65,7 @@ Use this order:
 
 1. **ClickUp task description and comments** define the agreed scope of each story, including additions, exclusions, and clarifications. The latest explicit decision wins.
 2. **Local user story files and decision records** give project context, relationships, dependencies, and references. Their requirements apply unless ClickUp explicitly contradicts them.
-3. **The PRD and related product documents** give the broader product intent and business rules, where ClickUp is silent.
+3. **The PRD and related product documents**, such as UX or experience specs, give the broader product intent, business objectives, and business rules, where ClickUp is silent.
 4. **Persona documents** give the target users' goals, needs, constraints, and behavior.
 5. **Figma** is the design being evaluated.
 
@@ -89,6 +98,7 @@ For each story, extract:
 - Story ID and title
 - Actor
 - User objective
+- **Business objective:** why the story matters to the business, with its source. Look in the ClickUp task, the story's "so that" line, and the PRD's goals. Leave it empty when none is documented.
 - Trigger and preconditions
 - User-facing acceptance criteria
 - Required states and feedback
@@ -141,7 +151,7 @@ Check whether:
 - Required loading, empty, success, error, and safety states are represented.
 - The flow includes unapproved behavior or contradicts an exclusion.
 - Every ClickUp decision in the scope record is reflected in the design.
-- Counts, labels, status, and sequence remain consistent across screens.
+- Information that drives a decision stays consistent across screens, such as who is selected, a status, or the next step. Do not check the arithmetic of example figures.
 - Related stories hand off correctly: the end of one flow matches the start of the next.
 - The flow has no unnecessary steps or dead ends.
 
@@ -162,57 +172,131 @@ Never write “As the persona, I feel…”. Write:
 
 Treat unproven concerns as hypotheses to validate, not persona truth.
 
-## 7. Classify and assess
+### Pass 3: Business fit
 
-Classify findings as:
+For each story, ask:
+
+1. Which documented business objective does this story serve?
+2. Does the design support that objective and the business process around it, such as an approval, a handoff, or a rule the business must follow?
+3. Can the design decision be explained in terms of user value and business relevance?
+
+Describe benefits as expected outcomes, such as "should help" or "is designed to". Never claim higher conversion, lower cost, or better retention unless a source states that goal. When no business objective is documented, say so instead of inventing one.
+
+## 7. Decide what to flag, classify, and assess
+
+### Is it worth flagging?
+
+Before recording any issue, ask:
+
+> Does this represent a meaningful, evidence-backed gap between the agreed requirements and the design, or does it materially prevent the intended user from achieving their goal?
+
+If not, do not create an issue, and do not let it affect the status.
+
+Do not flag:
+
+- Example figures in mock data that do not add up, such as totals, percentages, or targets, when the rule the screen states is correct.
+- English copy when the product will ship in another language. Figma designs are made in English, and developers handle localization.
+- Missing translations or language variants, unless the agreed scope makes them a design deliverable.
+- Typos, small wording differences, cosmetic details, and stylistic preferences.
+- Edge cases with no evidence that they matter in this project's scope.
+- Generic advice that only applies a design convention.
+- Accessibility, visual-design, or design-system rules that do not create a real user problem and are not an explicit requirement.
+
+Always flag a copy or number problem when it:
+
+- Changes the user's decision.
+- Causes a wrong transaction or record.
+- Contradicts a business rule.
+- Breaks a required flow.
+
+When a number problem matches both lists, ask whether the user acts on that number. Wrong example figures stay unflagged on screens the user reads to follow progress, even when they change a percentage, color, or status. Flag a figure only when the user approves, sends, pays, or deletes based on it, or when two screens state different rules.
+
+Flag localization work only when the agreed scope says language-specific layouts, locale-dependent content, or localization behavior must be designed in Figma.
+
+### Classify
+
+Classify each issue as:
 
 - **Requirement gap:** agreed behavior is absent or contradicted.
-- **UX friction:** the design may make the agreed task harder or unclear.
+- **UX friction:** the design makes the agreed task meaningfully harder or unclear.
 - **Scope conflict:** the design adds excluded or unapproved behavior.
 - **Mapping drift:** story documents and Figma organization no longer match.
-- **Accessibility concern:** a potential barrier requiring a separate accessibility review.
+- **Accessibility concern:** a barrier that materially affects the outcome, or breaks an explicit accessibility requirement. It never sets a story's status on its own.
 - **Evidence gap:** the available sources are insufficient to assess.
 - **Source conflict:** ClickUp, the local story, and the PRD disagree, and no explicit decision resolves it. List it under "Open scope questions", not as a design issue.
 
-Give every observation:
+Strengths are not issues. Record them as "What works".
 
-- **Priority:** High for a blocked objective, a core requirement or scope conflict, or a safety or trust problem. Medium for meaningful friction. Low for clarifications.
-- **Confidence:** "Confirmed" when visible design evidence contradicts or misses a stated requirement. "Potential concern" when it is a friction hypothesis to validate.
+Give every issue:
+
+- **Priority:** High for a blocked objective, a missing core requirement, a scope conflict, or a safety or trust problem. Medium for a missing important requirement or meaningful friction. Low for a clarification that still matters.
+- **Confidence:** "Confirmed" when the design visibly misses or contradicts a stated requirement. "Potential concern" when the evidence suggests a problem but does not prove it. Examples: a friction risk based on the persona, or a requirement with no agreed measure, such as "large type" when the size is still an assumption.
+- **Affected requirement:** the acceptance criterion, ClickUp decision, or business rule it touches, in one plain sentence.
 - **Evidence:** the exact sources it relies on, such as a ClickUp comment with its date, a story file, a PRD section, or a persona file.
 
-Assign one assessment:
+### Assess
 
-- **Supports:** the main objective and story requirements are covered.
-- **Partially supports:** the flow works, but an important gap remains.
-- **Needs attention:** a core requirement is missing or contradicted.
-- **Insufficient evidence:** the flow or source material cannot support a defensible assessment.
+A **core requirement** is one that the story's title, main goal, or success state names. Other acceptance criteria and agreed states are **important requirements**.
 
-These are story-support labels, not WCAG or overall design-quality scores.
+Assign one status:
+
+- **Supported:** the user can reach the goal, and every core requirement is met. Small issues may remain.
+- **Partially supported:** the user can reach the goal, but an important requirement, state, or connection is missing or incomplete.
+- **Needs attention:** a core requirement or the story's main goal is missing, contradicted, or blocked. This includes a missing flow.
+- **Insufficient evidence:** only when the Figma flow or the sources for this story could not be reached. Never use it for a design gap.
+
+Rules:
+
+- Only confirmed issues set the status. Show a potential concern so the designer can check it, but never let it lower the status on its own.
+- A design detail that is not ideal never makes a story Needs attention.
+- An issue that fails the "worth flagging" test never lowers a status.
+- When sources dispute a core requirement and the designer could not settle it, assess against the undisputed requirements. Say in the status reason that one requirement waits on a decision, and list it under "Open scope questions".
+
+These labels describe story support. They are not WCAG or design-quality scores.
+
+### Explain every status
+
+Every story gets a **status reason**: one or two sentences that name the specific design behavior behind the status. Do not repeat the story, and do not just say it meets requirements.
+
+| Status | Also include |
+| --- | --- |
+| Supported | User value, business value, and a client talking point |
+| Partially supported | What works, the issues, and a talking point that presents only what works today |
+| Needs attention | The issues, each with its affected requirement, and guidance on what is safe to say before the fix |
+| Insufficient evidence | What could not be reached, and what is needed to finish the review |
+
+Each issue states what we found, the user impact, the business impact when relevant, and the smallest meaningful fix. Fixable issues get a **Fix now** button.
+
+See the rubric in [methodology.md](methodology.md).
+
+### Issue IDs and fix actions
 
 Give every issue a stable ID and a fix action, so the designer can fix it from the canvas:
 
-- Story issues: `[story ID]-[observation number]`, for example `4.3-2`.
+- Story issues: `[story ID]-[issue number]`, for example `4.3-2`. If a story has no ID, use its order in the review, for example `3-1`.
 - Project-wide issues: `pw-[number]`, for example `pw-1`.
 - Fix action by classification:
   - Requirement gap, UX friction, scope conflict: `figma-screen`, or `figma-new-screen` when the fix needs a screen or state that does not exist yet.
   - Mapping drift: `figma-rename`, which renames the Figma section only. Story files are never edited.
   - Accessibility concern: `audit-handoff`.
-  - Evidence gap, source conflict, and strengths: `none`.
+  - Evidence gap and source conflict: `none`.
 
 See the fix rules in [methodology.md](methodology.md).
 
-## 8. Keep the review concise
+## 8. Keep the review focused
 
-- Report no more than three meaningful observations per story.
-- Use fewer when fewer are justified.
+- Report no more than three issues per story. Use fewer when fewer are justified. Never create issues to fill the quota.
+- List up to three "What works" points for a Partially supported story.
 - Report project-wide issues once.
 - Prioritize, in order:
   1. Objective blocked
   2. Core requirement or scope conflict
   3. Safety or trust problem
   4. Meaningful friction
-- Omit findings that would not affect a design decision or walkthrough explanation.
-- Reference every finding with a clear story, Figma section, or screen name.
+- State each fact once. Details live in the issue. The status reason and talking point do not repeat them.
+- Do not write fixes for issues that were not reported.
+- Ask follow-up questions only when the answer would change a status or an issue.
+- Reference every issue with a clear story, Figma section, or screen name.
 
 ## 9. Write in plain English
 
@@ -223,26 +307,38 @@ Every piece of text in the artifact must make sense to someone who has not read 
 - **Keep codes out of the body text.** Do not put requirement IDs (FR18, D-30, AD-19), Figma node IDs, layer names (`suppression-check-excluded`), or error codes in sentences. Put them only in the reference links.
 - **Explain product terms once.** If a term like “Copy Variant” or “suppression” is needed, add a short plain explanation the first time it appears.
 - **Use lists for comparisons.** When two things should match but do not, show them as two bullet points.
-- **No shorthand.** Avoid arrow chains (`A → B`), `·`-separated fragments, abbreviations, and jargon such as “affordance”, “state drift”, or “precedence”.
+- **No shorthand.** Avoid arrow chains (`A → B`), `·`-separated fragments, abbreviations, and jargon such as “affordance”, “state drift”, or “precedence”. Keep an abbreviation the project uses as a name, such as KPI, and spell it out once.
 - **One idea per paragraph.** Split long explanations.
+- **Lead with the issue or the value**, not with background.
 
-Write each observation in three parts:
+Write each issue in these parts:
 
 1. **What we found:** what is visible or missing, in plain words.
-2. **Why it matters:** the effect on the persona or the story goal.
-3. **Suggested fix:** one concrete change.
+2. **User impact:** what the user cannot do, may misunderstand, or could get wrong.
+3. **Business impact:** the consequence for the business objective or process. Omit it when there is none.
+4. **Recommended fix:** the smallest meaningful change.
 
 Name the screen in words (“the lead selection screen”) and link it. The link carries the node ID.
 
-The same rules apply to project-wide findings, design rationale, Consider changing / Keep, walkthrough notes, and the final chat reply.
+### Client talking points
 
-Quick test before delivery: could a new team member read any single observation and explain the problem to someone else without opening Figma or the story?
+- One or two sentences, at most about 40 words, that the designer can say aloud.
+- Cover the user's goal or problem, how the design addresses it, why that fits the user's context, and the business objective it supports.
+- Use this project's people, screens, and goals. Never reuse a talking point across stories.
+- Avoid empty claims such as "This improves UX" or "This follows best practices".
+- For Partially supported and Needs attention stories, present only what works today. Never present a missing capability as done.
 
-See [examples.md](examples.md) for a before-and-after rewrite.
+Example: "The confirmation step lets customers check their order before they submit it. That helps prevent avoidable mistakes and supports a more reliable checkout."
+
+The same rules apply to status reasons, value statements, project-wide issues, and the final chat reply.
+
+Quick test before delivery: could a new team member read any single issue and explain the problem to someone else without opening Figma or the story?
+
+See [examples.md](examples.md) for before-and-after rewrites.
 
 ## 10. Produce the review artifact
 
-Create the organized interactive output described in [canvas-output.md](canvas-output.md).
+Build the review from [canvas-template.tsx](canvas-template.tsx), following [canvas-output.md](canvas-output.md).
 
 Default output:
 
@@ -252,33 +348,39 @@ Default output:
 
 The output must include:
 
-- Assessment guide
+- A status overview and status guide, with the note on what is not flagged
 - Sources checked, with any source that could not be accessed
-- Project-wide findings
+- Project-wide issues
 - Open scope questions
 - Story filters
-- Persona and objective
-- Scope used, with the ClickUp decisions that override local documents
-- Assessment
-- Up to three observations, each with “What we found”, “Why it matters”, “Suggested fix”, priority, confidence, and evidence
-- A “Fix issue” button on every fixable issue, with a choice between the suggested fix and the designer's own instruction
+- For each story, in this order:
+  1. Story name and status
+  2. Why this status
+  3. User and business value, what works, or what is needed
+  4. Issues, each with its impact, recommended fix, and Fix now button
+  5. Client talking point
+  6. Evidence and sources, collapsed by default
 - Fix status for every issue, with Approve, Request changes, and Reject buttons once a fix is ready for review
-- Design rationale
-- Consider changing / Keep
-- Walkthrough notes
-- Direct links to persona, story, Figma flow, and relevant screens
 
-Use muted green for Supports, muted yellow for Partially supports, muted red for Needs attention, and neutral gray for Insufficient evidence. Maintain readable contrast.
+Use muted green for Supported, muted yellow for Partially supported, muted red for Needs attention, and neutral gray for Insufficient evidence. Maintain readable contrast.
 
 ## 11. Verify before delivery
 
-- Every observation passes the plain-English test in section 9.
+- Every story has a status reason that names specific design behavior.
+- Supported stories have user value, business value or a note that no business objective is documented, and a talking point.
+- Partially supported stories show what works and at least one issue.
+- Needs attention stories have at least one High-priority issue with its affected requirement.
+- Insufficient evidence is used only when a flow or source could not be reached.
+- No issue matches the "do not flag" list in section 7.
+- No business benefit is claimed without a source, and benefits are phrased as expected outcomes.
+- No two stories share a talking point.
+- Fix now appears only on issues that can be fixed in Figma.
+- Every issue passes the plain-English test in section 9.
 - No requirement ID, node ID, layer name, or error code appears in body text.
 - Every reviewed story maps to the correct current story ID.
 - Every persona selection is explainable from the sources.
-- Every factual finding has evidence.
-- Shared findings are deduplicated.
-- Counts in the summary match the story assessments.
+- Shared issues are deduplicated.
+- Counts in the summary match the story statuses.
 - Figma links target the correct section or screen.
 - Local references open the intended persona and story where the platform supports file links.
 - No finding claims observed user behavior.
@@ -289,11 +391,12 @@ Use muted green for Supports, muted yellow for Partially supports, muted red for
 - Every finding based on ClickUp cites the task or comment it relies on.
 - Every inaccessible or missing source appears in "Sources checked".
 - Unresolved conflicts appear in "Open scope questions", not as confirmed design issues.
+- No sample data from the template remains.
 
 Return only:
 
 1. A link to the review artifact.
-2. A one-sentence summary of how many stories support, partially support, need attention, or lack evidence.
+2. One sentence with the counts, such as "4 supported, 2 partially supported, 1 needs attention."
 3. One sentence naming any source that could not be accessed and the number of open scope questions. Omit it when there are none.
 
 ## Additional resources
@@ -301,6 +404,7 @@ Return only:
 - Collecting and checking sources: [intake.md](intake.md)
 - Review rules: [methodology.md](methodology.md)
 - Output structure: [canvas-output.md](canvas-output.md)
+- Canvas starting point: [canvas-template.tsx](canvas-template.tsx)
 - Fixing one issue: [fix-mode.md](fix-mode.md)
 - Applying an approved fix: [apply-fix.md](apply-fix.md)
 - Feedback examples: [examples.md](examples.md)

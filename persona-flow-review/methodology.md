@@ -6,12 +6,18 @@ The review connects four evidence layers:
 
 ```text
 Persona evidence
-→ Agreed story scope (ClickUp, local story, PRD)
+→ Agreed story scope and business objective (ClickUp, local story, PRD)
 → Figma design decision
-→ Defensible reason or finding
+→ Explained status, issue, or talking point
 ```
 
-The AI is an evidence-constrained reviewer. It is not a synthetic user and does not replace usability testing.
+It answers three questions for each story:
+
+1. Does the design support the user's goal and the intended journey?
+2. Does it fulfil the agreed scope and support the business objective?
+3. Can the designer explain to the client why it is a good solution?
+
+The AI is an evidence-constrained reviewer. It is not a synthetic user and does not replace usability testing. Accessibility, visual-design, and design-system rules are secondary. They matter when they change the user's outcome or are explicit requirements.
 
 ## Evidence rules
 
@@ -55,13 +61,28 @@ Technical criteria are relevant only when they affect visible behavior, timing, 
 - Comments about implementation only, with no visible effect
 - PRD statements that a later ClickUp decision explicitly replaced
 
+### Valid business evidence
+
+- Business goals or objectives in the PRD or product brief
+- The business reason in a ClickUp task or comment
+- The "so that" line of a user story, when it names a business outcome
+- Documented business processes, rules, and operational needs, such as an approval step or a legal obligation
+
+### Not business evidence
+
+- Generic benefits such as higher conversion, lower cost, or better retention, when no source states them as a goal
+- Industry statistics or best-practice claims
+- Benefits the reviewer assumes
+
+Phrase every business benefit as an expected outcome, such as "should help" or "is designed to". Never present it as a proven result.
+
 ## Source authority
 
 | Source | Role |
 | --- | --- |
 | ClickUp task and comments | Agreed scope of each story. The latest explicit decision wins. |
 | Local story files and decision records | Context, dependencies, references, and requirements ClickUp does not contradict |
-| PRD and product documents | Product intent and business rules where ClickUp is silent |
+| PRD and product documents, including UX or experience specs | Product intent and business rules where ClickUp is silent |
 | Persona documents | Target users' goals, needs, constraints, and behavior |
 | Figma page | The design under review |
 
@@ -104,7 +125,7 @@ Use multiple personas only when each has a distinct role in the flow. Review the
 - Treat nested sections as states or branches only when their naming and connections support that interpretation.
 - Do not infer interaction from appearance alone.
 - Do not assume a component instance has the same content as its source component; inspect the visible instance.
-- When a flow is incomplete, use Insufficient evidence.
+- When a story's flow is missing from the page, or a required state is missing, that is a design gap. Use Insufficient evidence only when the page, the flow, or the story's sources could not be reached.
 
 ## Review questions
 
@@ -114,7 +135,7 @@ Use multiple personas only when each has a distinct role in the flow. Review the
 - Is every important requirement represented?
 - Are critical non-happy states represented?
 - Does the flow include excluded behavior?
-- Is information consistent from one step to the next?
+- Does information that drives a decision stay consistent from one step to the next?
 
 ### Step-level walkthrough
 
@@ -124,6 +145,53 @@ Use multiple personas only when each has a distinct role in the flow. Review the
 - Does the next state show progress or success?
 
 These questions identify likely friction. They do not predict actual behavior.
+
+### Business fit
+
+- Which documented business objective does the story serve?
+- Does the design support that objective and the process around it?
+- Can the design be explained in terms of user value and business relevance?
+
+## What to flag
+
+### The decision rule
+
+Ask before recording any issue:
+
+> Does this represent a meaningful, evidence-backed gap between the agreed requirements and the design, or does it materially prevent the intended user from achieving their goal?
+
+If the answer is no, do not create an issue. It does not appear in the canvas, gets no fix, and does not affect the status.
+
+### Not design issues
+
+| Looks like | Why it is not flagged |
+| --- | --- |
+| Example figures that do not add up, such as a total lower than one of its parts | Mock data. Developers build from the rule, not the sample numbers. |
+| English copy on a product that ships in another language | Figma designs are made in English. Developers handle localization. |
+| Missing translations or language variants | An implementation task, unless the scope makes it a design deliverable |
+| Typos and small wording differences | Copy polish, not a flow or requirement gap |
+| Cosmetic details and stylistic preferences | No effect on the user's task or an agreed requirement |
+| Edge cases with no evidence they matter | Not part of the agreed scope |
+| Generic design advice | Applying a convention is not evidence of a user problem |
+| Accessibility, visual, or design-system rule breaks with no real user impact | Secondary unless explicitly in scope |
+
+### Always flag
+
+A copy, number, or localization problem is a real issue when it:
+
+- Changes the user's decision, such as a wrong price or a wrong count of people to be contacted.
+- Causes a wrong transaction or record.
+- Contradicts a documented business rule.
+- Breaks a required flow.
+- Falls under localization work the agreed scope says must be designed in Figma, such as language-specific layouts or locale-dependent content.
+
+### When both lists match
+
+For number problems, ask whether the user acts on that number:
+
+- The user reads it to follow progress, such as a scorecard, target, or board. Do not flag wrong example figures, even when they change a percentage, color, or status.
+- The user approves, sends, pays, or deletes based on it, such as an approval count or an invoice total. Flag it.
+- Two screens state different rules, such as "stops after 3 follow-ups" next to a timeline with 5. Flag it.
 
 ## Finding boundaries
 
@@ -157,7 +225,7 @@ Figma and source documents refer to different stories, IDs, or current behavior.
 
 ### Accessibility concern
 
-A potential barrier connected to an access need or WCAG. Route this to an accessibility or design-audit workflow. Do not claim conformance here.
+A barrier that materially affects the user's outcome, or breaks an explicit accessibility requirement. Route it to an accessibility or design-audit workflow. It never sets a story's status on its own. Do not claim conformance here.
 
 ### Evidence gap
 
@@ -167,42 +235,68 @@ The available material does not support a reliable conclusion.
 
 ClickUp, the local story, and the PRD disagree, and no explicit decision resolves it. This is a question for the product owner, not a design issue. List it under "Open scope questions" with what each source says.
 
-## Assessment rubric
+## Status rubric
 
-### Supports
+Every story gets a status reason: one or two sentences that name the design behavior behind the status. Never repeat the story or just say it meets requirements.
+
+A **core requirement** is one that the story's title, main goal, or success state names. Other acceptance criteria and agreed states are **important requirements**. Only confirmed issues set the status. A potential concern is shown for the designer to check, but never lowers the status on its own.
+
+### Supported
 
 Use when:
 
-- The main objective has a complete path.
-- Important user-facing requirements are represented.
+- The user can reach the goal through a complete path.
+- Every core requirement is met.
 - No core contradiction blocks the story.
 
-Minor refinements may remain.
+Small issues may remain. Explain:
 
-### Partially supports
+- **Why it is supported:** the specific screens or behavior that meet the requirements.
+- **User value:** how it helps the user reach the goal.
+- **Business value:** why that matters to the documented business objective. When none is documented, say so.
+- **Talking point:** a sentence the designer can say in the walkthrough.
+
+### Partially supported
 
 Use when:
 
-- The main path works.
-- One or more important requirements, states, or decisions need correction.
-- The objective remains achievable despite the gap.
+- The user can reach the goal.
+- An important requirement, state, or connection is missing or incomplete.
+
+Explain:
+
+- **What works:** up to three supported parts, each tied to a screen.
+- **What is missing:** each gap as an issue, with its user impact, business impact when relevant, and the smallest fix.
+- **Talking point:** what the design achieves today, without presenting the gap as done.
+
+Keep confirmed gaps apart from potential concerns, using the confidence label.
 
 ### Needs attention
 
 Use when:
 
-- The flow contradicts a core requirement.
-- The primary objective cannot be completed reliably.
+- A core requirement is missing or contradicted.
+- The story's main goal cannot be reached reliably, or its flow is missing.
 - A safety, trust, or scope problem changes the intended solution.
+
+A design detail that is not ideal is never enough. Explain:
+
+- **Why it needs attention:** the specific mismatch, omission, contradiction, or missing flow.
+- **Each issue:** the affected requirement, user impact, business impact, and recommended fix.
+- **Talking point:** what is safe to tell the client before the fix, when anything is.
 
 ### Insufficient evidence
 
-Use when:
+Use only when:
 
-- The flow is incomplete or inaccessible.
-- Sequence cannot be established.
-- Required source documents are missing.
-- Sources conflict on a core requirement, and the designer has not resolved it.
+- The Figma page or the story's flow could not be reached, and no export was supplied.
+- The story's scope sources could not be reached.
+
+Explain what could not be reached and what is needed to finish the review. Do not use this status for design gaps.
+
+### Disputed requirements
+
+When sources dispute a core requirement and the designer could not settle it, assess the story against the undisputed requirements. Say in the status reason that one requirement waits on a decision. List the dispute under "Open scope questions".
 
 ## Priority and compression
 
@@ -214,50 +308,58 @@ Rank findings by:
 4. Meaningful task friction
 5. Clarification
 
-Keep a maximum of three observations per story. Do not create findings to fill the quota.
+Keep a maximum of three issues per story. Do not create issues to fill the quota. Merge duplicates, and report a problem that spans stories once, as a project-wide issue.
 
 Show the rank as a priority label:
 
-- **High:** objective blocked, core requirement or scope conflict, or safety or trust risk
-- **Medium:** meaningful task friction
-- **Low:** clarification
+- **High:** objective blocked, missing core requirement, scope conflict, or safety or trust risk
+- **Medium:** missing important requirement, or meaningful task friction
+- **Low:** a clarification that still matters
 
-Show how certain the finding is:
+Show how certain the issue is:
 
-- **Confirmed:** visible design evidence contradicts or misses a stated requirement.
-- **Potential concern:** a friction hypothesis based on persona evidence. Validate it with users.
+- **Confirmed:** the design visibly misses or contradicts a stated requirement.
+- **Potential concern:** the evidence suggests a problem but does not prove it. Examples: a friction risk based on the persona, or a requirement with no agreed measure, such as "large type" when the size is still an assumption. Say what would confirm it.
 
-Each observation contains:
+Each issue contains:
 
-1. A short, plain-language title that states the problem or strength
-2. **What we found:** what is visible or missing, described by name
-3. **Why it matters:** the effect on the persona or the story goal
-4. **Suggested fix:** one concrete change, omitted for strengths
-5. A screen name in words, linked to the exact Figma node
-6. Priority and confidence labels
-7. **Evidence:** the sources it relies on, as named links, such as "ClickUp comment, 12 Oct 2026" or "Story file"
+1. A short, plain-language title that states the problem
+2. Priority and confidence labels
+3. **Affected requirement:** the criterion, decision, or business rule, in one plain sentence
+4. **What we found:** what is visible or missing, described by name
+5. **User impact:** what the user cannot do, may misunderstand, or could get wrong
+6. **Business impact:** the consequence for the business objective or process, when there is one
+7. **Recommended fix:** the smallest meaningful change
+8. A screen name in words, linked to the exact Figma node
+9. **Evidence:** the sources it relies on, as named links, such as "ClickUp comment, 12 Oct 2026" or "Story file"
 
 Write every part in plain English (see `SKILL.md` section 9). Keep requirement IDs, node IDs, and layer names in links, not in sentences.
 
-## Design rationale
+## Talking points
 
-Use this chain:
-
-```text
-Persona need
-→ Story objective or requirement
-→ Design decision
-→ Reason it supports the user
-```
-
-Example:
+Build each talking point from this chain, then write it as one or two natural sentences:
 
 ```text
-Riley needs to avoid contacting blocked identities
-→ Story 4.2 requires suppression confirmation
-→ The design shows excluded identities and reasons before sequence setup
-→ Riley can verify the safety boundary before outreach is configured
+The user's goal or problem
+→ How the design addresses it
+→ Why that fits the user's context
+→ The business objective it supports
 ```
+
+Example chain:
+
+```text
+Riley must never message a customer, competitor, or someone who unsubscribed
+→ The suppression check lists everyone excluded, with the reason, before sequence setup
+→ Riley checks lists before any outreach is configured
+→ The business must honour opt-outs and protect customer relationships
+```
+
+Talking point:
+
+> Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which protects customer relationships and the opt-out promise.
+
+For Partially supported and Needs attention stories, the talking point covers only what works today.
 
 ## Fixing issues
 
@@ -272,7 +374,9 @@ A review finds issues. Fixing them is a separate, designer-driven step, one issu
 | Scope conflict | `figma-screen` | Removes or changes the unapproved behavior. The note card says this may be a product decision. |
 | Mapping drift | `figma-rename` | Renames the Figma section to match the current story. Story files are never edited. |
 | Accessibility concern | `audit-handoff` | Starts a separate accessibility review |
-| Evidence gap, source conflict, or strength | `none` | Nothing to fix in Figma. A source conflict needs a scope decision first. |
+| Evidence gap or source conflict | `none` | Nothing to fix in Figma. A source conflict needs a scope decision first. |
+
+Strengths and anything that failed the "worth flagging" test are not issues, so they never get a fix.
 
 Use `figma-new-screen` only when the missing behavior needs its own screen or state, such as a missing error state.
 
@@ -290,6 +394,11 @@ Use `figma-new-screen` only when the missing behavior needs its own screen or st
 - No first-person persona role-play
 - No invented feelings or behavior
 - No design preference without evidence
+- No issue that fails the "worth flagging" decision rule
+- No English copy, example-figure arithmetic, or typo flagged unless it meets an "Always flag" condition
+- No business benefit without a source, and none presented as a proven result
+- No talking point reused across stories, and none that presents a gap as done
+- No Insufficient evidence status for a design gap
 - No Figma edits in Review mode
 - In Fix mode, no Figma edits outside the "Fixed issues" page
 - No changes to the Draft or Wireflows pages without the designer's approval

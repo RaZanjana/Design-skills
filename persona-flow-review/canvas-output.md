@@ -1,11 +1,13 @@
 # Review Artifact Structure
 
+The canvas is a working tool. It shows designers what to fix, and how to explain the design's value to the client. It is not a checklist of design rules.
+
 ## Output priority
 
 Use the richest supported format:
 
-1. **Cursor:** one self-contained `.canvas.tsx` file using only `cursor/canvas`.
-2. **Other platforms:** one self-contained interactive HTML file with inline CSS, data, and JavaScript.
+1. **Cursor:** copy [canvas-template.tsx](canvas-template.tsx) to the workspace `canvases` folder as `[output name].canvas.tsx`. Replace everything between `REVIEW DATA START` and `REVIEW DATA END`, including every sample entry. Change the components only when the review needs something the template lacks. Import only from `cursor/canvas`.
+2. **Other platforms:** one self-contained interactive HTML file with inline CSS, data, and JavaScript, using the same structure.
 3. **Fallback:** concise Markdown using the same information hierarchy.
 
 Do not require external packages, remote assets, or network requests to render the review.
@@ -14,26 +16,25 @@ Do not require external packages, remote assets, or network requests to render t
 
 ### Header
 
-- Project or feature name
-- Review date
-- Reviewed Figma page name
-- Story totals by assessment
+- Project or feature name, the reviewed Figma page, and the review date
+- Story totals by status
 - Issue totals by fix status: open, ready for review, applied
-- Source totals: read, partly read, not accessible, not found
-- "ClickUp scope was not checked" when the designer chose to continue without ClickUp
+- A warning when ClickUp scope was not checked
 
-### Assessment guide
+### Status guide
 
 Show these definitions near the filters:
 
-- **Supports:** The main user objective and story requirements are covered.
-- **Partially supports:** The flow works, but an important gap remains.
-- **Needs attention:** A core requirement is missing or contradicted.
-- **Insufficient evidence:** The available material cannot support a reliable assessment.
+- **Supported:** The user can reach the goal, and every core requirement is met.
+- **Partially supported:** The user can reach the goal, but an important requirement or state is missing.
+- **Needs attention:** A core requirement or the main goal is missing, contradicted, or blocked.
+- **Insufficient evidence:** The flow or its sources could not be reached.
 
 Add:
 
-> These labels describe story and persona support. They are not WCAG or overall design-quality scores.
+> These labels describe story support. They are not WCAG or design-quality scores.
+
+> Not flagged on purpose: English copy (developers handle localization), example figures in mock data, typos, and visual polish. They are raised only when they change what the user can do or break an agreed rule.
 
 ### Sources checked
 
@@ -44,17 +45,17 @@ Show a compact panel, collapsed by default when every source was read. Each row 
 - Its status: Read, Partly read, Not accessible, or Not found
 - What was missing, when anything was
 
-Show a warning callout at the top of the panel when any source is not accessible or not found.
+Show a warning callout above the panel when any source is not accessible or not found.
 
-### Project-wide findings
+### Project-wide issues
 
 Use one compact notice for issues affecting several stories. Do not repeat these inside every story.
 
 Examples:
 
-- Product language conflicts with the approved language.
-- Story IDs in Figma are out of date.
-- Counts do not remain consistent across a multi-story journey.
+- Story names in Figma no longer match the current stories.
+- A state that several stories need, such as an error screen, is missing from a shared screen.
+- A selection or status changes from one story's flow to the next.
 
 ### Open scope questions
 
@@ -69,87 +70,78 @@ These are not design issues and have no fix button.
 
 ### Story navigation
 
-Provide filters:
+Provide filters for All, then each status that has at least one story: Needs attention, Partially supported, Supported, and Insufficient evidence.
 
-- All
-- Needs attention
-- Partially supports
-- Supports
-- Insufficient evidence, when present
+Use a master-detail layout:
 
-Use a master-detail layout when possible:
-
-- Left: compact story list with ID, title, assessment, number of open issues, and a "Re-review suggested" tag when set
-- Right: selected story review
+- Left: compact story list with ID, title, status, number of open issues, and a "Re-review suggested" tag when set
+- Right: the selected story
 
 ### Story detail
 
-Use this order:
+Show parts 1 to 5 by default. Keep part 6 collapsed.
 
-1. **Review context**
-   - Story ID and title
-   - Persona
-   - User objective
-   - Direct Figma flow link
-   - Direct relevant-screen links
-   - **Scope used:** the ClickUp task link, and the ClickUp decisions that override the local story or PRD, one plain line each
-2. **Overall assessment**
-3. **Key observations**
-   - Maximum three
-   - Plain-language title that states the problem or strength
-   - Small tags: classification, such as “Requirement gap”, priority (High, Medium, Low), and confidence (Confirmed, Potential concern)
-   - “What we found”
-   - “Why it matters”
-   - “Suggested fix”, omitted for strengths
-   - “Evidence”: the sources as named links, such as “ClickUp comment, 12 Oct 2026”
+1. **Story name and status**
+   - Story ID, title, and status label
+   - The persona and their goal, one short line each
+   - A link to the whole flow in Figma
+2. **Why this status**
+   - The status reason: one or two sentences naming the design behavior behind it
+   - When a requirement waits on a decision, say so here
+3. **Value, what works, or what is needed**
+   - **Supported:** "User value" and "Business value". When no business objective is documented, show "No business objective is documented for this story."
+   - **Partially supported:** "What works", up to three points, each with a screen link
+   - **Needs attention:** nothing here. The impact sits in each issue.
+   - **Insufficient evidence:** "What we need": what could not be reached
+4. **Issues**, at most three, only when meaningful issues exist
+   - Plain-language title
+   - Small tags: priority (High, Medium, Low), confidence (Confirmed, Potential concern), and classification
+   - "Affected requirement"
+   - "What we found"
+   - "User impact", and "Business impact" when there is one
+   - "Recommended fix"
    - Screen name in words, linked to the Figma node
-   - Fix status and fix actions, described in [Fixing issues](#fixing-issues)
-4. **Resolved issues**
-   - Collapsed by default, and shown only when the story has any
-   - Title, date applied, and links to the Draft component and the "Fixed issues" row
-5. **Design rationale**
-   - Intentional design decision
-   - Reason it supports the persona or story
-6. **Considerations**
-   - Consider changing
-   - Keep
-   - Omit a heading when there is nothing meaningful to add
-7. **Walkthrough notes**
-   - Two or three short talking points
-8. **References**
-   - Persona
-   - ClickUp task
-   - Local user story
-   - PRD section, when directly relevant
-   - Scope decision, when directly relevant
-   - Figma flow
-   - Relevant screens
+   - "Evidence": the sources as named links, on one small line
+   - The **Fix now** button and fix status, described in [Fix now](#fix-now)
+5. **Client talking point**
+   - Label it "Say this in the walkthrough" for Supported stories
+   - Label it "Safe to say now" for Partially supported and Needs attention stories
+   - Omit it for Insufficient evidence
+6. **Evidence and sources**, collapsed by default
+   - Scope used: the ClickUp decisions that override the local story or PRD, one plain line each
+   - The business objective and its source
+   - References: persona, ClickUp task, local story, PRD section, decision records
+   - Relevant Figma screens
 
-## Fixing issues
+Show **Resolved issues** as a separate collapsed section, only when the story has any. Each shows its title, the date applied, and links to the Draft component and the "Fixed issues" row.
 
-Designers fix issues one at a time from the canvas. Every button opens a new agent chat with the canvas attached and a short prompt. The chat does the work in Figma and writes the result back into this canvas.
+## Fix now
+
+Designers fix issues one at a time from the canvas. The template already contains this flow. Every button opens a new agent chat with the canvas attached and a short prompt. The chat does the work in Figma and writes the result back into this canvas. The issue, its evidence, and the screen travel with the canvas, so the designer never re-enters context.
 
 ### Fix actions per issue
 
 | Fix action | Button |
 | --- | --- |
-| `figma-screen`, `figma-new-screen`, `figma-rename` | **Fix issue** (primary) |
+| `figma-screen`, `figma-new-screen`, `figma-rename` | **Fix now** (primary) |
 | `audit-handoff` | **Start accessibility review** (secondary). The prompt asks for an accessibility review of the linked screen and names the concern. |
 | `none` | No button |
 
-Project-wide findings get the same button, with the issue ID `pw-[number]`.
+Project-wide issues get the same button, with the issue ID `pw-[number]`.
+
+Fix now never appears on strengths, evidence gaps, source conflicts, or anything that failed the "worth flagging" test. A Supported story shows Fix now only when it has a separate, meaningful issue.
 
 ### What each status shows
 
-Place fix actions in the observation footer, next to the screen link. Use at most one primary button per observation.
+Place fix actions at the end of the issue. Use at most one primary button per issue.
 
 **Open, rejected, or needs a decision**
 
-- A "Fix issue" button. Clicking it opens an inline fix panel. It does not start a chat yet.
+- A "Fix now" button. Clicking it opens an inline fix panel. It does not start a chat yet.
 - The fix panel contains:
-  - The suggested fix.
+  - The recommended fix.
   - "What will change": the screen name and the kind of change, in one plain sentence.
-  - Two pills: "Use suggested fix" and "Use my own instruction".
+  - Two pills: "Use recommended fix" and "Use my own instruction".
   - A text area, shown only for "Use my own instruction".
   - A "Start fix" primary button, disabled while a chosen own instruction is empty.
   - The note: "This opens a new chat. The fix is made on a copy on the Fixed issues page in Figma. Your Wireflows and Draft pages do not change until you approve it."
@@ -179,13 +171,11 @@ Show this from the moment the designer clicks until the chat writes a newer stat
 
 ### Prompts
 
-Set `SKILL_DIR` to the absolute path of the folder this skill's `SKILL.md` was read from. The skill cannot be invoked automatically in a new chat, so the prompt points to the files.
+Set `REVIEW.skillDir` to the absolute path of the folder this skill's `SKILL.md` was read from. The skill cannot be invoked automatically in a new chat, so the prompt points to the files.
+
+The prompts keep the words "Fix issue [ID]", because `SKILL.md` section 0 routes Fix mode by that phrase. Only the button says "Fix now".
 
 ```tsx
-import { useCanvasAction, useCanvasState } from "cursor/canvas";
-
-const SKILL_DIR = "/absolute/path/to/persona-flow-review";
-
 type FixRequest = "fix" | "revise" | "reject" | "apply";
 
 function fixPrompt(request: FixRequest, issueId: string, instruction?: string): string {
@@ -198,7 +188,7 @@ function fixPrompt(request: FixRequest, issueId: string, instruction?: string): 
   const file = request === "apply" ? "apply-fix.md" : "fix-mode.md";
   const lines = [
     `Persona flow review: ${ask}.`,
-    `Read and follow ${SKILL_DIR}/${file}. The review canvas is attached.`,
+    `Read and follow ${REVIEW.skillDir}/${file}. The review canvas is attached.`,
   ];
   if (request === "fix") {
     lines.push(instruction ? "Approach: designer instruction" : "Approach: suggested fix");
@@ -206,24 +196,13 @@ function fixPrompt(request: FixRequest, issueId: string, instruction?: string): 
   if (instruction) lines.push(`Designer instruction: """${instruction}"""`);
   return lines.join("\n");
 }
-
-function useFixRequest(issueId: string) {
-  const dispatch = useCanvasAction();
-  const [sent, setSent] = useCanvasState<{ request: FixRequest; at: string } | null>(
-    `fix-request:${issueId}`,
-    null,
-  );
-  const send = (request: FixRequest, instruction?: string) => {
-    dispatch({ type: "newComposerChat", userPrompt: fixPrompt(request, issueId, instruction) });
-    setSent({ request, at: new Date().toISOString() });
-  };
-  return { sent, send };
-}
 ```
+
+Each button dispatches `{ type: "newComposerChat", userPrompt }` and records the request in `useCanvasState` under `fix-request:[issueId]`.
 
 Show the status like this:
 
-- When `sent.at` is later than `FIX_STATE[issueId].updatedAt`, or there is no entry, show the in-progress text for `sent.request`.
+- When the recorded request is later than `FIX_STATE[issueId].updatedAt`, or there is no entry, show the in-progress text.
 - Otherwise, show `FIX_STATE[issueId].status`.
 - Keep each designer's own instruction in `useCanvasState` under `fix-instruction:[issueId]`.
 
@@ -234,24 +213,28 @@ The fix chat edits only the `FIX_STATE` entry for its issue. Keep `FIX_STATE` as
 - **HTML:** use the same panel. Each button copies its prompt to the clipboard and shows "Copied. Paste it into a new chat with the review attached."
 - **Markdown:** under each fixable issue, show its fix prompt in a code block.
 
+Never show a fix as started or done when the environment could not start it.
+
 ## Writing rules
 
 All canvas text follows the plain-English rules in `SKILL.md` section 9. In short:
 
 - Write for someone who has not seen the stories, personas, or Figma file.
+- Lead with the issue or the value. Skip background.
 - Use short sentences, everyday words, and active voice.
 - Describe what is on the screen by name: people, buttons, labels, numbers.
-- Keep requirement IDs, node IDs, ClickUp task IDs, layer names, and error codes out of sentences. Show them only in links or the References area.
+- Keep requirement IDs, node IDs, ClickUp task IDs, layer names, and error codes out of sentences. Show them only in links or the evidence area.
 - Explain any product term the first time it appears.
 - Use bullet lists when comparing two things that should match.
 - Do not use arrow chains, `·`-separated fragments, or abbreviations.
+- State each fact once. Do not repeat an issue in the status reason or the talking point.
 
 Show screen references as readable names with links, for example “Lead selection screen”, not `suppression-check-excluded · 343:24200`.
 
 ## Visual rules
 
-- Use muted green for Supports.
-- Use muted yellow for Partially supports.
+- Use muted green for Supported.
+- Use muted yellow for Partially supported.
 - Use muted red for Needs attention.
 - Use neutral gray for Insufficient evidence.
 - Use the same muted colors for fix status: green for Applied, yellow for Ready for review, red for Needs a decision, and gray for the rest. Take them from theme tokens or `Callout` tones, because `Pill` always renders neutral.
@@ -272,11 +255,11 @@ Build direct links using the file key and node ID:
 https://www.figma.com/design/[file-key]/[file-name]?node-id=[node-id]&m=dev
 ```
 
-Link both the complete story section and the specific screen supporting a finding.
+Link both the complete story section and the specific screen supporting an issue or a strength.
 
 ### Local sources
 
-When the platform can open local files, provide actions for the persona, story, PRD, and decision records.
+When the platform can open local files, open the persona, story, PRD, and decision records with an `openFile` action, at the right line when known.
 
 When it cannot, display the exact supplied path or document name.
 
@@ -286,75 +269,63 @@ Link each task with its URL. Link a comment with its own URL when the connector 
 
 ## Data contract
 
+The template defines these as TypeScript types. Keep the field names, because Fix and Apply mode read them.
+
 ### Review
 
-The fix chats need these details, so store them once at the top of the canvas:
-
 ```text
-skillDir
-figmaFileKey
-figmaFileName
-wireflowsPage { name, nodeId }   the page the designer named
-sources
-  personas[]            { name, path or "Designer (pasted)" }
-  stories[]             local story paths
-  decisionRecords[]
-  prd?                  path, or null when not found
-  clickup               { checked, urls[], tasks[{ id, url, storyId, commentsRead, gaps[] }] }
-sourceLedger[]          { source, origin, status, gap? }
-                        origin: designer | discovered | clickup | figma
-                        status: read | partly-read | not-accessible | not-found
-openQuestions[]         { id, storyId?, question, positions[{ source, says }], decideBy? }
-projectWideFindings[]   same fields as an observation, with issueId "pw-[number]" and affectedScreenNodeIds[]
+REVIEW
+  title, summary, date
+  skillDir
+  figmaFileKey, figmaFileName
+  wireflowsPage { name, nodeId }   the page the designer named
+  clickupChecked
+SOURCES[]               { source, origin, status, gap? }
+                        origin: Designer | Discovered | ClickUp | Figma
+                        status: Read | Partly read | Not accessible | Not found
+OPEN_QUESTIONS[]        { id, storyId?, question, positions[{ source, says }], decideBy? }
+PROJECT_ISSUES[]        same fields as an issue, plus affectedScreens[{ label, nodeId }]
+RESOLVED_PROJECT[]      same fields as a resolved issue
 ```
 
 ### Story
 
-Each story review should contain:
-
 ```text
 id
 title
-assessment
+assessment          Supported | Partially supported | Needs attention | Insufficient evidence
 reReviewSuggested?
 persona
 objective
-scope
-  clickupTaskUrl?   null when ClickUp was not checked
-  localStoryPath
-  prdSections[]
-  requirements[]    { text, source }
-  decisions[]       { text, source, author, date, overrides? }
-  exclusions[]
-  dependencies[]
-observations[]
+businessGoal?       { text, source }   omit when none is documented
+statusReason
+userValue?          Supported
+businessValue?      Supported, only when businessGoal exists
+whatWorks?[]        { text, screen? { label, nodeId } }   Partially supported
+missingEvidence?    Insufficient evidence: what could not be reached
+talkingPoint?       omit for Insufficient evidence
+issues[]
   issueId           "[story ID]-[number]", never reused
   title
   classification
-  priority          high | medium | low
-  confidence        confirmed | potential
-  found
-  whyItMatters
-  suggestedFix?
-  evidence[]        { label, url or path }
+  priority          High | Medium | Low
+  confidence        Confirmed | Potential concern
+  affectedRequirement { text, source }
+  found             one string, or a list for comparisons
+  userImpact
+  businessImpact?
+  recommendedFix
   changeSummary?    one plain sentence on what a fix would change
+  evidence[]        { label, url or path, line? }
   fixAction         figma-screen | figma-new-screen | figma-rename | audit-handoff | none
   screenName
   screenNodeId      the screen instance, not a wrapper frame
 resolved[]
-  issueId, title, appliedAt, draftComponentNodeId, fixedSectionNodeId
-designDecision
-reason
-considerChanging? 
-keep
-walkthroughNotes[]
-storyReference
-clickupReference?
-prdReference?
-personaReference
-scopeReferences[]
-figmaFlowReference
-figmaScreenReferences[]
+  issueId, title, appliedAt, draftComponentNodeId?, fixedSectionNodeId, screenNodeId?, note?
+scopeDecisions[]    { text, source }   ClickUp decisions that override the local story or PRD
+references[]        { label, url or path, line? }   persona, ClickUp task, story, PRD, decisions
+figmaFlow           { label, nodeId }
+figmaScreens[]      { label, nodeId }
 ```
 
 ### Fix state
@@ -390,7 +361,7 @@ Return:
 ```text
 Created the persona flow review: [Open review]
 
-[N] support · [N] partially support · [N] need attention · [N] insufficient evidence
+[N] supported, [N] partially supported, [N] need attention, [N] insufficient evidence.
 
 [Sources that could not be accessed, and the number of open scope questions. Omit when there are none.]
 ```

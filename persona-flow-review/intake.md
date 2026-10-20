@@ -53,7 +53,11 @@ Search the open workspace before asking anything. Treat every result as a propos
 
 When there are several candidates, list them and ask. Never pick one silently.
 
-Do not search outside the open workspace or use an online repository unless the designer allows it.
+Keep discovery cheap:
+
+- Follow known paths and references first, such as links in a story file. Use targeted searches by story ID or name before any wider search.
+- Stop searching once a confident match is found.
+- Do not search outside the open workspace or use an online repository unless the designer allows it.
 
 ## Step 3. Ask only for what is missing
 
@@ -114,7 +118,7 @@ Never say ClickUp was reviewed when it was not.
 
 ### Local files
 
-1. Read each matched story file in full, plus the epic file or index that contains it.
+1. Read each matched story in full. When many stories share one large file, read only that story's section, plus the file's header for goals and references.
 2. Follow its references:
    - PRD and product documents
    - UX specifications, scenarios, and journey maps
@@ -132,6 +136,8 @@ Never ask the designer for the PRD. Find it in this order:
 3. A file named like `prd*.md` in a planning or product folder.
 
 If several PRDs exist, use the one the epic references. Otherwise use the most recent one and record that choice.
+
+Read the PRD's goals or objectives section, and the sections the reviewed stories reference. Do not read the whole PRD.
 
 If no PRD can be found, record "PRD not found" and continue with the other sources. Do not fill in what a PRD might say.
 
@@ -154,6 +160,7 @@ The scope record is the agreed scope the review checks against.
 Each scope record holds:
 
 - The ClickUp task link, or a note that ClickUp was not checked
+- The business objective behind the story, with its source, or a note that none is documented
 - The requirements in scope, each with its source
 - The ClickUp decisions that override the local story or PRD
 - Exclusions and deferred items
