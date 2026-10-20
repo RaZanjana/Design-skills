@@ -1,6 +1,6 @@
 ---
 name: persona-flow-review
-description: Reviews a chosen Figma page's story flows against the project's defined personas, the agreed ClickUp story scope including task comments, local user stories, and the PRD. Answers three questions for each story - does the design support the user's goal, does it meet the agreed scope and business objective, and can the designer explain it to the client. Starts from a short prompt, asks only for missing inputs, flags only meaningful gaps, and produces a canvas that explains every story status with user and business value, client walkthrough talking points, and a Fix now button per issue. Fixes are made on a separate "Fixed issues" Figma page and applied to source components only after designer approval. Use when a designer asks for a persona flow review, user-story design validation, client walkthrough preparation, evidence-based design rationale, or to fix or apply a fix for an issue from a persona flow review.
+description: Reviews a chosen Figma page's story flows against the project's personas, the agreed ClickUp story scope including comments, local user stories, and the PRD. Answers three questions per story - does the design support the user's goal, does it meet the agreed scope and business objective, and can the designer explain it to the client. Starts from a short prompt, asks only for missing inputs, flags only meaningful gaps, and produces a canvas with explained story statuses, a Fix now button per issue, a client walkthrough script, a few positive Figma comments to publish after approval, and Figma annotations for worthwhile elements beyond the stories. Fixes are made on a "Fixed issues" Figma page and applied only after approval. Use for a persona flow review, user-story design validation, or client walkthrough preparation, or to fix an issue, publish comments, or add annotations from a persona flow review.
 disable-model-invocation: true
 ---
 
@@ -16,17 +16,27 @@ This is not persona role-play, usability testing, a visual-quality audit, a desi
 
 ## 0. Choose the mode
 
-This skill has three modes. Pick one from the request before doing anything else.
+This skill has six modes. Pick one from the request before doing anything else.
 
 | Request | Mode | Instructions |
 | --- | --- | --- |
-| Review flows, stories, or a Figma file | **Review** | [intake.md](intake.md), then sections 1 to 11 of this file |
+| Review flows, stories, or a Figma file | **Review** | [intake.md](intake.md), then sections 1 to 12 of this file |
 | "Fix issue [ID]", "Revise fix for issue [ID]", or "Reject fix for issue [ID]" | **Fix** | [fix-mode.md](fix-mode.md) |
 | "Apply approved fix for issue [ID]" | **Apply** | [apply-fix.md](apply-fix.md) |
+| "Publish comments", "Update comment [ID]", "Remove comment [ID]", or "Check comments" | **Publish** | [publish-comments.md](publish-comments.md) |
+| "Add annotations", "Update annotation [ID]", or "Remove annotation [ID]" | **Annotate** | [annotate-figma.md](annotate-figma.md) |
+| "Regenerate walkthrough script" | **Script** | Section 10 of this file, then [canvas-output.md](canvas-output.md#regenerate-the-script) |
 
-Fix and Apply requests usually arrive from a button in the review canvas. The canvas file is attached to the chat and holds the issue, its evidence, the Figma links, and the source paths. Read only what the mode file asks for. Do not rerun the full review.
+These requests usually arrive from a button in the review canvas. The canvas file is attached to the chat and holds the issue or note, its evidence, the Figma links, and the source paths. Read only what the mode file asks for. Do not rerun the full review.
 
-Review mode is read-only. Fix mode writes only to the "Fixed issues" Figma page. Only Apply mode changes the Draft and Wireflows pages, and only after the designer approves the fix.
+What each mode may change:
+
+- **Review:** nothing. It is read-only.
+- **Fix:** only the "Fixed issues" Figma page.
+- **Apply:** the Draft and Wireflows pages, only after the designer approves the fix.
+- **Publish:** only Figma comments the designer approved, through the Figma REST API.
+- **Annotate:** only annotations in the "Beyond scope" category, after the designer approves them.
+- **Script:** only the walkthrough script in the canvas.
 
 ## 1. Run the intake
 
@@ -149,7 +159,8 @@ Check whether:
 - The persona objective has a complete path.
 - Every important user-facing requirement appears in a screen, state, or transition.
 - Required loading, empty, success, error, and safety states are represented.
-- The flow includes unapproved behavior or contradicts an exclusion.
+- The flow contradicts an exclusion or a business rule, or changes agreed behavior.
+- The flow adds something no source asks for. Keep these aside for section 10. They are not issues.
 - Every ClickUp decision in the scope record is reflected in the design.
 - Information that drives a decision stays consistent across screens, such as who is selected, a status, or the next step. Do not check the arithmetic of example figures.
 - Related stories hand off correctly: the end of one flow matches the start of the next.
@@ -219,7 +230,7 @@ Classify each issue as:
 
 - **Requirement gap:** agreed behavior is absent or contradicted.
 - **UX friction:** the design makes the agreed task meaningfully harder or unclear.
-- **Scope conflict:** the design adds excluded or unapproved behavior.
+- **Scope conflict:** the design adds something that contradicts an explicit exclusion or a business rule, or changes agreed behavior. A harmless addition that no source asks for is not a scope conflict. Section 10 decides whether it is worth keeping.
 - **Mapping drift:** story documents and Figma organization no longer match.
 - **Accessibility concern:** a barrier that materially affects the outcome, or breaks an explicit accessibility requirement. It never sets a story's status on its own.
 - **Evidence gap:** the available sources are insufficient to assess.
@@ -336,7 +347,59 @@ Quick test before delivery: could a new team member read any single issue and ex
 
 See [examples.md](examples.md) for before-and-after rewrites.
 
-## 10. Produce the review artifact
+## 10. Prepare client notes and the walkthrough script
+
+Build three client-facing outputs from the review you just did. Reuse its statuses, reasons, value statements, "What works" points, talking points, issues, and screenshots. Do not open new sources or re-analyze the flows.
+
+Keep them apart from the issues. Issues say what is missing. Client notes say why something works, and never turn an assumption into a strength.
+
+A comment or annotation never sits on a screen that an open issue names, including a potential concern, and never praises the behavior an issue is about. Other screens of the same story can still get one. The script is different: it names each open issue honestly.
+
+### Positive Figma comments
+
+Suggest a small set of comments that explain the most important in-scope design decisions to the client, pinned to the feature or screen they describe.
+
+- Take candidates only from Supported and Partially supported stories: a "What works" point, the status reason, or the user and business value. Never from a Needs attention or Insufficient evidence story.
+- Pick the strongest few. Up to 5 for a review of six stories or fewer, counting every reviewed story. Then up to 6 for 9 stories, 7 for 12, and 8 at most. These are ceilings, not targets: 3 is typical, and a small flow may need only 1.
+- One comment per screen. Allow a second only for a separate feature with a different benefit.
+- One point per comment, 25 to 45 words, in two or three short sentences. Count words by spaces, as the canvas does.
+- When several features share a benefit, comment on the strongest one only.
+- When no business objective is documented, give the user benefit only. Do not mention the missing objective in the comment.
+- Leave a screen without a comment when it has no decision worth explaining.
+
+### Beyond-scope annotations
+
+Some designs include elements no source asks for that are worth keeping. Suggest a Figma annotation for each one that meets all of these:
+
+- No ClickUp task, story, or PRD section asks for it.
+- It does not contradict an exclusion or business rule, and does not change agreed behavior. Otherwise it is a scope conflict issue.
+- Its value ties to the persona or a documented business goal.
+
+Ignore additions with no evidence of value. Do not annotate, list, or flag them, and leave no trace of them in the canvas. Keep up to 5 per review, one per feature. Each annotation starts with "Beyond the story:", stays at 40 words or fewer, and asks the client to confirm the element stays.
+
+A feature gets either a comment or an annotation, never both. A separate feature on the same screen, such as a download link beside a list, can get an annotation while the list gets a comment. Annotations do not count toward the one-comment-per-screen limit.
+
+### Walkthrough script
+
+Write one script for the whole review, in journey order, split into stages by journey step or screen. Each stage is about 50 to 100 words. A typical review comes to 300 to 500 words, about two to four minutes spoken. A small review is shorter. Never pad it to reach a length. For each stage, in two to four sentences, cover:
+
+1. What the user is trying to do.
+2. How the design helps, naming the screen.
+3. Why the key decision makes sense for this user, when a persona source supports it. Otherwise skip this part.
+4. The business objective it supports, when a source documents one.
+
+Then add, on top of those sentences:
+
+- One honest sentence for each open issue that affects the stage, with the next step.
+- One sentence for each beyond-scope element, asking the client to confirm it.
+- For a story with Insufficient evidence, one neutral closing sentence, such as "We'll walk through approval once we can review it." It is not a stage.
+- Never contradict a story's status or present a gap as done.
+
+No introduction or closing is needed beyond that.
+
+The rules for selection, wording, and quality checks are in [methodology.md](methodology.md#client-notes).
+
+## 11. Produce the review artifact
 
 Build the review from [canvas-template.tsx](canvas-template.tsx), following [canvas-output.md](canvas-output.md).
 
@@ -361,10 +424,24 @@ The output must include:
   5. Client talking point
   6. Evidence and sources, collapsed by default
 - Fix status for every issue, with Approve, Request changes, and Reject buttons once a fix is ready for review
+- A "Client notes" area with three tabs, each shown only when it has content:
+  - **Walkthrough script:** stage navigation, edit, copy, and regenerate
+  - **Figma comments:** approve, exclude, edit, approve all, publish, and the real Figma status of each comment
+  - **Worth keeping:** beyond-scope elements, each with its annotation text, approve, exclude, edit, and the real Figma status
 
 Use muted green for Supported, muted yellow for Partially supported, muted red for Needs attention, and neutral gray for Insufficient evidence. Maintain readable contrast.
 
-## 11. Verify before delivery
+On a re-run for the same Figma file, look in the canvases folder for the most recent earlier review with the same `figmaFileKey`. Carry over:
+
+- Its `COMMENT_STATE` and `ANNOTATION_STATE` entries, with their suggestions and IDs, so nothing is published or annotated twice.
+- For each published comment, set the suggestion's `text` to its `publishedText`. For each annotated item, use its `annotatedText`.
+- `WALKTHROUGH.version`: the earlier version plus one.
+
+When a published note no longer fits, for example because its story now needs attention, keep the suggestion and set its `reviewNote`, such as "Story 2.1 now needs attention. Consider removing this comment." Never remove anything from Figma in Review mode.
+
+Tell the designer to use the new canvas from now on. The earlier one stays as a record. Its buttons still check Figma before posting, so they never create duplicates.
+
+## 12. Verify before delivery
 
 - Every story has a status reason that names specific design behavior.
 - Supported stories have user value, business value or a note that no business objective is documented, and a talking point.
@@ -391,6 +468,11 @@ Use muted green for Supported, muted yellow for Partially supported, muted red f
 - Every finding based on ClickUp cites the task or comment it relies on.
 - Every inaccessible or missing source appears in "Sources checked".
 - Unresolved conflicts appear in "Open scope questions", not as confirmed design issues.
+- Every comment and annotation names a real screen, ties to a source, and stays within the volume and length limits.
+- No comment or annotation sits on a screen that an open issue names, and no feature has both.
+- No new comment comes from a Needs attention or Insufficient evidence story. A published comment carried over from an earlier review may stay, with a `reviewNote`.
+- The script follows the journey order, matches every story status, and mentions each open journey issue and beyond-scope element.
+- No two comments make the same point, and no two annotations do. The script may cover the same decisions, in its own words. Nothing repeats another output word for word.
 - No sample data from the template remains.
 
 Return only:
@@ -398,6 +480,7 @@ Return only:
 1. A link to the review artifact.
 2. One sentence with the counts, such as "4 supported, 2 partially supported, 1 needs attention."
 3. One sentence naming any source that could not be accessed and the number of open scope questions. Omit it when there are none.
+4. One sentence saying the walkthrough script, [N] suggested comments, and [N] items worth keeping are ready to review in the canvas, and that nothing is published to Figma until the designer approves it.
 
 ## Additional resources
 
@@ -407,5 +490,7 @@ Return only:
 - Canvas starting point: [canvas-template.tsx](canvas-template.tsx)
 - Fixing one issue: [fix-mode.md](fix-mode.md)
 - Applying an approved fix: [apply-fix.md](apply-fix.md)
+- Publishing approved comments: [publish-comments.md](publish-comments.md)
+- Adding approved annotations: [annotate-figma.md](annotate-figma.md)
 - Feedback examples: [examples.md](examples.md)
 - Installation and usage: [README.md](README.md)

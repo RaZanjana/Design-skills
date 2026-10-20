@@ -217,7 +217,7 @@ Required behavior is absent or contradicted.
 
 ### Scope conflict
 
-The design adds behavior with no approved source or conflicts with an explicit exclusion.
+The design contradicts an explicit exclusion or a business rule, or changes agreed behavior. An addition that no source asks for, but that breaks nothing, is not a scope conflict. It is either worth keeping (see [Client notes](#client-notes)) or ignored.
 
 ### Mapping drift
 
@@ -357,9 +357,95 @@ Riley must never message a customer, competitor, or someone who unsubscribed
 
 Talking point:
 
-> Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which protects customer relationships and the opt-out promise.
+> Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which is designed to protect opt-outs and customer relationships.
 
 For Partially supported and Needs attention stories, the talking point covers only what works today.
+
+## Client notes
+
+Three outputs help the designer explain the design: positive Figma comments, beyond-scope annotations, and one walkthrough script. All three reuse the review's evidence. None of them is an issue, and none of them changes a status.
+
+### Positive comments
+
+A comment explains why one in-scope design decision works, so the client can read it beside the feature in Figma.
+
+**Pick candidates from:** "What works" points, status reasons, and user and business value of Supported and Partially supported stories. Never from Needs attention or Insufficient evidence stories.
+
+**Where an open issue blocks a note:** a comment or annotation never sits on a screen that an open issue names, including a potential concern, and never praises the behavior the issue is about. Other screens of the same story can still get one. The issue stays in the review and the script, where it is named honestly.
+
+**Rank candidates by:**
+
+1. It directly helps the user reach an important goal from the persona or story.
+2. It answers a significant user need, pain point, or requirement.
+3. It supports a documented business objective.
+4. It is a decision the client may question or need to explain to stakeholders.
+5. Its value is not obvious from the screen alone.
+
+Keep a candidate only when its value is specific, meaningful, and backed by a source.
+
+**Volume:**
+
+| Limit | Ceiling |
+| --- | --- |
+| Per review, counting every reviewed story | Up to 5 for six stories or fewer. Up to 6 for 9 to 11 stories, 7 for 12 to 14, and 8 for 15 or more. |
+| Per screen | 1. A second only for a separate feature with a different benefit. |
+| Per comment | 25 to 45 words, two or three short sentences, one point. Count words by spaces. |
+
+These are ceilings, not quotas. There is no minimum: 3 is typical, and a small flow may need only 1. When several features show the same benefit, keep the strongest one. When two candidates tie, prefer the one the client is more likely to question.
+
+**Each comment:**
+
+- Names the actual feature, section, or interaction.
+- Says the specific user benefit, then the business value when a source supports it. When none is documented, it gives the user benefit only, and does not mention the missing objective.
+- Explains any product term in the comment itself, because each comment is read on its own.
+- Uses simple, natural English a non-technical client understands.
+- Phrases unverified business value as intent: "is designed to", "should help".
+- Never mentions implementation details, generic UX principles, visual polish, or metrics no source states.
+- Never repeats what the screen already makes obvious, or what another comment says.
+
+Pin it to the most specific node that shows the feature, such as a card or panel. Use the screen when no smaller node fits.
+
+### Beyond-scope elements
+
+Some designs include elements no source asks for that are worth keeping. Keep one only when all of these are true:
+
+1. No ClickUp task, story, or PRD section asks for it.
+2. It does not contradict an exclusion or business rule, and does not change agreed behavior. Otherwise it is a scope conflict issue.
+3. Its value ties to the persona or a documented business goal.
+
+Ignore additions with no evidence of value. Do not annotate, list, or flag them, and leave no trace of them in the canvas.
+
+Keep up to 5 per review, one per feature. For each, record what it is, why it is beyond scope, the user value, the business value when a source supports it, a short note for developers when useful, and the annotation text.
+
+**Annotation text:** starts with "Beyond the story:", stays at 40 words or fewer, says what the element does and why it helps, and asks the client to confirm it stays. It goes in a Figma annotation in the "Beyond scope" category, never in a comment.
+
+A feature gets either a comment or an annotation, never both. A separate feature on the same screen can get an annotation while another gets a comment. Annotations do not count toward the per-screen comment limit.
+
+### Walkthrough script
+
+One script for the whole review, written to be spoken.
+
+- **Order:** follow the user's journey, not the status order. One stage per journey step or key screen.
+- **Length:** two to four sentences per stage, about 50 to 100 words. A typical review comes to 300 to 500 words. A small review is shorter. Never pad it.
+- **Each stage:** what the user is trying to do, how the design helps, why the key decision fits this user when a persona source supports it, and the business objective it supports when a source documents one. Skip a part that no source supports.
+- **Gaps:** one honest sentence for each open issue that affects the journey, with the fix or next step, on top of the stage's sentences. Never hide a gap behind positive words, and never present it as done.
+- **Beyond scope:** one sentence per element, asking the client to confirm it, on top of the stage's sentences.
+- **Insufficient evidence:** one neutral closing sentence, such as "We'll walk through approval once we can review it." It is not a stage, and it never suggests the design is unfinished.
+- **Style:** conversational, short sentences, practical value. No introduction or closing, no reading out every element, no repeating the stories, no sales tone, no invented outcomes.
+
+Reuse the talking points as raw material, but do not paste them in word for word.
+
+### Quality check
+
+Before showing client notes, check each one:
+
+- **Relevant:** it explains an important decision for this persona and story.
+- **Evidence:** it traces to a requirement, persona need, or documented business goal.
+- **Clear:** a client who has not read the stories understands it.
+- **Unique:** no two comments make the same point, and no two annotations do. The script may cover the same decisions in its own words. Nothing repeats another output word for word.
+- **Volume:** the set stays within the limits above.
+
+Drop any note that fails. Fewer strong notes beat many weak ones.
 
 ## Fixing issues
 
@@ -371,7 +457,7 @@ A review finds issues. Fixing them is a separate, designer-driven step, one issu
 | --- | --- | --- |
 | Requirement gap | `figma-screen` or `figma-new-screen` | Adds or corrects the missing behavior, state, or screen |
 | UX friction | `figma-screen` | Clarifies the label, order, emphasis, or feedback |
-| Scope conflict | `figma-screen` | Removes or changes the unapproved behavior. The note card says this may be a product decision. |
+| Scope conflict | `figma-screen` | Removes or changes the conflicting behavior. The note card says this may be a product decision. |
 | Mapping drift | `figma-rename` | Renames the Figma section to match the current story. Story files are never edited. |
 | Accessibility concern | `audit-handoff` | Starts a separate accessibility review |
 | Evidence gap or source conflict | `none` | Nothing to fix in Figma. A source conflict needs a scope decision first. |
@@ -412,3 +498,7 @@ Use `figma-new-screen` only when the missing behavior needs its own screen or st
 - No flow-order inference from canvas coordinates alone
 - No repeated project-wide finding under every story
 - No jargon, codes, or shorthand that forces the reader to look something up
+- No positive comment that hides a gap or turns an assumption into a strength
+- No comment or annotation published to Figma without the designer's approval
+- No comment shown as published unless the Figma API confirmed it
+- No personal access token in any file, canvas, comment, script, log, or error message

@@ -1,7 +1,7 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.3.0
+**Version:** 1.4.0
 
 Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
 
@@ -14,6 +14,12 @@ For each story, it answers three questions:
 3. Can the designer clearly explain to the client why it is a good solution?
 
 Every story status comes with its reason. Supported stories get the user value, the business value, and a sentence to say in the walkthrough. Stories with gaps show what works, what is missing, why it matters, and a **Fix now** button for each issue.
+
+For the client meeting, the skill also prepares:
+
+- **A walkthrough script** that follows the user's journey and is honest about open gaps.
+- **A few positive Figma comments** that explain the most important design decisions beside the design. You approve them, then publish them.
+- **Figma annotations** for elements beyond the stories that are worth keeping, after you approve them.
 
 The skill uses personas as documented evidence. It does not pretend to be the persona or replace testing with real users.
 
@@ -54,6 +60,8 @@ persona-flow-review/
 ├── canvas-template.tsx
 ├── fix-mode.md
 ├── apply-fix.md
+├── publish-comments.md
+├── annotate-figma.md
 └── examples.md
 ```
 
@@ -64,7 +72,9 @@ persona-flow-review/
 - `canvas-template.tsx` — the ready-made Cursor Canvas the review fills in, so each run only writes the review data
 - `fix-mode.md` — how one issue is fixed on the "Fixed issues" Figma page
 - `apply-fix.md` — how an approved fix reaches the Draft and Wireflows pages
-- `examples.md` — examples of useful and unhelpful feedback
+- `publish-comments.md` — how approved comments are published, updated, removed, and checked in Figma
+- `annotate-figma.md` — how approved beyond-scope annotations are added, updated, and removed in Figma
+- `examples.md` — examples of useful and unhelpful feedback, comments, annotations, and script
 - `README.md` — installation and usage instructions
 
 ## Install in Claude
@@ -107,6 +117,8 @@ Do not install it inside `~/.cursor/skills-cursor/`; that folder is reserved for
 - **Figma connector**, with access to the file. If it is unavailable, provide story-grouped screenshots or a PDF export.
 - **ClickUp connector**, signed in, with access to the stories' tasks and comments. If it is unavailable, you can paste the task descriptions and comments, or continue without ClickUp.
 - **The project open** in your editor, so the skill can read the local story files, persona files, and PRD.
+- **To publish comments:** a Figma personal access token with file_comments:read and file_comments:write, created when you publish. In Cursor, publishing may also need network access to api.figma.com, which Cursor asks you to approve.
+- **To add annotations:** edit access to the Figma file through the Figma connector.
 
 ## How to use
 
@@ -184,6 +196,12 @@ Each story shows, in this order:
 5. **A client talking point**: "Say this in the walkthrough" for Supported stories, "Safe to say now" for stories with gaps
 6. **Evidence and sources**, collapsed until needed
 
+Below the stories, a **Client notes** area has three tabs:
+
+- **Walkthrough script:** one script in journey order, with stage navigation, edit, copy, and regenerate.
+- **Figma comments:** the suggested positive comments, with approve, exclude, edit wording, approve all, and publish. Each shows its real Figma status.
+- **Worth keeping:** elements beyond the stories, each with its annotation text, approve, exclude, and edit wording.
+
 Cursor uses an interactive Canvas when available.
 
 On platforms without Cursor Canvas, the skill produces an equivalent self-contained interactive HTML review. If interactive file creation is unavailable, it falls back to concise Markdown.
@@ -210,6 +228,54 @@ It does not flag:
 - Generic design advice, and accessibility or design-system rules with no real user impact.
 
 It still flags a copy or number problem that changes the user's decision, causes a wrong record, breaks a business rule, or breaks a flow. It also flags localization work that the agreed scope makes a design deliverable.
+
+An element that no story asks for is not flagged when it breaks nothing. When it has clear user or business value, it is suggested as worth keeping. When it has none, it is ignored. Only an addition that contradicts an exclusion or a business rule, or changes agreed behavior, is a scope conflict.
+
+## Client notes
+
+### Walkthrough script
+
+One script for the whole review, about two to four minutes spoken. It follows the user's journey, explains how the design helps and why the key decisions fit the user, and links each stage to the business objective when a source documents one. It names each open gap in one honest sentence, with the next step, and asks the client to confirm any beyond-scope element.
+
+Edit any stage in the canvas. **Regenerate** rewrites it from the current review. If you had edits, you choose whether to keep them.
+
+### Positive Figma comments
+
+The skill suggests a few comments, usually 3 to 5 per review, each 25 to 45 words. They explain why an important in-scope decision helps the user and the business. They never come from a story that needs attention, never sit on a part of the flow with an open issue, and never claim outcomes no source supports.
+
+To publish:
+
+1. Approve, exclude, or edit each comment in the canvas, or click **Approve all**.
+2. Click **Publish approved**. A new chat opens.
+3. The chat asks for a Figma personal access token. Create one in Figma under **Settings → Security → Generate new token**:
+   - Choose the shortest expiry Figma offers.
+   - Tick only **file_comments:read** and **file_comments:write**.
+4. Give the token to the skill in one of two ways:
+   - **Safer, on a Mac:** run the command the chat shows in the Terminal app and paste the token there. It goes into your Mac's Keychain and never appears in the chat. Later buttons reuse it until you delete it.
+   - **Quicker:** paste it into the chat. It is saved in that chat's transcript on your computer, and a later button press asks for it again.
+5. The skill checks the token, posts each approved comment, and updates its status in the canvas.
+6. Revoke the token in Figma when you are done. If you used the Keychain, delete it with `security delete-generic-password -a "$USER" -s persona-flow-review-figma`.
+
+How the token is handled:
+
+- It is handed to Figma in a request header, read from the Keychain or the chat's shell. It never appears in commands, the process list, files, the canvas, comments, the script, or error messages.
+- A pasted token is cleared from the chat's shell at the end of the run. It stays in the chat transcript, because you pasted it there, so a short expiry and revoking it afterwards are the real protection.
+- The skill uses its own token name, so it never picks up another Figma token already set on your computer.
+
+What Figma allows:
+
+- Comments are posted under the token owner's name.
+- Figma's API cannot edit a comment. **Update in Figma** posts the new wording and removes the old comment, so it gets a new ID. When the comment already has replies, the new wording is posted as a reply instead, so the replies stay.
+- Only the comment's author can remove it.
+- Before every post, the skill checks the file's comments, so retries and re-runs never create duplicates.
+- A comment shows as published only after Figma confirms it. When the result is unclear, or a chat closed before it reported back, it shows **Needs check**, and **Check Figma status** confirms it.
+- The skill refuses to publish empty wording or wording that looks like a token.
+
+### Beyond-scope annotations
+
+Some designs include elements no story asks for that are worth keeping. The skill suggests up to about five, each with an annotation that starts "Beyond the story:". After you approve them, **Add approved annotations** writes them through the Figma connector, in a "Beyond scope" annotation category. No token is needed. Annotations can be updated and removed in place, and re-runs update the existing annotation instead of adding another.
+
+Annotations show in Figma when annotations are turned on, and in Dev Mode. Check that your client can see them before you rely on them.
 
 ## Fixing issues
 
@@ -272,6 +338,9 @@ The skill will not:
 - Claim it reviewed a source it could not read
 - Pick silently between conflicting sources
 - Claim business benefits that no source supports
+- Publish a comment or write an annotation you have not approved
+- Show a comment as published before Figma confirms it
+- Save your Figma token in any file, or show it in the canvas, comments, script, or messages
 
 Use a separate accessibility or design-audit workflow for WCAG, visual consistency, component quality, and formal conformance checks.
 

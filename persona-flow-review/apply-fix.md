@@ -118,6 +118,11 @@ Follow `SKILL.md` sections 4 to 9 for this story alone:
 - Give new issues new IDs that continue the story's numbering. Never reuse an ID.
 - Keep the limit of three open issues, and apply the "worth flagging" test to any new one.
 - When the status changes, rewrite the status reason, the value or "what works" block, and the talking point to match.
+- Keep the client notes consistent with the new review:
+  - Rewrite the script stage for this story, raise `WALKTHROUGH.version`, and set `generatedAt`. The gap sentence goes when the gap is fixed.
+  - When the fix makes a new strength worth a comment, add it to `COMMENTS` within the volume limits.
+  - When the story now needs attention, remove its unpublished comments. For a published one, set `reviewNote` to suggest removing it.
+  - Never publish, annotate, or remove anything in Figma from this mode.
 
 ## 7. Update Figma and the canvas
 
@@ -129,6 +134,7 @@ In the attached canvas:
 
 - In `FIX_STATE`, set `status: "applied"`, `appliedAt`, `updatedAt`, and the final `changes[]`. Add `draftComponentNodeId`, and `newScreenNodeId` when a screen was added.
 - Update the story: `assessment`, `statusReason`, `userValue`, `businessValue`, `whatWorks`, `issues`, `resolved`, and `talkingPoint`.
+- Update `WALKTHROUGH`, and `COMMENTS` when needed, as section 6 describes.
 - Set `reReviewSuggested: true` on each story in `otherStories`.
 - Update the summary counts in the header.
 - Check the canvas TypeScript result.

@@ -1,6 +1,6 @@
 # Review Artifact Structure
 
-The canvas is a working tool. It shows designers what to fix, and how to explain the design's value to the client. It is not a checklist of design rules.
+The canvas is a working tool. It shows designers what to fix, and how to explain the design's value to the client through talking points, a walkthrough script, Figma comments, and annotations. It is not a checklist of design rules.
 
 ## Output priority
 
@@ -19,6 +19,7 @@ Do not require external packages, remote assets, or network requests to render t
 - Project or feature name, the reviewed Figma page, and the review date
 - Story totals by status
 - Issue totals by fix status: open, ready for review, applied
+- Client note totals: comments suggested and published, items worth keeping and annotated
 - A warning when ClickUp scope was not checked
 
 ### Status guide
@@ -114,6 +115,65 @@ Show parts 1 to 5 by default. Keep part 6 collapsed.
    - Relevant Figma screens
 
 Show **Resolved issues** as a separate collapsed section, only when the story has any. Each shows its title, the date applied, and links to the Draft component and the "Fixed issues" row.
+
+### Client notes
+
+Place one "Client notes" area below the stories, with up to three tabs. Show a tab only when it has content. Omit the area when all three are empty.
+
+**Walkthrough script** (default tab)
+
+- Stage pills: "Whole script", then one pill per stage, numbered in journey order.
+- Each stage shows its title, a link to its key screen, and its spoken text.
+- The total word count and the rough speaking time.
+- **Copy script:** copies the whole script as plain text, one paragraph per stage. When the canvas blocks the clipboard, show the full text in a block that selects itself on click, with "Copying is blocked here. Click the text to select it, then copy."
+- **Edit:** turns each shown stage into a text area. Edits are saved in canvas state and marked "Edited". Each edited stage has "Reset to generated".
+- **Regenerate:** opens a new chat that rewrites the script from the current review. While it runs, show "Stop waiting" beside it. When the new version arrives and the designer had edits, show "The script was regenerated after you edited it." with "Use the new script" and "Keep my edits".
+
+**Figma comments**
+
+A compact row per suggested comment:
+
+- The feature in words, the story, and the status.
+- "On:" the target screen, linked to Figma.
+- The comment text, with "Edit wording". Editing shows a text area and the word count, with a hint when it is over 45 words.
+- Approve and Exclude pills, until it is published.
+- "Why this one", collapsed: why it is worth highlighting, the user need, the business objective, and the evidence links.
+- After publishing: "Update in Figma" when the wording changed, and "Remove from Figma".
+- The note from the last run, when there is one, such as a failure reason.
+
+Above the rows:
+
+- One line: "Positive notes the client reads beside the design in Figma. Nothing is published until you click Publish."
+- Counts: suggested, approved, and published.
+- **Approve all**, then **Publish approved ([N])** as the primary button.
+- **Check Figma status**, when any comment has a Figma ID or needs a check.
+- "Remove from Figma" also marks the comment Excluded, so a later "Publish approved" never posts it again. The designer can approve it again to republish it.
+- Publish approved skips comments that are already in Figma, still need a check, or have empty wording or wording that looks like a token.
+- The note: "Publishing opens a new chat that asks for a Figma token. On a Mac, you can keep it in the Keychain so it never appears in the chat. A pasted token is saved in that chat's transcript, so give it a short expiry and revoke it afterwards."
+
+**Worth keeping**
+
+A row per beyond-scope element:
+
+- Title, stories, status, and "On:" the target screen.
+- What it is, and why it is beyond the stories.
+- User value, and business value when a source supports it.
+- "For developers", collapsed, when there is a note.
+- The annotation text, with "Edit wording".
+- Approve and Exclude pills, until it is annotated. Then "Update in Figma" when the wording changed, and "Remove from Figma".
+
+Above the rows: one line explaining these are additions the stories do not ask for, which go into Figma as annotations, plus **Approve all** and **Add approved annotations ([N])**.
+
+### Note statuses
+
+Each comment and annotation shows one status. Take the first that applies:
+
+1. **Working in a new chat:** the designer's latest request is newer than the state entry's `updatedAt`.
+2. **Needs check**, after the designer clicked "Stop waiting" and no newer state entry arrived. Note: "The chat closed before it reported back. Check the status in Figma before trying again."
+3. The state entry from Figma: **Published** or **Annotated** (green), **Needs check** (yellow), **Failed** (red), **Not published** or **Removed** (gray).
+4. The designer's choice: **Approved** (accent), **Suggested** or **Excluded** (gray).
+
+Never show Published or Annotated without a state entry written by Publish or Annotate mode. Show the entry's note under the status. While a note is "Working in a new chat", show "Stop waiting". It marks the request as stopped instead of deleting it, because the chat may still have changed Figma. A stopped comment can be checked but not published until "Check Figma status" reports back. A comment counts as in Figma whenever its entry has a `figmaCommentId` and is not removed, even when it needs a check.
 
 ## Fix now
 
@@ -214,6 +274,52 @@ The fix chat edits only the `FIX_STATE` entry for its issue. Keep `FIX_STATE` as
 - **Markdown:** under each fixable issue, show its fix prompt in a code block.
 
 Never show a fix as started or done when the environment could not start it.
+
+## Client note buttons
+
+Comment, annotation, and script buttons work like Fix now. Each opens a new chat with the canvas attached and a short prompt, and records the request in `useCanvasState`. The chat writes the result back into `COMMENT_STATE`, `ANNOTATION_STATE`, or `WALKTHROUGH`.
+
+The designer's choices live in canvas state, not in the data block:
+
+| Key | Holds |
+| --- | --- |
+| `note-decisions` | `{ [noteId]: "suggested" \| "approved" \| "excluded" }` |
+| `note-texts` | `{ [noteId]: text }`, only for notes the designer edited |
+| `note-requests` | `{ [noteId]: { action, at, stopped? } }`, the latest request per note |
+| `script-edits` | `{ version, stages: { [stageId]: text } }` |
+
+The parent component reads these once and passes them down, so counts, "Approve all", and "Publish approved" always agree with the rows. The state file sits next to the canvas as `[name].canvas.data.json`. Mode chats rely on the prompt, not on that file.
+
+Write every `updatedAt` as an ISO time in UTC, such as `2026-10-20T14:05:00.000Z`. Get it with `date -u +%Y-%m-%dT%H:%M:%S.000Z` just before writing. Never estimate it. The canvas compares it with the request time, as dates, to decide whether work is still in progress.
+
+Prompts carry each item's ID and final wording as a JSON string, so quotes and line breaks survive and the chat never guesses what was approved:
+
+```text
+Persona flow review: Publish comments.
+Read and follow [skillDir]/publish-comments.md. The review canvas is attached.
+Figma file: [file name] ([file key])
+Approved comments:
+- c-1, on "Suppression check" (node 20:2): "[final text]"
+```
+
+The first line names the request, so `SKILL.md` section 0 can route it:
+
+| Button | First line |
+| --- | --- |
+| Publish approved | `Publish comments.` |
+| Update in Figma (comment) | `Update comment [ID].` with the new wording |
+| Remove from Figma (comment) | `Remove comment [ID].` |
+| Check Figma status | `Check comments.` with each comment's ID and its last known text |
+| Add approved annotations | `Add annotations.` with each item's wording |
+| Update in Figma (annotation) | `Update annotation [ID].` with the new wording |
+| Remove from Figma (annotation) | `Remove annotation [ID].` |
+| Regenerate (script) | `Regenerate walkthrough script.` |
+
+### Regenerate the script
+
+The chat reads the attached canvas: `STORIES`, `PROJECT_ISSUES`, `BEYOND_SCOPE`, and `FIX_STATE`. It rewrites `WALKTHROUGH.stages` with the rules in `SKILL.md` section 10 and [methodology.md](methodology.md#walkthrough-script), raises `version` by one, and sets `generatedAt`. Keep each stage's `id` when it covers the same journey step, so "Keep my edits" lands on the right stage. Never reuse a removed stage's ID.
+
+Write `generatedAt` as an ISO time in UTC, from `date -u`. It edits only `WALKTHROUGH`. It never touches the canvas state file, so the designer's edits are kept until they choose "Use the new script". Check the canvas TypeScript result, then reply with one sentence on what changed in the script.
 
 ## Writing rules
 
@@ -352,6 +458,45 @@ FIX_STATE[issueId]
   newScreenNodeId?
 ```
 
+### Client notes
+
+```text
+COMMENTS[]
+  id                "c-[number]", never reused
+  storyId
+  feature           the feature in words
+  target            { label, nodeId }   the most specific node that shows the feature
+  text              25 to 45 words
+  why               why it is worth highlighting, for the designer
+  userNeed?
+  businessGoal?     only when a source documents it
+  evidence[]        { label, url or path, line? }
+  reviewNote?       set on a re-run when a published comment no longer fits
+
+BEYOND_SCOPE[]
+  id                "b-[number]", never reused
+  title
+  storyIds[]
+  target            { label, nodeId }
+  whatItIs
+  whyBeyondScope
+  userValue
+  businessValue?    only when a source supports it
+  forDevelopers?
+  text              annotation text, starting "Beyond the story:"
+  evidence[]
+  reviewNote?
+
+WALKTHROUGH
+  version           starts at 1, raised on every regeneration
+  generatedAt       ISO time
+  stages[]          { id, title, storyIds[], screen? { label, nodeId }, text }
+```
+
+Two top-level constants, keyed by note ID. Start them empty. Only Publish mode changes `COMMENT_STATE`, and only Annotate mode changes `ANNOTATION_STATE`. The fields are listed in [publish-comments.md](publish-comments.md#6-update-the-canvas-and-reply) and [annotate-figma.md](annotate-figma.md#3-update-the-canvas-and-reply).
+
+On a re-run, carry these entries over from the earlier review of the same Figma file, as `SKILL.md` section 11 describes. Keep a published note's suggestion in `COMMENTS` or `BEYOND_SCOPE` with a `reviewNote`, even when it would no longer be suggested, so the designer can still remove it.
+
 ## Final chat response
 
 Do not reproduce the review in chat. Keep the reply in plain English.
@@ -364,4 +509,6 @@ Created the persona flow review: [Open review]
 [N] supported, [N] partially supported, [N] need attention, [N] insufficient evidence.
 
 [Sources that could not be accessed, and the number of open scope questions. Omit when there are none.]
+
+The walkthrough script, [N] suggested comments, and [N] items worth keeping are ready in the canvas. Nothing goes to Figma until you approve it.
 ```

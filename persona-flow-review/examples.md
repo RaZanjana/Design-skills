@@ -136,7 +136,7 @@ Why: it names no screen or behavior, so the designer cannot defend it or act on 
 
 Say this in the walkthrough:
 
-> Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which protects customer relationships and the opt-out promise.
+> Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which is designed to protect opt-outs and customer relationships.
 
 ### Supported, avoid
 
@@ -181,6 +181,90 @@ Business value: This will increase reply rates by 20% and cut sending costs.
 Why: no source states these figures or goals. They are invented results.
 
 When no objective is documented, write: "No business objective is documented for this story."
+
+---
+
+## Positive Figma comment
+
+### Good
+
+On the suppression check list:
+
+> Before Riley sets up any messages, this list shows everyone who is left out and why. Riley can confirm the campaign is safe in one place, which is designed to protect opt-outs and customer relationships.
+
+It names the feature, the user benefit, and the documented business goal, in 35 words. The business value is phrased as intent.
+
+### Avoid
+
+> Great clean layout with clear hierarchy and consistent spacing. This intuitive design will boost conversions and reduce churn.
+
+Why: it praises visual polish, uses UX jargon, names no user goal, and claims outcomes no source states.
+
+### Avoid: hides a gap
+
+On the stop rules, while unsubscribing is still missing:
+
+> Every way a sequence should end is covered here, so Riley never messages someone who opted out.
+
+Why: an open issue touches this screen. A comment must never present a gap as done. Comment on a part of the flow that works instead, or leave the screen without one.
+
+---
+
+## Choosing which comments to keep
+
+Seven candidates across four stories:
+
+| Candidate | Keep? | Why |
+| --- | --- | --- |
+| Excluded people listed with reasons, before sequencing | Yes | Answers a core user need and a documented business rule. Clients often ask why the step exists. |
+| Schedule and daily limit shown before approval | Yes | Its value is not obvious from the screen alone, and it ties to a documented goal. |
+| Locked Continue button until the list is confirmed | No | Same benefit as the first comment. Keep the stronger one. |
+| Friendly empty state on the reply list | No | Nice, but no requirement or business goal depends on it. |
+| Consistent card style across screens | No | Visual polish. Not a decision the client needs explained. |
+| Campaign review summary on one page | No | Its story needs attention. No comments from Needs attention stories. |
+| Second comment on the timeline screen, about the daily limit | No | Same screen and same point. One comment per screen. |
+
+Two strong comments beat seven weak ones.
+
+---
+
+## Beyond-scope annotation
+
+### Good
+
+> Beyond the story: Riley can download the list of excluded people to check it with account managers before launch. The story does not ask for this, so please confirm it stays.
+
+It says what the element does, ties it to the persona, and asks for confirmation instead of hiding the scope change.
+
+### Avoid
+
+> Added an export feature for better UX.
+
+Why: it does not say it is beyond the story, names no user value, and uses jargon.
+
+### Not annotated
+
+A decorative illustration on the empty state. No story asks for it, and no persona need or business goal depends on it. Ignore it: no annotation, no issue.
+
+### Scope conflict, not an annotation
+
+The design adds a "Send now" button that skips the approval step. The story requires approval before sending. This contradicts a business rule, so it is a scope conflict issue, not something worth keeping.
+
+---
+
+## Walkthrough script stage
+
+### Good
+
+> Next, Riley sets up the sequence. The timeline shows when every message goes out, with the daily limit right beside it. Riley can check the pace before approving anything, which should help keep sending at a safe level. One thing we're still adding: unsubscribing will become a third stop rule, next to the sales handoff and the suppression list.
+
+It follows the journey, names the screen, explains why the decision helps, and names the open gap with its fix in one honest sentence.
+
+### Avoid
+
+> On this screen we have a header, a timeline component, a sidebar with settings, and a footer with buttons. The design follows industry best practices for sequencing and will maximize engagement.
+
+Why: it reads out the interface, uses generic claims, invents an outcome, and hides the missing stop rule.
 
 ---
 

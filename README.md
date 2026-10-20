@@ -10,6 +10,8 @@ Reviews a Figma page's story flows against the project's personas, the agreed Cl
 
 Each issue in the review has a "Fix now" button. The fix is made on a detached copy on a "Fixed issues" Figma page. After the designer approves it, the fix is applied to the source component on the Draft page, and the story is re-reviewed.
 
+For the client meeting, it prepares a walkthrough script in journey order and a few positive Figma comments on the key design decisions. It also suggests Figma annotations for worthwhile elements beyond the stories. Nothing reaches Figma until the designer approves it. Comments are published with a short-lived personal access token the designer gives only when publishing, through the Mac Keychain or the chat.
+
 ### [Product Copy Refine](product-copy-refine/README.md)
 
 Rewrites the interface copy in Figma so it speaks the target users' language, grounded in the project's PRD, user stories, and personas. It replaces jargon, filler, and vague labels in place without breaking the layout, never uses em dashes, and produces a before-and-after change log.

@@ -1,7 +1,7 @@
 // Persona flow review canvas template.
 // Copy to the workspace canvases folder as [output name].canvas.tsx.
 // Replace everything between REVIEW DATA START and REVIEW DATA END, including every sample entry.
-// Fix and Apply mode read these field names. Keep them.
+// Fix, Apply, Publish, Annotate, and Script mode read these field names. Keep them.
 
 import {
   Button,
@@ -138,6 +138,66 @@ type FixEntry = {
   newScreenNodeId?: string;
 };
 
+type CommentSuggestion = {
+  id: string;
+  storyId: string;
+  feature: string;
+  target: ScreenRef;
+  text: string;
+  why: string;
+  userNeed?: string;
+  businessGoal?: string;
+  evidence: Ref[];
+  reviewNote?: string;
+};
+
+type BeyondScopeItem = {
+  id: string;
+  title: string;
+  storyIds: string[];
+  target: ScreenRef;
+  whatItIs: string;
+  whyBeyondScope: string;
+  userValue: string;
+  businessValue?: string;
+  forDevelopers?: string;
+  text: string;
+  evidence: Ref[];
+  reviewNote?: string;
+};
+
+type ScriptStage = {
+  id: string;
+  title: string;
+  storyIds: string[];
+  screen?: ScreenRef;
+  text: string;
+};
+
+type Walkthrough = { version: number; generatedAt: string; stages: ScriptStage[] };
+
+type CommentEntry = {
+  status: "published" | "failed" | "removed" | "needs-check" | "not-published";
+  figmaCommentId?: string;
+  oldCommentId?: string;
+  replyIds?: string[];
+  authorId?: string;
+  nodeId: string;
+  fileKey: string;
+  publishedText?: string;
+  attemptedText?: string;
+  updatedAt: string;
+  note?: string;
+};
+
+type AnnotationEntry = {
+  status: "annotated" | "removed" | "failed" | "needs-check";
+  nodeId: string;
+  annotatedText?: string;
+  updatedAt: string;
+  note?: string;
+};
+
 // ===== REVIEW DATA START =====
 
 const REVIEW = {
@@ -224,7 +284,7 @@ const STORIES: StoryReview[] = [
     businessValue:
       "It should keep opt-outs and customer relationships safe, which the PRD names as a must.",
     talkingPoint:
-      "Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which protects customer relationships and the opt-out promise.",
+      "Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which is designed to protect opt-outs and customer relationships.",
     issues: [],
     resolved: [],
     scopeDecisions: [
@@ -376,6 +436,82 @@ const STORIES: StoryReview[] = [
 ];
 
 const FIX_STATE: Record<string, FixEntry> = {};
+
+const COMMENTS: CommentSuggestion[] = [
+  {
+    id: "c-1",
+    storyId: "S.1",
+    feature: "Excluded people, each with a reason",
+    target: { label: "Suppression check", nodeId: "20:2" },
+    text: "Before Riley sets up any messages, this list shows everyone who is left out and why. Riley can confirm the campaign is safe in one place, which is designed to protect opt-outs and customer relationships.",
+    why: "Clients often ask why a separate check comes before the messages. This explains it.",
+    userNeed: "Riley must never message a customer, a competitor, or someone who opted out.",
+    businessGoal: "Never contact customers, competitors, or people who opted out.",
+    evidence: [
+      { label: "PRD goals", path: "docs/prd.md", line: 40 },
+      { label: "Story S.1", path: "docs/stories/s-1.md" },
+    ],
+  },
+  {
+    id: "c-2",
+    storyId: "S.2",
+    feature: "Schedule and daily limit before approval",
+    target: { label: "Sequence timeline", nodeId: "30:2" },
+    text: "Riley sees when every message goes out, and the daily limit, before approving anything. The pace is easy to check at a glance, which should help keep sending within safe limits for the domain.",
+    why: "The value of showing the whole schedule up front is not obvious from the screen alone.",
+    userNeed: "Riley needs to control the pace of sending.",
+    businessGoal: "Send outreach at a safe pace that protects the sending domain.",
+    evidence: [{ label: "PRD goals", path: "docs/prd.md", line: 44 }],
+  },
+];
+
+const BEYOND_SCOPE: BeyondScopeItem[] = [
+  {
+    id: "b-1",
+    title: "Download the list of excluded people",
+    storyIds: ["S.1"],
+    target: { label: "Suppression check", nodeId: "20:3" },
+    whatItIs: "A Download list button under the excluded people saves the list as a spreadsheet.",
+    whyBeyondScope: "The story asks to show the excluded people. It does not ask to export them.",
+    userValue:
+      "The persona file says Riley checks lists with account managers before a campaign. The download makes that easy.",
+    forDevelopers: "The file holds the same columns as the on-screen list: name, company, and reason.",
+    text: "Beyond the story: Riley can download the list of excluded people to check it with account managers before launch. The story does not ask for this, so please confirm it stays.",
+    evidence: [{ label: "Persona: Riley", path: "docs/personas/riley.md", line: 22 }],
+  },
+];
+
+const WALKTHROUGH: Walkthrough = {
+  version: 1,
+  generatedAt: "2026-10-20T09:00:00.000Z",
+  stages: [
+    {
+      id: "st-1",
+      title: "Check who is left out",
+      storyIds: ["S.1"],
+      screen: { label: "Suppression check", nodeId: "20:2" },
+      text: "Riley's first job is making sure nobody who should be left out gets a message. Before any messages exist, this screen lists everyone excluded and the reason. Riley confirms the list once, and only then moves on. That's designed to protect opt-outs and customer relationships, which the product brief names as a must. We also added a download for the excluded list, so Riley can check it with account managers. That's outside the agreed scope, so we'd like your OK to keep it.",
+    },
+    {
+      id: "st-2",
+      title: "Set the pace",
+      storyIds: ["S.2"],
+      screen: { label: "Sequence timeline", nodeId: "30:2" },
+      text: "Next, Riley sets up the sequence. The timeline shows when every message goes out, with the daily limit right beside it. Riley can check the pace before approving anything, which should help keep sending at a safe level. One thing we're still adding: unsubscribing will become a third stop rule, next to the sales handoff and the suppression list.",
+    },
+    {
+      id: "st-3",
+      title: "Approve and start",
+      storyIds: ["S.3"],
+      screen: { label: "Campaign review", nodeId: "40:2" },
+      text: "Then Riley reviews the campaign. The review screen brings the leads, messages, and schedule together on one page. The final approval step isn't in the design yet. We're adding it now, so nothing sends until Riley signs off. We'll walk through reply monitoring once we can review it.",
+    },
+  ],
+};
+
+const COMMENT_STATE: Record<string, CommentEntry> = {};
+
+const ANNOTATION_STATE: Record<string, AnnotationEntry> = {};
 
 // ===== REVIEW DATA END =====
 
@@ -1263,6 +1399,811 @@ function ProjectIssues() {
   );
 }
 
+type NoteDecision = "suggested" | "approved" | "excluded";
+type NoteRequest = { action: string; at: string; stopped?: boolean };
+type ScriptEdits = { version: number; stages: Record<string, string> };
+type NoteTone = "green" | "yellow" | "red" | "gray" | "accent";
+type ShownStatus = { label: string; tone: NoteTone; note?: string };
+
+const COMMENT_STATUS: Record<CommentEntry["status"], [string, NoteTone]> = {
+  published: ["Published", "green"],
+  "needs-check": ["Needs check", "yellow"],
+  failed: ["Failed", "red"],
+  "not-published": ["Not published", "gray"],
+  removed: ["Removed", "gray"],
+};
+
+const ANNOTATION_STATUS: Record<AnnotationEntry["status"], [string, NoteTone]> = {
+  annotated: ["Annotated", "green"],
+  "needs-check": ["Needs check", "yellow"],
+  failed: ["Failed", "red"],
+  removed: ["Removed", "gray"],
+};
+
+function wordCount(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function isAfter(a: string, b: string): boolean {
+  return Date.parse(a) > Date.parse(b);
+}
+
+function canSend(text: string): boolean {
+  return text.trim() !== "" && !/figd_/i.test(text);
+}
+
+function inFigma(entry?: CommentEntry): boolean {
+  return !!entry?.figmaCommentId && entry.status !== "removed";
+}
+
+function notePrompt(request: string, file: string, lines: string[]): string {
+  return [
+    `Persona flow review: ${request}`,
+    `Read and follow ${REVIEW.skillDir}/${file}. The review canvas is attached.`,
+    `Figma file: ${REVIEW.figmaFileName} (${REVIEW.figmaFileKey})`,
+    ...lines,
+  ].join("\n");
+}
+
+function noteLine(id: string, target: ScreenRef, text?: string): string {
+  const base = `- ${id}, on "${target.label}" (node ${target.nodeId})`;
+  return text === undefined ? base : `${base}: ${JSON.stringify(text)}`;
+}
+
+function scriptPrompt(): string {
+  return [
+    "Persona flow review: Regenerate walkthrough script.",
+    `Read and follow ${REVIEW.skillDir}/SKILL.md section 10 and ${REVIEW.skillDir}/canvas-output.md, "Regenerate the script". The review canvas is attached.`,
+  ].join("\n");
+}
+
+function shownStatus(
+  entry: { status: string; note?: string } | undefined,
+  labels: Record<string, [string, NoteTone]>,
+  decision: NoteDecision,
+  busy: boolean,
+  stopped: boolean,
+): ShownStatus {
+  if (busy) return { label: "Working in a new chat", tone: "gray" };
+  if (stopped) {
+    return {
+      label: "Needs check",
+      tone: "yellow",
+      note: "The chat closed before it reported back. Check the status in Figma before trying again.",
+    };
+  }
+  if (entry) {
+    const [label, tone] = labels[entry.status] ?? ["Needs check", "yellow"];
+    return { label, tone, note: entry.note };
+  }
+  if (decision === "approved") return { label: "Approved", tone: "accent" };
+  if (decision === "excluded") return { label: "Excluded", tone: "gray" };
+  return { label: "Suggested", tone: "gray" };
+}
+
+function NoteStatusLabel({ status }: { status: ShownStatus }) {
+  const theme = useHostTheme();
+  const color = {
+    green: theme.category.green,
+    yellow: theme.category.yellow,
+    red: theme.category.red,
+    gray: theme.text.tertiary,
+    accent: theme.accent.primary,
+  }[status.tone];
+  return (
+    <Row gap={6} align="center" style={{ flexShrink: 0 }}>
+      <Dot color={color} />
+      <Text as="span" size="small" tone="secondary">
+        {status.label}
+      </Text>
+    </Row>
+  );
+}
+
+type UiNode = ReturnType<typeof Stack>;
+
+type NoteRowProps = {
+  id: string;
+  title: string;
+  meta: string;
+  target: ScreenRef;
+  textLabel: string;
+  text: string;
+  edited: boolean;
+  decision: NoteDecision;
+  status: ShownStatus;
+  live: boolean;
+  liveText?: string;
+  busy: boolean;
+  reviewNote?: string;
+  body?: UiNode;
+  moreLabel: string;
+  more: UiNode;
+  onDecide: (decision: NoteDecision) => void;
+  onText: (text: string | null) => void;
+  onUpdate: () => void;
+  onRemove: () => void;
+  onCancel: () => void;
+};
+
+function NoteRow(p: NoteRowProps) {
+  const theme = useHostTheme();
+  const [editing, setEditing] = useCanvasState<boolean>(`note-edit:${p.id}`, false);
+  const [more, setMore] = useCanvasState<boolean>(`note-more:${p.id}`, false);
+  const words = wordCount(p.text);
+  const sendable = canSend(p.text);
+  const changed = p.live && sendable && p.text.trim() !== (p.liveText ?? "").trim();
+  return (
+    <div style={{ padding: "14px 0", borderTop: `1px solid ${theme.stroke.tertiary}` }}>
+      <Stack gap={8}>
+        <Row justify="space-between" align="start" gap={12}>
+          <div>
+            <Text weight="semibold">{p.title}</Text>
+            <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
+              {p.meta}. On: <Link href={figmaUrl(p.target.nodeId)}>{p.target.label}</Link>
+            </Text>
+          </div>
+          <NoteStatusLabel status={p.status} />
+        </Row>
+        {p.status.note && (
+          <Text size="small" tone="secondary">
+            {p.status.note}
+          </Text>
+        )}
+        {p.reviewNote && <Callout tone="warning">{p.reviewNote}</Callout>}
+        {!sendable && (
+          <Callout tone="warning">
+            {p.text.trim() === ""
+              ? "The wording is empty, so it cannot be sent to Figma."
+              : "The wording looks like it contains a Figma token. Remove it before sending this to Figma."}
+          </Callout>
+        )}
+        {p.body}
+        <div>
+          <Label>{p.textLabel}</Label>
+          {editing ? (
+            <Stack gap={6} style={{ marginTop: 4 }}>
+              <TextArea value={p.text} onChange={(value) => p.onText(value)} rows={3} />
+              <Row gap={10} align="center" wrap>
+                <Text
+                  size="small"
+                  tone="tertiary"
+                  style={words > 45 ? { color: theme.category.yellow } : undefined}
+                >
+                  {words} words{words > 45 ? ". Over 45 words. Consider shortening it." : ""}
+                </Text>
+                {p.edited && (
+                  <Button variant="ghost" onClick={() => p.onText(null)}>
+                    Use suggested wording
+                  </Button>
+                )}
+                <Button variant="ghost" onClick={() => setEditing(false)}>
+                  Done
+                </Button>
+              </Row>
+            </Stack>
+          ) : (
+            <Text size="small" style={{ marginTop: 2 }}>
+              “{p.text}”
+              {p.edited ? (
+                <Text as="span" size="small" tone="tertiary">
+                  {" "}
+                  Edited
+                </Text>
+              ) : null}
+            </Text>
+          )}
+        </div>
+        <Row gap={8} align="center" wrap>
+          {!p.live && !p.busy && (
+            <Pill active={p.decision === "approved"} onClick={() => p.onDecide("approved")}>
+              Approve
+            </Pill>
+          )}
+          {!p.live && !p.busy && (
+            <Pill active={p.decision === "excluded"} onClick={() => p.onDecide("excluded")}>
+              Exclude
+            </Pill>
+          )}
+          {!editing && !p.busy && (
+            <Button variant="ghost" onClick={() => setEditing(true)}>
+              Edit wording
+            </Button>
+          )}
+          {p.live && !p.busy && (
+            <Button variant="secondary" disabled={!changed} onClick={p.onUpdate}>
+              Update in Figma
+            </Button>
+          )}
+          {p.live && !p.busy && (
+            <Button variant="ghost" onClick={p.onRemove}>
+              Remove from Figma
+            </Button>
+          )}
+          {p.busy && (
+            <Button variant="ghost" onClick={p.onCancel}>
+              Stop waiting
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => setMore(!more)}>
+            {more ? "Hide details" : p.moreLabel}
+          </Button>
+        </Row>
+        {more && p.more}
+      </Stack>
+    </div>
+  );
+}
+
+type NotesState = {
+  decisionOf: (id: string) => NoteDecision;
+  textOf: (id: string, suggested: string) => string;
+  isEdited: (id: string) => boolean;
+  isBusy: (id: string, updatedAt?: string) => boolean;
+  isStopped: (id: string, updatedAt?: string) => boolean;
+  setDecision: (id: string, decision: NoteDecision) => void;
+  approveAll: (ids: string[]) => void;
+  setText: (id: string, text: string | null) => void;
+  send: (ids: string[], action: string, userPrompt: string) => void;
+  cancel: (id: string) => void;
+};
+
+function useNotesState(): NotesState {
+  const dispatch = useCanvasAction();
+  const [decisions, setDecisions] = useCanvasState<Record<string, NoteDecision>>(
+    "note-decisions",
+    {},
+  );
+  const [texts, setTexts] = useCanvasState<Record<string, string>>("note-texts", {});
+  const [requests, setRequests] = useCanvasState<Record<string, NoteRequest>>(
+    "note-requests",
+    {},
+  );
+  return {
+    decisionOf: (id) => decisions[id] ?? "suggested",
+    textOf: (id, suggested) => texts[id] ?? suggested,
+    isEdited: (id) => texts[id] !== undefined,
+    isBusy: (id, updatedAt) => {
+      const request = requests[id];
+      return !!request && !request.stopped && (!updatedAt || isAfter(request.at, updatedAt));
+    },
+    isStopped: (id, updatedAt) => {
+      const request = requests[id];
+      return !!request?.stopped && (!updatedAt || isAfter(request.at, updatedAt));
+    },
+    setDecision: (id, decision) => setDecisions((prev) => ({ ...prev, [id]: decision })),
+    approveAll: (ids) =>
+      setDecisions((prev) => {
+        const next = { ...prev };
+        ids.forEach((id) => {
+          if ((prev[id] ?? "suggested") === "suggested") next[id] = "approved";
+        });
+        return next;
+      }),
+    setText: (id, text) =>
+      setTexts((prev) => {
+        const next = { ...prev };
+        if (text === null) delete next[id];
+        else next[id] = text;
+        return next;
+      }),
+    send: (ids, action, userPrompt) => {
+      dispatch({ type: "newComposerChat", userPrompt });
+      const at = new Date().toISOString();
+      setRequests((prev) => {
+        const next = { ...prev };
+        ids.forEach((id) => {
+          next[id] = { action, at };
+        });
+        return next;
+      });
+    },
+    cancel: (id) =>
+      setRequests((prev) => (prev[id] ? { ...prev, [id]: { ...prev[id], stopped: true } } : prev)),
+  };
+}
+
+function CommentsTab({ notes }: { notes: NotesState }) {
+  const rows = COMMENTS.map((c) => {
+    const entry = COMMENT_STATE[c.id];
+    const decision = notes.decisionOf(c.id);
+    const busy = notes.isBusy(c.id, entry?.updatedAt);
+    const stopped = notes.isStopped(c.id, entry?.updatedAt);
+    return { c, entry, decision, busy, stopped, text: notes.textOf(c.id, c.text) };
+  });
+  const publishable = rows.filter(
+    (r) =>
+      r.decision === "approved" &&
+      !r.busy &&
+      !r.stopped &&
+      !inFigma(r.entry) &&
+      r.entry?.status !== "needs-check" &&
+      canSend(r.text),
+  );
+  const published = rows.filter((r) => inFigma(r.entry));
+  const approved = rows.filter((r) => r.decision === "approved").length;
+  const checkable = rows.filter(
+    (r) => !r.busy && (inFigma(r.entry) || r.entry?.status === "needs-check" || r.stopped),
+  );
+
+  return (
+    <Stack gap={10}>
+      <Text size="small" tone="secondary">
+        Positive notes the client reads beside the design in Figma. Nothing is published until
+        you click Publish.
+      </Text>
+      <Row justify="space-between" align="center" gap={12} wrap>
+        <Text size="small" tone="tertiary">
+          {rows.length} suggested, {approved} approved, {published.length} published.
+        </Text>
+        <Row gap={8} wrap>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              notes.approveAll(rows.filter((r) => r.entry?.status !== "published").map((r) => r.c.id))
+            }
+          >
+            Approve all
+          </Button>
+          {checkable.length > 0 && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                notes.send(
+                  checkable.map((r) => r.c.id),
+                  "check",
+                  notePrompt("Check comments.", "publish-comments.md", [
+                    "Comments to check:",
+                    ...checkable.map((r) =>
+                      noteLine(r.c.id, r.c.target, r.entry?.publishedText ?? r.entry?.attemptedText ?? r.text),
+                    ),
+                  ]),
+                )
+              }
+            >
+              Check Figma status
+            </Button>
+          )}
+          <Button
+            variant="primary"
+            disabled={publishable.length === 0}
+            onClick={() =>
+              notes.send(
+                publishable.map((r) => r.c.id),
+                "publish",
+                notePrompt("Publish comments.", "publish-comments.md", [
+                  "Approved comments:",
+                  ...publishable.map((r) => noteLine(r.c.id, r.c.target, r.text)),
+                ]),
+              )
+            }
+          >
+            Publish approved ({publishable.length})
+          </Button>
+        </Row>
+      </Row>
+      <div>
+        {rows.map(({ c, entry, decision, busy, stopped, text }) => (
+          <NoteRow
+            key={c.id}
+            id={c.id}
+            title={c.feature}
+            meta={`Story ${c.storyId}`}
+            target={c.target}
+            textLabel="Comment"
+            text={text}
+            edited={notes.isEdited(c.id)}
+            decision={decision}
+            status={shownStatus(entry, COMMENT_STATUS, decision, busy, stopped)}
+            live={inFigma(entry)}
+            liveText={entry?.publishedText}
+            busy={busy}
+            reviewNote={c.reviewNote}
+            moreLabel="Why this one"
+            more={
+              <Stack gap={6}>
+                <Para label="Why highlight it" text={c.why} />
+                {c.userNeed && <Para label="User need" text={c.userNeed} />}
+                {c.businessGoal && <Para label="Business objective" text={c.businessGoal} />}
+                <Text size="small">
+                  <Text as="span" size="small" tone="tertiary">
+                    Evidence:{" "}
+                  </Text>
+                  <RefList items={c.evidence} />
+                </Text>
+              </Stack>
+            }
+            onDecide={(d) => notes.setDecision(c.id, d)}
+            onText={(t) => notes.setText(c.id, t)}
+            onUpdate={() =>
+              notes.send(
+                [c.id],
+                "update",
+                notePrompt(`Update comment ${c.id}.`, "publish-comments.md", [
+                  "New wording:",
+                  noteLine(c.id, c.target, text),
+                ]),
+              )
+            }
+            onRemove={() => {
+              notes.setDecision(c.id, "excluded");
+              notes.send(
+                [c.id],
+                "remove",
+                notePrompt(`Remove comment ${c.id}.`, "publish-comments.md", [
+                  noteLine(c.id, c.target),
+                ]),
+              );
+            }}
+            onCancel={() => notes.cancel(c.id)}
+          />
+        ))}
+      </div>
+      <Text size="small" tone="tertiary">
+        Publishing opens a new chat that asks for a Figma token. On a Mac, you can keep it in the
+        Keychain so it never appears in the chat. A pasted token is saved in that chat's
+        transcript, so give it a short expiry and revoke it afterwards.
+      </Text>
+    </Stack>
+  );
+}
+
+function KeepTab({ notes }: { notes: NotesState }) {
+  const rows = BEYOND_SCOPE.map((b) => {
+    const entry = ANNOTATION_STATE[b.id];
+    const decision = notes.decisionOf(b.id);
+    const busy = notes.isBusy(b.id, entry?.updatedAt);
+    const stopped = notes.isStopped(b.id, entry?.updatedAt);
+    return { b, entry, decision, busy, stopped, text: notes.textOf(b.id, b.text) };
+  });
+  const ready = rows.filter(
+    (r) =>
+      r.decision === "approved" && !r.busy && r.entry?.status !== "annotated" && canSend(r.text),
+  );
+  const annotated = rows.filter((r) => r.entry?.status === "annotated").length;
+
+  return (
+    <Stack gap={10}>
+      <Text size="small" tone="secondary">
+        These elements are in the design but no story asks for them. They look worth keeping, so
+        they go into Figma as annotations, after you approve them.
+      </Text>
+      <Row justify="space-between" align="center" gap={12} wrap>
+        <Text size="small" tone="tertiary">
+          {rows.length} worth keeping, {annotated} annotated.
+        </Text>
+        <Row gap={8} wrap>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              notes.approveAll(rows.filter((r) => r.entry?.status !== "annotated").map((r) => r.b.id))
+            }
+          >
+            Approve all
+          </Button>
+          <Button
+            variant="primary"
+            disabled={ready.length === 0}
+            onClick={() =>
+              notes.send(
+                ready.map((r) => r.b.id),
+                "annotate",
+                notePrompt("Add annotations.", "annotate-figma.md", [
+                  "Approved annotations:",
+                  ...ready.map((r) => noteLine(r.b.id, r.b.target, r.text)),
+                ]),
+              )
+            }
+          >
+            Add approved annotations ({ready.length})
+          </Button>
+        </Row>
+      </Row>
+      <div>
+        {rows.map(({ b, entry, decision, busy, stopped, text }) => (
+          <NoteRow
+            key={b.id}
+            id={b.id}
+            title={b.title}
+            meta={b.storyIds.map((s) => `Story ${s}`).join(", ")}
+            target={b.target}
+            textLabel="Annotation"
+            text={text}
+            edited={notes.isEdited(b.id)}
+            decision={decision}
+            status={shownStatus(entry, ANNOTATION_STATUS, decision, busy, stopped)}
+            live={entry?.status === "annotated"}
+            liveText={entry?.annotatedText}
+            busy={busy}
+            reviewNote={b.reviewNote}
+            body={
+              <Grid columns={2} gap={14}>
+                <Para label="What it is" text={b.whatItIs} />
+                <Para label="Why it is beyond the stories" text={b.whyBeyondScope} />
+                <Para label="User value" text={b.userValue} />
+                {b.businessValue && <Para label="Business value" text={b.businessValue} />}
+              </Grid>
+            }
+            moreLabel="For developers and evidence"
+            more={
+              <Stack gap={6}>
+                {b.forDevelopers && <Para label="For developers" text={b.forDevelopers} />}
+                <Text size="small">
+                  <Text as="span" size="small" tone="tertiary">
+                    Evidence:{" "}
+                  </Text>
+                  <RefList items={b.evidence} />
+                </Text>
+              </Stack>
+            }
+            onDecide={(d) => notes.setDecision(b.id, d)}
+            onText={(t) => notes.setText(b.id, t)}
+            onUpdate={() =>
+              notes.send(
+                [b.id],
+                "update",
+                notePrompt(`Update annotation ${b.id}.`, "annotate-figma.md", [
+                  "New wording:",
+                  noteLine(b.id, b.target, text),
+                ]),
+              )
+            }
+            onRemove={() => {
+              notes.setDecision(b.id, "excluded");
+              notes.send(
+                [b.id],
+                "remove",
+                notePrompt(`Remove annotation ${b.id}.`, "annotate-figma.md", [
+                  noteLine(b.id, b.target),
+                ]),
+              );
+            }}
+            onCancel={() => notes.cancel(b.id)}
+          />
+        ))}
+      </div>
+    </Stack>
+  );
+}
+
+function ScriptPanel() {
+  const theme = useHostTheme();
+  const dispatch = useCanvasAction();
+  const [stageId, setStageId] = useCanvasState<string>("script-stage", "all");
+  const [editing, setEditing] = useCanvasState<boolean>("script-editing", false);
+  const [edits, setEdits] = useCanvasState<ScriptEdits>("script-edits", {
+    version: WALKTHROUGH.version,
+    stages: {},
+  });
+  const [copyState, setCopyState] = useCanvasState<"idle" | "copied" | "blocked">(
+    "script-copy",
+    "idle",
+  );
+  const [regenAt, setRegenAt] = useCanvasState<string | null>("script-regenerate", null);
+
+  const stages = WALKTHROUGH.stages;
+  const hasEdits = Object.keys(edits.stages).length > 0;
+  const stale = hasEdits && edits.version !== WALKTHROUGH.version;
+  const regenerating = !!regenAt && isAfter(regenAt, WALKTHROUGH.generatedAt);
+  const isEdited = (s: ScriptStage) => !stale && edits.stages[s.id] !== undefined;
+  const textOf = (s: ScriptStage) => (isEdited(s) ? edits.stages[s.id] : s.text);
+  const full = stages.map(textOf).join("\n\n");
+  const words = wordCount(full);
+  const minutes = Math.max(1, Math.round(words / 140));
+  const selected = stages.find((s) => s.id === stageId);
+  const shown = selected ? [selected] : stages;
+  const index = selected ? stages.indexOf(selected) : -1;
+
+  const setStageText = (id: string, text: string | null) => {
+    setCopyState("idle");
+    setEdits((prev) => {
+      const base = prev.version === WALKTHROUGH.version ? prev.stages : {};
+      const next = { ...base };
+      if (text === null) delete next[id];
+      else next[id] = text;
+      return { version: WALKTHROUGH.version, stages: next };
+    });
+  };
+
+  const copy = () => {
+    const clipboard = typeof navigator !== "undefined" ? navigator.clipboard : undefined;
+    if (!clipboard) {
+      setCopyState("blocked");
+      return;
+    }
+    clipboard.writeText(full).then(
+      () => setCopyState("copied"),
+      () => setCopyState("blocked"),
+    );
+  };
+
+  return (
+    <Stack gap={14}>
+      <Row justify="space-between" align="center" gap={12} wrap>
+        <Row gap={6} wrap>
+          <Pill active={!selected} onClick={() => setStageId("all")}>
+            Whole script
+          </Pill>
+          {stages.map((s, i) => (
+            <Pill key={s.id} active={selected?.id === s.id} onClick={() => setStageId(s.id)}>
+              {i + 1}. {s.title}
+            </Pill>
+          ))}
+        </Row>
+        <Row gap={8} wrap>
+          <Button variant="secondary" onClick={copy}>
+            {copyState === "copied" ? "Copied" : "Copy script"}
+          </Button>
+          <Button variant="ghost" disabled={stale} onClick={() => setEditing(!editing)}>
+            {editing ? "Done editing" : "Edit"}
+          </Button>
+          <Button
+            variant="ghost"
+            disabled={regenerating}
+            onClick={() => {
+              dispatch({ type: "newComposerChat", userPrompt: scriptPrompt() });
+              setRegenAt(new Date().toISOString());
+            }}
+          >
+            {regenerating ? "Regenerating in a new chat" : "Regenerate"}
+          </Button>
+          {regenerating && (
+            <Button variant="ghost" onClick={() => setRegenAt(null)}>
+              Stop waiting
+            </Button>
+          )}
+        </Row>
+      </Row>
+
+      {stale && (
+        <Callout tone="warning" title="The script was regenerated after you edited it">
+          <Row gap={8} wrap style={{ marginTop: 6 }}>
+            <Button
+              variant="primary"
+              onClick={() => setEdits({ version: WALKTHROUGH.version, stages: {} })}
+            >
+              Use the new script
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setEdits((prev) => ({
+                  version: WALKTHROUGH.version,
+                  stages: Object.keys(prev.stages)
+                    .filter((id) => stages.some((s) => s.id === id))
+                    .reduce<Record<string, string>>((acc, id) => {
+                      acc[id] = prev.stages[id];
+                      return acc;
+                    }, {}),
+                }))
+              }
+            >
+              Keep my edits
+            </Button>
+          </Row>
+        </Callout>
+      )}
+
+      {copyState === "blocked" && (
+        <Stack gap={4}>
+          <Text size="small" tone="secondary">
+            Copying is blocked here. Click the text to select it, then copy.
+          </Text>
+          <pre
+            style={{
+              userSelect: "all",
+              whiteSpace: "pre-wrap",
+              fontFamily: "inherit",
+              fontSize: 13,
+              lineHeight: 1.6,
+              margin: 0,
+              padding: 12,
+              borderRadius: 6,
+              background: theme.fill.secondary,
+              color: theme.text.primary,
+            }}
+          >
+            {full}
+          </pre>
+        </Stack>
+      )}
+
+      <Stack gap={18}>
+        {shown.map((s) => (
+          <div key={s.id}>
+            <Row gap={10} align="center" wrap>
+              <Text weight="semibold">
+                {stages.indexOf(s) + 1}. {s.title}
+              </Text>
+              {s.screen && <Link href={figmaUrl(s.screen.nodeId)}>{s.screen.label}</Link>}
+              {isEdited(s) && (
+                <Text as="span" size="small" tone="tertiary">
+                  Edited
+                </Text>
+              )}
+            </Row>
+            {editing && !stale ? (
+              <Stack gap={4} style={{ marginTop: 6 }}>
+                <TextArea value={textOf(s)} onChange={(v) => setStageText(s.id, v)} rows={4} />
+                {isEdited(s) && (
+                  <Row>
+                    <Button variant="ghost" onClick={() => setStageText(s.id, null)}>
+                      Reset to generated
+                    </Button>
+                  </Row>
+                )}
+              </Stack>
+            ) : (
+              <Text style={{ marginTop: 6, lineHeight: 1.6 }}>{textOf(s)}</Text>
+            )}
+          </div>
+        ))}
+      </Stack>
+
+      {selected && (
+        <Row gap={8}>
+          <Button
+            variant="ghost"
+            disabled={index <= 0}
+            onClick={() => setStageId(stages[index - 1].id)}
+          >
+            Previous stage
+          </Button>
+          <Button
+            variant="ghost"
+            disabled={index >= stages.length - 1}
+            onClick={() => setStageId(stages[index + 1].id)}
+          >
+            Next stage
+          </Button>
+        </Row>
+      )}
+
+      <Text size="small" tone="tertiary">
+        About {words} words, roughly {minutes} {minutes === 1 ? "minute" : "minutes"} spoken.
+        Open issues are named in the script, so nothing is presented as finished before it is.
+      </Text>
+    </Stack>
+  );
+}
+
+type NotesTab = "script" | "comments" | "keep";
+
+function ClientNotes() {
+  const notes = useNotesState();
+  const [tab, setTab] = useCanvasState<NotesTab>("notes-tab", "script");
+  const tabs: { id: NotesTab; label: string }[] = [];
+  if (WALKTHROUGH.stages.length > 0) tabs.push({ id: "script", label: "Walkthrough script" });
+  if (COMMENTS.length > 0) tabs.push({ id: "comments", label: `Figma comments (${COMMENTS.length})` });
+  if (BEYOND_SCOPE.length > 0) tabs.push({ id: "keep", label: `Worth keeping (${BEYOND_SCOPE.length})` });
+  if (tabs.length === 0) return null;
+  const active = tabs.some((t) => t.id === tab) ? tab : tabs[0].id;
+
+  return (
+    <section>
+      <H2>Client notes</H2>
+      <Text size="small" tone="secondary" style={{ marginTop: 4 }}>
+        Use these to present the design. The script is for the meeting. Comments and annotations
+        go into Figma only after you approve them.
+      </Text>
+      <Row gap={6} wrap style={{ marginTop: 12 }}>
+        {tabs.map((t) => (
+          <Pill key={t.id} active={active === t.id} onClick={() => setTab(t.id)}>
+            {t.label}
+          </Pill>
+        ))}
+      </Row>
+      <Card size="lg" style={{ marginTop: 12 }}>
+        <CardBody>
+          {active === "script" && <ScriptPanel />}
+          {active === "comments" && <CommentsTab notes={notes} />}
+          {active === "keep" && <KeepTab notes={notes} />}
+        </CardBody>
+      </Card>
+    </section>
+  );
+}
+
 export default function PersonaFlowReview() {
   const theme = useHostTheme();
   const [filter, setFilter] = useCanvasState<Filter>("pfr-filter", "All");
@@ -1305,6 +2246,15 @@ export default function PersonaFlowReview() {
             Reviewed {REVIEW.date} on the “{REVIEW.wireflowsPage.name}” page. Issues:{" "}
             {openCount} open, {readyCount} ready for review, {appliedCount} applied.
           </Text>
+          {(COMMENTS.length > 0 || BEYOND_SCOPE.length > 0) && (
+            <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
+              Client notes: {COMMENTS.length} comments suggested,{" "}
+              {Object.values(COMMENT_STATE).filter((e) => e.status === "published").length}{" "}
+              published. {BEYOND_SCOPE.length} worth keeping,{" "}
+              {Object.values(ANNOTATION_STATE).filter((e) => e.status === "annotated").length}{" "}
+              annotated.
+            </Text>
+          )}
         </div>
         <Row gap={18}>
           <Stat value={String(count("Supported"))} label="Supported" tone="success" />
@@ -1374,6 +2324,8 @@ export default function PersonaFlowReview() {
           </Card>
         </Grid>
       )}
+
+      <ClientNotes />
 
       <Divider />
       <Text size="small" tone="tertiary">
