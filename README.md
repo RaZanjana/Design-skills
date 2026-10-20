@@ -10,7 +10,7 @@ Reviews a Figma page's story flows against the project's personas, the agreed Cl
 
 Each issue in the review has a "Fix now" button. The fix is made on a detached copy on a "Fixed issues" Figma page. After the designer approves it, the fix is applied to the source component on the Draft page, and the story is re-reviewed.
 
-For the client meeting, it prepares a walkthrough script in journey order, in its own "Client meeting" view. It also suggests Figma comments on the key design decisions, plus optional ones that answer the questions the client's team is likely to ask, so the client can review the design on their own and defend it internally. It also suggests Figma annotations for worthwhile elements beyond the stories. Nothing reaches Figma until the designer approves it. Comments are published with a short-lived personal access token the designer gives only when publishing, through the Mac Keychain or the chat.
+For the client meeting, it has its own "Client meeting" view. There, the designer can generate a walkthrough script in journey order when needed, with the story IDs and Figma flow for each stage. It also suggests Figma comments on the key design decisions, plus optional ones that answer the questions the client's team is likely to ask. Comments explain each decision with user and business reasons, never internal sources, so the client can review the design on their own and defend it internally. It also suggests Figma annotations for worthwhile elements beyond the stories. Nothing reaches Figma until the designer approves it. Comments are published with a short-lived personal access token the designer gives only when publishing, through the Mac Keychain or the chat.
 
 ### [Product Copy Refine](product-copy-refine/README.md)
 

@@ -1,7 +1,7 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.6.0
+**Version:** 1.7.0
 
 Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
 
@@ -17,8 +17,8 @@ Every story status comes with its reason. Supported stories get the user value, 
 
 For the client meeting, the skill also prepares:
 
-- **A walkthrough script** that follows the user's journey and is honest about open gaps.
-- **A few positive Figma comments** that explain the most important design decisions beside the design. You approve them, then publish them.
+- **A walkthrough script**, when you ask for it, that follows the user's journey and is honest about open gaps.
+- **Positive Figma comments** that explain the most important design decisions beside the design, with user and business reasons the client can repeat to their team. You approve them, then publish them.
 - **Figma annotations** for elements beyond the stories that are worth keeping, after you approve them.
 
 The skill uses personas as documented evidence. It does not pretend to be the persona or replace testing with real users.
@@ -198,7 +198,7 @@ Each story shows, in this order:
 
 At the top of the canvas, **Review** and **Client meeting** switch between the story review and everything for the client meeting. A callout under the header shows what is ready and opens the meeting view. It has three tabs:
 
-- **Walkthrough script:** one script in journey order, with stage navigation, edit, copy, and regenerate. Under each stage are the questions the client may ask, with answers.
+- **Walkthrough script:** a **Generate walkthrough script** button until you ask for one. Then one script in journey order, with each stage's story IDs and Figma flow links, stage navigation, edit, copy, and regenerate. Under each stage are the questions the client may ask, with answers.
 - **Figma comments:** the suggested positive comments, with approve, exclude, edit wording, approve all, and publish. Each shows its real Figma status. Below them, **More comments for client self-review** can be added to the list one at a time or all at once.
 - **Worth keeping:** elements beyond the stories, each with its annotation text, approve, exclude, and edit wording.
 
@@ -235,19 +235,23 @@ An element that no story asks for is not flagged when it breaks nothing. When it
 
 ### Walkthrough script
 
+The review doesn't write a script. When you need one, click **Generate walkthrough script** in the **Client meeting** view. It opens a new chat that writes the script from the current review.
+
 One script for the whole review, about two to four minutes spoken. It follows the user's journey, explains how the design helps and why the key decisions fit the user, and links each stage to the business objective when a source documents one. It names each open gap in one honest sentence, with the next step, and asks the client to confirm any beyond-scope element.
 
-Open it with **Client meeting** at the top of the canvas. Each stage links to its screen in Figma. Under each stage, the canvas lists the questions the client may ask, with an answer, so you are ready for them. These questions are not copied with the script.
+Each stage shows the story IDs it covers, with a link to each story's flow in Figma, and a link to its key screen. **Copy script** includes those references under each stage. Under each stage, the canvas also lists the questions the client may ask, with an answer, so you are ready for them. These questions are not copied.
 
-Edit any stage in the canvas. **Regenerate** rewrites it from the current review. If you had edits, you choose whether to keep them.
+Edit any stage in the canvas. **Regenerate** rewrites it from the current review. If you had edits, you choose whether to keep them. A re-run of the review or an applied fix never rewrites the script. When the review changes after the script was written, the canvas warns you and offers **Regenerate**.
 
 ### Positive Figma comments
 
 Clients often review a design on their own and share it with their team. The comments help them check it without you and explain it internally, so a misunderstanding doesn't turn into a revision.
 
-The skill ranks candidates across every story and suggests about one comment for every two or three stories with a clear strength: up to 5 for eight stories or fewer, 6 for 9 to 11, 7 for 12 to 14, and 8 for more. Each is 25 to 45 words and explains why an important in-scope decision helps the user and the business. They never come from a story that needs attention, never sit on a part of the flow with an open issue, and never claim outcomes no source supports.
+The skill ranks candidates across every story and suggests about one comment for every two or three stories with a clear strength: up to 5 for eight stories or fewer, 6 for 9 to 11, 7 for 12 to 14, and 8 for more. Each is 25 to 45 words and explains why an important in-scope decision helps the user and the business.
 
-**More comments for client self-review** sit below the list. Each one answers a question the client's team is likely to ask, such as why the screen differs from the story or why something is entered by hand, with the reason from a source. Click **Add to comments**, or **Add all**, to move them into the list. Then they publish like the others.
+Comments give reasons, not sources. They never mention ClickUp, the story, the product owner, or "as agreed", because an internal decision is no argument for the client. They explain the decision from the user's and the business's point of view, and what it protects. When a reason rests on domain logic rather than a source, "Why this one" says so, so you can check it before publishing. They never come from a story that needs attention, never sit on a part of the flow with an open issue, and never claim outcomes no source supports.
+
+**More comments for client self-review** sit below the list. Each one answers a question the client's team is likely to ask, such as why targets are set per day or why something is entered by hand, with the user and business reason. Click **Add to comments**, or **Add all**, to move them into the list. Then they publish like the others.
 
 To publish:
 

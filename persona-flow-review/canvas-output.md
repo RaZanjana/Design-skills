@@ -20,7 +20,7 @@ Do not require external packages, remote assets, or network requests to render t
 - Story totals by status
 - Issue totals by fix status: open, ready for review, applied
 - Client note totals: comments suggested, more for self-review, published, items worth keeping and annotated
-- Two pills, **Review** and **Client meeting**, when there are client notes. In the Review view, a callout under the header: "Ready for the client meeting", with the script's stage count and speaking time, the comment counts, and an **Open client meeting** button
+- Two pills, **Review** and **Client meeting**, when there are client notes. In the Review view, a callout under the header: "Ready for the client meeting", with the script's stage count and speaking time, or a note that the script can be generated, the comment counts, and an **Open client meeting** button
 - A warning when ClickUp scope was not checked
 
 ### Status guide
@@ -119,17 +119,19 @@ Show **Resolved issues** as a separate collapsed section, only when the story ha
 
 ### Client meeting view
 
-Show the client notes in their own "Client meeting" view, so the designer finds the script without scrolling past the stories. It has up to three tabs. Show a tab only when it has content. Omit the view and its pills when all three are empty. Save the chosen view in `pfr-view`.
+Show the client notes in their own "Client meeting" view, so the designer finds the script without scrolling past the stories. It has up to three tabs. Show the script tab whenever a reviewed story can be presented, even before a script exists. Show the other tabs only when they have content. Omit the view and its pills when no tab has anything to show. Save the chosen view in `pfr-view`.
 
 **Walkthrough script** (default tab)
 
+- **Before a script exists:** one line on what the script is, and **Generate walkthrough script**. It opens a new chat that writes the script from the current review. While it runs, show "Generating in a new chat" with "Stop waiting".
 - Stage pills: "Whole script", then one pill per stage, numbered in journey order.
-- Each stage shows its title, a link to its key screen, and its spoken text.
+- Each stage shows its title, a link to its key screen, its story IDs with a link to each story's flow in Figma, and its spoken text.
 - Under each stage, "Questions they may ask": the `question` and wording of each additional comment for the stage's stories, so the designer can answer them in the meeting. They are not copied with the script.
-- The total word count and the rough speaking time.
-- **Copy script:** copies the whole script as plain text, one paragraph per stage. When the canvas blocks the clipboard, show the full text in a block that selects itself on click, with "Copying is blocked here. Click the text to select it, then copy."
+- The word count of the spoken text and the rough speaking time.
+- **Copy script:** copies the whole script as plain text. For each stage: the numbered title, the spoken text, and a reference line such as "Stories 1.6 and 1.7. Figma: Story 1.6 flow ([link]), Story 1.7 flow ([link])". When the canvas blocks the clipboard, show the full text in a block that selects itself on click, with "Copying is blocked here. Click the text to select it, then copy."
 - **Edit:** turns each shown stage into a text area. Edits are saved in canvas state and marked "Edited". Each edited stage has "Reset to generated".
 - **Regenerate:** opens a new chat that rewrites the script from the current review. While it runs, show "Stop waiting" beside it. When the new version arrives and the designer had edits, show "The script was regenerated after you edited it." with "Use the new script" and "Keep my edits".
+- **Older than the review:** when `REVIEW.updatedAt` is later than `WALKTHROUGH.generatedAt`, show "The review changed after this script was written" with Regenerate, so an older script is never presented as current.
 
 **Figma comments**
 
@@ -325,11 +327,12 @@ The first line names the request, so `SKILL.md` section 0 can route it:
 | Add approved annotations | `Add annotations.` with each item's wording |
 | Update in Figma (annotation) | `Update annotation [ID].` with the new wording |
 | Remove from Figma (annotation) | `Remove annotation [ID].` |
+| Generate walkthrough script | `Generate walkthrough script.` |
 | Regenerate (script) | `Regenerate walkthrough script.` |
 
-### Regenerate the script
+### Generate the script
 
-The chat reads the attached canvas: `STORIES`, `PROJECT_ISSUES`, `BEYOND_SCOPE`, and `FIX_STATE`. It rewrites `WALKTHROUGH.stages` with the rules in `SKILL.md` section 10 and [methodology.md](methodology.md#walkthrough-script), raises `version` by one, and sets `generatedAt`. Keep each stage's `id` when it covers the same journey step, so "Keep my edits" lands on the right stage. Never reuse a removed stage's ID.
+The chat reads the attached canvas: `STORIES`, `PROJECT_ISSUES`, `BEYOND_SCOPE`, `COMMENTS`, and `FIX_STATE`. It writes `WALKTHROUGH.stages` with the rules in `SKILL.md` section 10 and [methodology.md](methodology.md#walkthrough-script), raises `version` by one, so the first script is version 1, and sets `generatedAt`. Each stage's `storyIds` lists every story it presents, so the canvas can link their flows. On a regeneration, keep each stage's `id` when it covers the same journey step, so "Keep my edits" lands on the right stage. Never reuse a removed stage's ID.
 
 Write `generatedAt` as an ISO time in UTC, from `date -u`. It edits only `WALKTHROUGH`. It never touches the canvas state file, so the designer's edits are kept until they choose "Use the new script". Check the canvas TypeScript result, then reply with one sentence on what changed in the script.
 
@@ -394,6 +397,7 @@ The template defines these as TypeScript types. Keep the field names, because Fi
 ```text
 REVIEW
   title, summary, date
+  updatedAt         ISO time of the latest review run or applied fix
   skillDir
   figmaFileKey, figmaFileName
   wireflowsPage { name, nodeId }   the page the designer named
@@ -502,9 +506,11 @@ BEYOND_SCOPE[]
   reviewNote?
 
 WALKTHROUGH
-  version           starts at 1, raised on every regeneration
-  generatedAt       ISO time
+  version           0 with no stages until the designer asks for a script,
+                    then raised by one on every generation
+  generatedAt       ISO time, empty until the first script
   stages[]          { id, title, storyIds[], screen? { label, nodeId }, text }
+                    storyIds: every story the stage presents
 ```
 
 Two top-level constants, keyed by note ID. Start them empty. Only Publish mode changes `COMMENT_STATE`. Only Annotate mode changes `ANNOTATION_STATE`, except that a re-run may set an entry to `needs-check` when Figma shows the annotation is missing. The fields are listed in [publish-comments.md](publish-comments.md#6-update-the-canvas-and-reply) and [annotate-figma.md](annotate-figma.md#3-update-the-canvas-and-reply).
@@ -524,5 +530,5 @@ Created the persona flow review: [Open review]
 
 [Sources that could not be accessed, and the number of open scope questions. Omit when there are none.]
 
-The walkthrough script, [N] suggested comments, and [N] items worth keeping are ready in the canvas. Nothing goes to Figma until you approve it.
+[N] suggested comments, [N] more for client self-review, and [N] items worth keeping are ready in the canvas. Generate the walkthrough script there when you need it. Nothing goes to Figma until you approve it.
 ```

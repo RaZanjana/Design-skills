@@ -359,17 +359,42 @@ Talking point:
 
 > Before Riley sets up any messages, the check shows exactly who is excluded and why. That gives Riley one clear moment to confirm the list is safe, which is designed to protect opt-outs and customer relationships.
 
-For Partially supported and Needs attention stories, the talking point covers only what works today.
+For Partially supported and Needs attention stories, the talking point covers only what works today. Explain the decision by its user and business reasons, never by an internal source, as [Reasons the client can use](#reasons-the-client-can-use) describes.
 
 ## Client notes
 
-Three outputs help the designer explain the design: Figma comments, beyond-scope annotations, and one walkthrough script. All three reuse the review's evidence. None of them is an issue, and none of them changes a status.
+Three outputs help the designer explain the design: Figma comments, beyond-scope annotations, and one walkthrough script. All three reuse the review's evidence. None of them is an issue, and none of them changes a status. The script is written only when the designer asks for it.
+
+### Reasons the client can use
+
+Comments, annotations, talking points, and the script are read or heard by the client. Each one explains a decision so the client, and the designer, can defend it with logic from the user's and the business's point of view.
+
+**Keep internal sources out.** Never mention ClickUp, the story or its comments, the product owner, the PRD, internal discussions, or phrases such as "as agreed", "as requested", or "the story says". These sources prove the decision to the designer, so they stay in the evidence links and the `why` field.
+
+**Give the logic instead.** Use one or more of these, in this order:
+
+1. The user need or business goal a source documents, in plain words.
+2. What follows directly from how the design works, such as "the month total is the sum of the days, so the two always agree".
+3. Basic domain logic the client's own team would accept as true for their business, such as "an ended placement is a candidate who stopped working for a client". Never invent numbers, outcomes, or business practices. When a note relies on this, say so in `why`, so the designer can check it before publishing.
+
+**Then say what it protects or prevents:** what would go wrong for the user or the business if the decision changed, when the logic supports it.
+
+A scope decision is explained the same way. The note says why the design works this way, not that it differs from the story or who agreed to it.
+
+A beyond-scope annotation, or a script line that asks the client to confirm an addition, may say it goes beyond the agreed scope, because that is the client's decision. It still gives the user reason, and names no internal source.
+
+**Test:** if the client forwarded the note to a colleague who has never seen the project's tickets, would it still make sense and convince them?
+
+For daily targets that replaced weekly ones:
+
+- Avoid: "Targets are entered per day, as agreed in the story comments."
+- Good: "Targets are entered per person, per day. The week, month and quarter targets are the sum of those days, so all four periods always agree, and a holiday or a new joiner only changes the days it affects."
 
 ### Positive comments
 
 A comment explains why one in-scope design decision works. The client reads it beside the feature in Figma, often without the designer, so it should help them check the design on their own and explain it to their team. A question answered in Figma is a revision avoided.
 
-**Pick candidates from:** "What works" points, status reasons, user and business value, and agreed scope decisions of Supported and Partially supported stories. Never from Needs attention or Insufficient evidence stories.
+**Pick candidates from:** "What works" points, status reasons, user and business value, and scope decisions of Supported and Partially supported stories. Never from Needs attention or Insufficient evidence stories.
 
 **Rank across the whole review:** first list the strongest candidate from every eligible story, then drop those that break a rule in this section, then rank what is left. Never stop after the first few good ones.
 
@@ -399,6 +424,7 @@ These are ceilings, not quotas. Comments already published from an earlier run c
 
 - Names the actual feature, section, or interaction.
 - Says the specific user benefit, then the business value when a source supports it. When none is documented, it gives the user benefit only, and does not mention the missing objective.
+- Gives the reason as user and business logic, never as an internal source, as [Reasons the client can use](#reasons-the-client-can-use) describes.
 - Explains any product term in the comment itself, because each comment is read on its own.
 - Uses simple, natural English a non-technical client understands.
 - Phrases unverified business value as intent: "is designed to", "should help".
@@ -413,7 +439,7 @@ After the positive comments, suggest more that the designer can add from the can
 
 **Good candidates:**
 
-- An agreed scope decision that differs from the original story wording. Say where it was agreed, in plain words.
+- A decision that works differently from what a reviewer may expect, such as a scope decision that changed the original story. Explain why it works this way, never where it was agreed.
 - A default or trade-off someone may want to change, such as which period a page opens on.
 - A state that prevents a wrong reading, such as missing data shown as a message instead of a zero.
 - A limit of a source system that explains why something is entered by hand or shown as not available.
@@ -421,12 +447,12 @@ After the positive comments, suggest more that the designer can add from the can
 
 **Each additional comment:**
 
-- Has a `question`: what the client's team would ask, in their words, such as "Why are targets set per day and not per week?". The canvas shows it to the designer. It is not part of the comment.
-- Answers it in 25 to 45 words: the decision, the reason from a source, and what would go wrong if it changed, when a source supports that.
+- Has a `question`: what the client's team would ask, in their words and from what they see on the screen, such as "Why are targets set per day and not per week?". It names no internal source either. The canvas shows it to the designer. It is not part of the comment.
+- Answers it in 25 to 45 words: the decision, the user or business reason behind it, and what would go wrong if it changed, when the logic supports that.
 - Follows the rules for positive comments: eligible stories only, never on a screen an open issue names, one note per feature, and the same writing rules.
 - Never sounds defensive, never guesses at a reason, and never repeats a point another comment or annotation makes.
 
-**Volume:** up to as many as the ceiling for positive comments. No minimum. Rank them by how likely the client's team is to question the decision, then by the strength of the source.
+**Volume:** up to as many as the ceiling for positive comments. No minimum. Rank them by how likely the client's team is to question the decision, then by the strength of the reason.
 
 They stay suggestions until the designer adds them in the canvas. Once added and approved, they are published like any other comment.
 
@@ -450,12 +476,15 @@ A feature gets either a comment or an annotation, never both. A separate feature
 
 One script for the whole review, written to be spoken.
 
+- **When:** only when the designer asks, with the Generate button in the canvas or in a chat. A review run never writes or rewrites it.
+- **References:** each stage lists every story it presents in `storyIds`. The canvas shows the story IDs and a link to each story's flow in Figma, and copies them with the script.
 - **Order:** follow the user's journey, not the status order. One stage per journey step or key screen.
 - **Length:** two to four sentences per stage, about 50 to 100 words. A typical review comes to 300 to 500 words. A small review is shorter. Never pad it.
 - **Each stage:** what the user is trying to do, how the design helps, why the key decision fits this user when a persona source supports it, and the business objective it supports when a source documents one. Skip a part that no source supports.
 - **Gaps:** one honest sentence for each open issue that affects the journey, with the fix or next step, on top of the stage's sentences. Never hide a gap behind positive words, and never present it as done.
 - **Beyond scope:** one sentence per element, asking the client to confirm it, on top of the stage's sentences.
 - **Insufficient evidence:** one neutral closing sentence, such as "We'll walk through approval once we can review it." It is not a stage, and it never suggests the design is unfinished.
+- **Reasons:** explain each decision by its user and business reasons, never by an internal source.
 - **Style:** conversational, short sentences, practical value. No introduction or closing, no reading out every element, no repeating the stories, no sales tone, no invented outcomes.
 
 Reuse the talking points as raw material, but do not paste them in word for word.
@@ -465,9 +494,10 @@ Reuse the talking points as raw material, but do not paste them in word for word
 Before showing client notes, check each one:
 
 - **Relevant:** it explains an important decision for this persona and story.
-- **Evidence:** it traces to a requirement, persona need, or documented business goal.
+- **Evidence:** it traces to a requirement, persona need, or documented business goal, or to domain logic that its `why` names.
+- **Reasons, not sources:** it gives user and business reasons, and names no internal source or who decided.
 - **Clear:** a client who has not read the stories understands it.
-- **Answers a real question:** each additional comment answers a question the client's team is likely to ask, from a source.
+- **Answers a real question:** each additional comment answers a question the client's team is likely to ask, with a user or business reason.
 - **Unique:** no two comments make the same point, and no two annotations do. No feature gets a second note when it already has one in Figma. The script may cover the same decisions in its own words. Nothing repeats another output word for word.
 - **Still true:** a note already in Figma still describes the current screen. When the design changed, the note gets a `reviewNote`, as `SKILL.md` section 10 describes.
 - **Volume:** the set stays within the limits above.

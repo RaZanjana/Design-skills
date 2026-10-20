@@ -232,17 +232,31 @@ Two strong comments beat seven weak ones.
 
 ### Good
 
-Question: "Why does the list have four exclusion reasons when the story names three?"
+Question: "Why are unsubscribed people listed as a separate reason?"
+
+> People who unsubscribed get their own reason, separate from customers and competitors. Riley can see they chose to stop hearing from the company, so they are never contacted again and the opt-out promise is kept.
+
+It answers a question a reviewer is likely to ask, with the user reason and the business reason. The client can repeat it to their team without opening a ticket or asking the designer.
+
+### Good: domain logic
+
+Question: "Why is the target for ended placements zero, when every other KPI aims higher?"
+
+> Ended placements are measured against a limit, not a goal, because each one is a candidate who stopped working for a client. The limit is zero, so any number here points to placements worth looking into, not progress.
+
+No source spells out why fewer is better, so the reason rests on what an ended placement means for a recruitment business. The `why` field says so, and the designer confirms it before publishing.
+
+### Avoid: names an internal source
 
 > People who unsubscribed get their own reason in this list. The story named three reasons, and this fourth one was agreed in the story comments, so anyone who opted out by email is never contacted again.
 
-It answers the question a reviewer will ask when they compare the screen with the story. It says where the decision was agreed and what it protects, so the client can explain it to their team without asking the designer.
+Why: the story and its comments are internal. Telling the client a decision was agreed in a ticket defends nothing. It invites "Agreed by whom?" instead of explaining why the design is right for the user and the business.
 
-### Avoid
+### Avoid: defensive
 
 > We know this looks different from the story, but the extra reason is important and the team thought about it carefully.
 
-Why: it sounds defensive, gives no reason or source, and leaves the client nothing to tell their team.
+Why: it sounds defensive, gives no reason, and leaves the client nothing to tell their team.
 
 ### Avoid: not a real question
 
@@ -283,6 +297,14 @@ The design adds a "Send now" button that skips the approval step. The story requ
 > Next, Riley sets up the sequence. The timeline shows when every message goes out, with the daily limit right beside it. Riley can check the pace before approving anything, which should help keep sending at a safe level. One thing we're still adding: unsubscribing will become a third stop rule, next to the sales handoff and the suppression list.
 
 It follows the journey, names the screen, explains why the decision helps, and names the open gap with its fix in one honest sentence.
+
+In the canvas, and when copied, the stage carries its reference:
+
+```text
+2. Set the pace
+Next, Riley sets up the sequence. [...]
+Story S.2. Figma: Sequence setup flow (https://www.figma.com/design/[file-key]/[file-name]?node-id=30-1&m=dev)
+```
 
 ### Avoid
 

@@ -142,4 +142,4 @@ Reply in plain English:
 
 - One line per item: Annotated, Updated, Removed, Failed with the reason, or Needs check.
 - A link to each annotated screen.
-- "Annotations show in Figma when annotations are turned on, and in Dev Mode. Check that your client can see them before you rely on them. The walkthrough script also covers these elements."
+- "Annotations show in Figma when annotations are turned on, and in Dev Mode. Check that your client can see them before you rely on them. When you generate the walkthrough script, it covers these elements too."

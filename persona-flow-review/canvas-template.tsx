@@ -208,6 +208,7 @@ const REVIEW = {
   summary:
     "Four sample stories on the “Wireflows” page of the sample Figma file. Replace this data block with the real review.",
   date: "20 October 2026",
+  updatedAt: "2026-10-20T09:00:00.000Z",
   skillDir: "/absolute/path/to/persona-flow-review",
   figmaFileKey: "FILE_KEY",
   figmaFileName: "Sample-file",
@@ -469,14 +470,14 @@ const COMMENTS: CommentSuggestion[] = [
   {
     id: "c-3",
     storyId: "S.1",
-    feature: "Unsubscribed as a fourth exclusion reason",
+    feature: "Unsubscribed as a separate exclusion reason",
     target: { label: "Exclusion reasons", nodeId: "20:4" },
-    text: "People who unsubscribed get their own reason in this list. The story named three reasons, and this fourth one was agreed in the story comments, so anyone who opted out by email is never contacted again.",
-    why: "A reviewer comparing the screen with the story will see four reasons instead of three and may ask for one to be removed.",
+    text: "People who unsubscribed get their own reason, separate from customers and competitors. Riley can see they chose to stop hearing from the company, so they are never contacted again and the opt-out promise is kept.",
+    why: "A reviewer may ask to merge unsubscribed people into another reason. This explains why they stay separate.",
     userNeed: "Riley must never message someone who opted out.",
     evidence: [{ label: "ClickUp comment, 12 Oct 2026", url: "https://app.clickup.com/t/SAMPLE1" }],
     additional: true,
-    question: "Why does the list have four exclusion reasons when the story names three?",
+    question: "Why are unsubscribed people listed as a separate reason?",
   },
 ];
 
@@ -496,16 +497,17 @@ const BEYOND_SCOPE: BeyondScopeItem[] = [
   },
 ];
 
+// A review run writes { version: 0, generatedAt: "", stages: [] }. Stages exist only after the designer asks for a script.
 const WALKTHROUGH: Walkthrough = {
   version: 1,
-  generatedAt: "2026-10-20T09:00:00.000Z",
+  generatedAt: "2026-10-20T09:30:00.000Z",
   stages: [
     {
       id: "st-1",
       title: "Check who is left out",
       storyIds: ["S.1"],
       screen: { label: "Suppression check", nodeId: "20:2" },
-      text: "Riley's first job is making sure nobody who should be left out gets a message. Before any messages exist, this screen lists everyone excluded and the reason. Riley confirms the list once, and only then moves on. That's designed to protect opt-outs and customer relationships, which the product brief names as a must. We also added a download for the excluded list, so Riley can check it with account managers. That's outside the agreed scope, so we'd like your OK to keep it.",
+      text: "Riley's first job is making sure nobody who should be left out gets a message. Before any messages exist, this screen lists everyone excluded and the reason. Riley confirms the list once, and only then moves on. That's designed to protect opt-outs and customer relationships. We also added a download for the excluded list, so Riley can check it with account managers. That's outside the agreed scope, so we'd like your OK to keep it.",
     },
     {
       id: "st-2",
@@ -1465,11 +1467,33 @@ function noteLine(id: string, target: ScreenRef, text?: string): string {
   return text === undefined ? base : `${base}: ${JSON.stringify(text)}`;
 }
 
-function scriptPrompt(): string {
+function scriptPrompt(kind: "Generate" | "Regenerate"): string {
   return [
-    "Persona flow review: Regenerate walkthrough script.",
-    `Read and follow ${REVIEW.skillDir}/SKILL.md section 10 and ${REVIEW.skillDir}/canvas-output.md, "Regenerate the script". The review canvas is attached.`,
+    `Persona flow review: ${kind} walkthrough script.`,
+    `Read and follow ${REVIEW.skillDir}/SKILL.md section 10 and ${REVIEW.skillDir}/canvas-output.md, "Generate the script". The review canvas is attached.`,
   ].join("\n");
+}
+
+function stageFlows(s: ScriptStage): ScreenRef[] {
+  const flows: ScreenRef[] = [];
+  for (const id of s.storyIds) {
+    const flow = STORIES.find((x) => x.id === id)?.figmaFlow;
+    if (flow && !flows.some((f) => f.nodeId === flow.nodeId)) flows.push(flow);
+  }
+  return flows;
+}
+
+function storyList(ids: string[]): string {
+  if (ids.length === 0) return "";
+  if (ids.length === 1) return `Story ${ids[0]}`;
+  return `Stories ${ids.slice(0, -1).join(", ")} and ${ids[ids.length - 1]}`;
+}
+
+function stageReference(s: ScriptStage): string {
+  const figma = stageFlows(s)
+    .map((f) => `${f.label} (${figmaUrl(f.nodeId)})`)
+    .join(", ");
+  return [storyList(s.storyIds), figma && `Figma: ${figma}`].filter(Boolean).join(". ");
 }
 
 function shownStatus(
@@ -2085,11 +2109,15 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
   const stages = WALKTHROUGH.stages;
   const hasEdits = Object.keys(edits.stages).length > 0;
   const stale = hasEdits && edits.version !== WALKTHROUGH.version;
-  const regenerating = !!regenAt && isAfter(regenAt, WALKTHROUGH.generatedAt);
+  const regenerating =
+    !!regenAt && (!WALKTHROUGH.generatedAt || isAfter(regenAt, WALKTHROUGH.generatedAt));
+  const outdated = stages.length > 0 && isAfter(REVIEW.updatedAt, WALKTHROUGH.generatedAt);
   const isEdited = (s: ScriptStage) => !stale && edits.stages[s.id] !== undefined;
   const textOf = (s: ScriptStage) => (isEdited(s) ? edits.stages[s.id] : s.text);
-  const full = stages.map(textOf).join("\n\n");
-  const words = wordCount(full);
+  const full = stages
+    .map((s, i) => [`${i + 1}. ${s.title}`, textOf(s), stageReference(s)].filter(Boolean).join("\n"))
+    .join("\n\n");
+  const words = wordCount(stages.map(textOf).join(" "));
   const minutes = Math.max(1, Math.round(words / 140));
   const selected = stages.find((s) => s.id === stageId);
   const shown = selected ? [selected] : stages;
@@ -2108,6 +2136,14 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
     });
   };
 
+  const requestScript = () => {
+    dispatch({
+      type: "newComposerChat",
+      userPrompt: scriptPrompt(stages.length > 0 ? "Regenerate" : "Generate"),
+    });
+    setRegenAt(new Date().toISOString());
+  };
+
   const copy = () => {
     const clipboard = typeof navigator !== "undefined" ? navigator.clipboard : undefined;
     if (!clipboard) {
@@ -2119,6 +2155,28 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
       () => setCopyState("blocked"),
     );
   };
+
+  if (stages.length === 0) {
+    return (
+      <Stack gap={10}>
+        <Text size="small" tone="secondary">
+          A spoken walkthrough of the reviewed flows for the client meeting, in journey order. Each
+          stage names its stories and links their flows in Figma. It is written from the current
+          review, only when you ask for it.
+        </Text>
+        <Row gap={8} align="center" wrap>
+          <Button variant="primary" disabled={regenerating} onClick={requestScript}>
+            {regenerating ? "Generating in a new chat" : "Generate walkthrough script"}
+          </Button>
+          {regenerating && (
+            <Button variant="ghost" onClick={() => setRegenAt(null)}>
+              Stop waiting
+            </Button>
+          )}
+        </Row>
+      </Stack>
+    );
+  }
 
   return (
     <Stack gap={14}>
@@ -2140,14 +2198,7 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
           <Button variant="ghost" disabled={stale} onClick={() => setEditing(!editing)}>
             {editing ? "Done editing" : "Edit"}
           </Button>
-          <Button
-            variant="ghost"
-            disabled={regenerating}
-            onClick={() => {
-              dispatch({ type: "newComposerChat", userPrompt: scriptPrompt() });
-              setRegenAt(new Date().toISOString());
-            }}
-          >
+          <Button variant="ghost" disabled={regenerating} onClick={requestScript}>
             {regenerating ? "Regenerating in a new chat" : "Regenerate"}
           </Button>
           {regenerating && (
@@ -2182,6 +2233,20 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
               }
             >
               Keep my edits
+            </Button>
+          </Row>
+        </Callout>
+      )}
+
+      {outdated && !regenerating && (
+        <Callout tone="warning" title="The review changed after this script was written">
+          <Text size="small">
+            A story status, issue, or note may have changed since. Regenerate the script before the
+            meeting, or check it against the stories.
+          </Text>
+          <Row style={{ marginTop: 8 }}>
+            <Button variant="secondary" onClick={requestScript}>
+              Regenerate
             </Button>
           </Row>
         </Callout>
@@ -2225,6 +2290,18 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
                 </Text>
               )}
             </Row>
+            {s.storyIds.length > 0 && (
+              <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
+                {storyList(s.storyIds)}
+                {stageFlows(s).length > 0 && ". Figma: "}
+                {stageFlows(s).map((f, i) => (
+                  <span key={f.nodeId}>
+                    {i > 0 && ", "}
+                    <Link href={figmaUrl(f.nodeId)}>{f.label}</Link>
+                  </span>
+                ))}
+              </Text>
+            )}
             {editing && !stale ? (
               <Stack gap={4} style={{ marginTop: 6 }}>
                 <TextArea value={textOf(s)} onChange={(v) => setStageText(s.id, v)} rows={4} />
@@ -2287,7 +2364,7 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
       <Text size="small" tone="tertiary">
         About {words} words, roughly {minutes} {minutes === 1 ? "minute" : "minutes"} spoken.
         Open issues are named in the script, so nothing is presented as finished before it is.
-        The questions under each stage are not copied with the script.
+        Copying includes each stage's stories and Figma links, but not the questions under it.
       </Text>
     </Stack>
   );
@@ -2296,15 +2373,16 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
 type NotesTab = "script" | "comments" | "keep";
 type View = "review" | "client";
 
-const HAS_CLIENT_NOTES =
-  WALKTHROUGH.stages.length > 0 || COMMENTS.length > 0 || BEYOND_SCOPE.length > 0;
+const CAN_PRESENT =
+  WALKTHROUGH.stages.length > 0 || STORIES.some((s) => s.assessment !== "Insufficient evidence");
+const HAS_CLIENT_NOTES = CAN_PRESENT || COMMENTS.length > 0 || BEYOND_SCOPE.length > 0;
 const EXTRA_COMMENTS = COMMENTS.filter((c) => c.additional).length;
 
 function ClientNotes() {
   const notes = useNotesState();
   const [tab, setTab] = useCanvasState<NotesTab>("notes-tab", "script");
   const tabs: { id: NotesTab; label: string }[] = [];
-  if (WALKTHROUGH.stages.length > 0) tabs.push({ id: "script", label: "Walkthrough script" });
+  if (CAN_PRESENT) tabs.push({ id: "script", label: "Walkthrough script" });
   if (COMMENTS.length > 0) {
     const core = COMMENTS.length - EXTRA_COMMENTS;
     tabs.push({
@@ -2350,10 +2428,14 @@ function MeetingCallout({ onOpen }: { onOpen: () => void }) {
   const minutes = Math.max(1, Math.round(wordCount(WALKTHROUGH.stages.map((s) => s.text).join(" ")) / 140));
   const core = COMMENTS.length - EXTRA_COMMENTS;
   const parts: string[] = [];
-  if (stages > 0) {
+  if (stages > 0 && isAfter(REVIEW.updatedAt, WALKTHROUGH.generatedAt)) {
+    parts.push("The walkthrough script was written before the latest review changes.");
+  } else if (stages > 0) {
     parts.push(
       `A walkthrough script in ${stages} ${stages === 1 ? "stage" : "stages"}, about ${minutes} ${minutes === 1 ? "minute" : "minutes"} spoken.`,
     );
+  } else if (CAN_PRESENT) {
+    parts.push("You can generate a walkthrough script when you need one.");
   }
   if (COMMENTS.length > 0) {
     parts.push(

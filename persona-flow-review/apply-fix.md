@@ -119,7 +119,7 @@ Follow `SKILL.md` sections 4 to 9 for this story alone:
 - Keep the limit of three open issues, and apply the "worth flagging" test to any new one.
 - When the status changes, rewrite the status reason, the value or "what works" block, and the talking point to match.
 - Keep the client notes consistent with the new review:
-  - Rewrite the script stage for this story, raise `WALKTHROUGH.version`, and set `generatedAt`. The gap sentence goes when the gap is fixed.
+  - Leave `WALKTHROUGH` unchanged. The script changes only when the designer asks for it. When one exists, the newer `REVIEW.updatedAt` makes the canvas warn that it is older than the review, and the designer can regenerate it.
   - When the fix makes a new strength worth a comment, add it to `COMMENTS` within the volume limits.
   - When the story now needs attention, remove its unpublished comments. For a published one, set `reviewNote` to suggest removing it.
   - Check every published comment and annotated item on a screen this fix changed, including those of other stories that use the same component. When its wording no longer describes the fixed screen, set `reviewNote`: "The fix changed this screen: [what changed]. Update the wording, or remove it."
@@ -136,7 +136,8 @@ In the attached canvas:
 
 - In `FIX_STATE`, set `status: "applied"`, `appliedAt`, `updatedAt`, and the final `changes[]`. Add `draftComponentNodeId`, and `newScreenNodeId` when a screen was added.
 - Update the story: `assessment`, `statusReason`, `userValue`, `businessValue`, `whatWorks`, `issues`, `resolved`, and `talkingPoint`.
-- Update `WALKTHROUGH`, and `COMMENTS` when needed, as section 6 describes.
+- Update `COMMENTS` when needed, as section 6 describes. Never change `WALKTHROUGH`.
+- Set `REVIEW.updatedAt` to the current time, from `date -u +%Y-%m-%dT%H:%M:%S.000Z`.
 - Set `reReviewSuggested: true` on each story in `otherStories`.
 - Update the summary counts in the header.
 - Check the canvas TypeScript result.
