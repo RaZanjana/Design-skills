@@ -1,6 +1,6 @@
 ---
 name: persona-flow-review
-description: Reviews a chosen Figma page's story flows against the project's personas, the agreed ClickUp story scope including comments, local user stories, and the PRD. Answers three questions per story - does the design support the user's goal, does it meet the agreed scope and business objective, and can the designer explain it to the client. Starts from a short prompt, asks only for missing inputs, flags only meaningful gaps, and produces a canvas with explained story statuses, a Fix now button per issue, a client walkthrough script, a few positive Figma comments to publish after approval, and Figma annotations for worthwhile elements beyond the stories. Fixes are made on a "Fixed issues" Figma page and applied only after approval. Use for a persona flow review, user-story design validation, or client walkthrough preparation, or to fix an issue, publish comments, or add annotations from a persona flow review.
+description: Reviews a chosen Figma page's story flows against the project's personas, the agreed ClickUp story scope including comments, local user stories, and the PRD. Answers three questions per story - does the design support the user's goal, does it meet the agreed scope and business objective, and can the designer explain it to the client. Starts from a short prompt, asks only for missing inputs, flags only meaningful gaps, and produces a canvas with explained story statuses, a Fix now button per issue, a client walkthrough script, positive Figma comments that help the client self-review and defend the design, published after approval, and Figma annotations for worthwhile elements beyond the stories. Fixes are made on a "Fixed issues" Figma page and applied only after approval. Use for a persona flow review, user-story design validation, or client walkthrough preparation, or to fix an issue, publish comments, or add annotations from a persona flow review.
 disable-model-invocation: true
 ---
 
@@ -357,15 +357,26 @@ A comment or annotation never sits on a screen that an open issue names, includi
 
 ### Positive Figma comments
 
-Suggest a small set of comments that explain the most important in-scope design decisions to the client, pinned to the feature or screen they describe.
+Suggest comments that explain the most important in-scope design decisions, pinned to the feature or screen they describe. Comments are for the client reviewing the design without you. Each one should help them check the design on their own and explain it to their team, so a misunderstanding doesn't turn into a revision.
 
-- Take candidates only from Supported and Partially supported stories: a "What works" point, the status reason, or the user and business value. Never from a Needs attention or Insufficient evidence story.
-- Pick the strongest few. Up to 5 for a review of six stories or fewer, counting every reviewed story. Then up to 6 for 9 stories, 7 for 12, and 8 at most. These are ceilings, not targets: 3 is typical, and a small flow may need only 1.
+- Take candidates only from Supported and Partially supported stories: a "What works" point, the status reason, the user and business value, or an agreed scope decision. Never from a Needs attention or Insufficient evidence story.
+- Rank across the whole review. First list the strongest candidate from every eligible story, then drop the ones that break a rule below, then rank what is left. Never stop after the first few good ones.
+- Keep the strongest. Up to 5 for a review of eight stories or fewer, counting every reviewed story. Up to 6 for 9 to 11 stories, 7 for 12 to 14, and 8 for 15 or more. These are ceilings, not targets. Expect about one for every two or three stories with a clear strength. A small flow may need only 1.
 - One comment per screen. Allow a second only for a separate feature with a different benefit.
 - One point per comment, 25 to 45 words, in two or three short sentences. Count words by spaces, as the canvas does.
 - When several features share a benefit, comment on the strongest one only.
 - When no business objective is documented, give the user benefit only. Do not mention the missing objective in the comment.
 - Leave a screen without a comment when it has no decision worth explaining.
+
+### Additional comments for client self-review
+
+After choosing the comments above, suggest more that the designer can add. Each additional comment answers a question the client's team is likely to ask when they go through the design without you. With the answer beside the design, they can check it and defend it internally instead of sending a change request.
+
+- **Good candidates:** an agreed scope decision that differs from the original story wording; a default or trade-off someone may want to change; a state that prevents a wrong reading, such as missing data shown as a message instead of a zero; a limit of a source system; a role restriction.
+- **Write the question first**, in the client team's words, such as "Why are targets set per day and not per week?". Then write the comment: the decision, the reason from a source, and what would go wrong if it changed, when a source supports that. Say plainly where a decision was agreed, such as "as agreed in the story comments". Never sound defensive or guess at a reason.
+- The rules for positive comments apply: eligible stories only, never on a screen an open issue names, 25 to 45 words, one note per feature. Never repeat a point another comment, annotation, or this list already makes.
+- Up to as many as the ceiling for positive comments. No minimum. When nothing qualifies, suggest none.
+- They are suggestions only. Nothing is published unless the designer adds it in the canvas and publishes it.
 
 ### Beyond-scope annotations
 
@@ -402,7 +413,7 @@ No introduction or closing is needed beyond that.
 On a re-run, the canvas already holds notes from earlier runs (see section 11). Start from them:
 
 1. **One note per feature.** Match each new candidate to the earlier notes by target screen and feature. When it matches, keep the earlier note and its ID. Never add a second note for a feature that already has a comment or annotation in Figma, even with better wording. Give new notes new IDs that continue the numbering.
-2. **The limits include what is in Figma.** Count published comments and annotated items toward the ceilings above.
+2. **The limits include what is in Figma.** Count published comments and annotated items toward the ceilings above. A published additional comment counts toward the additional limit and keeps `additional: true`.
 3. **Check that each note in Figma still fits.** For every published comment and annotated item:
    - Confirm its node still exists, and read back each annotation, in one read-only `use_figma` call for all notes. Change nothing. A comment's node is the `nodeId` in `COMMENT_STATE`. Figma returns annotation labels HTML-escaped, so decode them as [annotate-figma.md](annotate-figma.md#2-write-and-verify-in-one-call) does before comparing.
    - Compare its wording with the current screen and this review. The feature must still be there and still work as described. No open issue may name the screen. Its story must not be Needs attention or Insufficient evidence.
@@ -444,18 +455,18 @@ The output must include:
   5. Client talking point
   6. Evidence and sources, collapsed by default
 - Fix status for every issue, with Approve, Request changes, and Reject buttons once a fix is ready for review
-- A "Client notes" area with three tabs, each shown only when it has content:
-  - **Walkthrough script:** stage navigation, edit, copy, and regenerate
-  - **Figma comments:** approve, exclude, edit, approve all, publish, and the real Figma status of each comment
+- A "Client meeting" view, opened from the top of the canvas, with three tabs, each shown only when it has content:
+  - **Walkthrough script:** stage navigation, the questions each stage may raise, edit, copy, and regenerate
+  - **Figma comments:** approve, exclude, edit, approve all, publish, and the real Figma status of each comment, plus the additional self-review comments the designer can add
   - **Worth keeping:** beyond-scope elements, each with its annotation text, approve, exclude, edit, and the real Figma status
 
 Use muted green for Supported, muted yellow for Partially supported, muted red for Needs attention, and neutral gray for Insufficient evidence. Maintain readable contrast.
 
 ### Re-runs update the same canvas
 
-On a re-run for the same Figma file and page, update the most recent earlier canvas in place. Find it in the canvases folder by `REVIEW.figmaFileKey` and `REVIEW.wireflowsPage.nodeId`. Keep its file name and replace only its data block. The designer's approvals, edited wording, and script edits are saved next to the canvas and keyed by note and stage IDs, so they carry over. Use a new canvas only for a different file or page. When the designer wants to keep the earlier review as a record, copy the canvas first.
+On a re-run for the same Figma file and page, update the most recent earlier canvas in place. Find it in the canvases folder by `REVIEW.figmaFileKey` and `REVIEW.wireflowsPage.nodeId`. Keep its file name, and rebuild the whole file from the current [canvas-template.tsx](canvas-template.tsx) with the new data block. Never keep the earlier file's code: it may come from an older template without client notes or the walkthrough script. The designer's approvals, edited wording, and script edits are saved next to the canvas and keyed by note and stage IDs, so they carry over. Use a new canvas only for a different file or page. When the designer wants to keep the earlier review as a record, copy the canvas first.
 
-Carry over:
+Carry over from the earlier data block. When it has no client notes yet, start them fresh:
 
 - `COMMENT_STATE`, `ANNOTATION_STATE`, and `FIX_STATE` entries, unchanged apart from the annotation check in section 10.
 - Every note that has a state entry, with its ID. For a published comment, set `text` to its `publishedText`. For an annotated item, use its `annotatedText`.
@@ -496,6 +507,9 @@ Never remove anything from Figma in Review mode.
 - No comment or annotation sits on a screen that an open issue names, and no feature has both.
 - No new comment comes from a Needs attention or Insufficient evidence story. A published comment carried over from an earlier review may stay, with a `reviewNote`.
 - No feature has two notes in Figma, and published comments and annotated items count toward the limits.
+- Positive comments were ranked across every eligible story, not just the first few.
+- Each additional comment has a `question` the client's team is likely to ask, answers it from a source, and repeats no other note.
+- The canvas was built from the current template, including on a re-run.
 - On a re-run, every published comment and annotated item was checked against the current screen, and each one that no longer fits has a `reviewNote`.
 - The script follows the journey order, matches every story status, and mentions each open journey issue and beyond-scope element.
 - No two comments make the same point, and no two annotations do. The script may cover the same decisions, in its own words. Nothing repeats another output word for word.
@@ -506,7 +520,7 @@ Return only:
 1. A link to the review artifact.
 2. One sentence with the counts, such as "4 supported, 2 partially supported, 1 needs attention."
 3. One sentence naming any source that could not be accessed and the number of open scope questions. Omit it when there are none.
-4. One sentence saying the walkthrough script, [N] suggested comments, and [N] items worth keeping are ready to review in the canvas, and that nothing is published to Figma until the designer approves it.
+4. One sentence saying the walkthrough script, [N] suggested comments, [N] more for client self-review, and [N] items worth keeping are ready in the canvas's "Client meeting" view, and that nothing is published to Figma until the designer approves it.
 
 ## Additional resources
 

@@ -19,7 +19,8 @@ Do not require external packages, remote assets, or network requests to render t
 - Project or feature name, the reviewed Figma page, and the review date
 - Story totals by status
 - Issue totals by fix status: open, ready for review, applied
-- Client note totals: comments suggested and published, items worth keeping and annotated
+- Client note totals: comments suggested, more for self-review, published, items worth keeping and annotated
+- Two pills, **Review** and **Client meeting**, when there are client notes. In the Review view, a callout under the header: "Ready for the client meeting", with the script's stage count and speaking time, the comment counts, and an **Open client meeting** button
 - A warning when ClickUp scope was not checked
 
 ### Status guide
@@ -116,14 +117,15 @@ Show parts 1 to 5 by default. Keep part 6 collapsed.
 
 Show **Resolved issues** as a separate collapsed section, only when the story has any. Each shows its title, the date applied, and links to the Draft component and the "Fixed issues" row.
 
-### Client notes
+### Client meeting view
 
-Place one "Client notes" area below the stories, with up to three tabs. Show a tab only when it has content. Omit the area when all three are empty.
+Show the client notes in their own "Client meeting" view, so the designer finds the script without scrolling past the stories. It has up to three tabs. Show a tab only when it has content. Omit the view and its pills when all three are empty. Save the chosen view in `pfr-view`.
 
 **Walkthrough script** (default tab)
 
 - Stage pills: "Whole script", then one pill per stage, numbered in journey order.
 - Each stage shows its title, a link to its key screen, and its spoken text.
+- Under each stage, "Questions they may ask": the `question` and wording of each additional comment for the stage's stories, so the designer can answer them in the meeting. They are not copied with the script.
 - The total word count and the rough speaking time.
 - **Copy script:** copies the whole script as plain text, one paragraph per stage. When the canvas blocks the clipboard, show the full text in a block that selects itself on click, with "Copying is blocked here. Click the text to select it, then copy."
 - **Edit:** turns each shown stage into a text area. Edits are saved in canvas state and marked "Edited". Each edited stage has "Reset to generated".
@@ -137,19 +139,28 @@ A compact row per suggested comment:
 - "On:" the target screen, linked to Figma.
 - The comment text, with "Edit wording". Editing shows a text area and the word count, with a hint when it is over 45 words.
 - Approve and Exclude pills, until it is published.
+- For an added additional comment: "Answers: [question]", and **Move back** until it has a Figma status.
 - "Why this one", collapsed: why it is worth highlighting, the user need, the business objective, and the evidence links.
 - After publishing: "Update in Figma" when the wording changed, and "Remove from Figma".
 - The note from the last run, when there is one, such as a failure reason.
 
 Above the rows:
 
-- One line: "Positive notes the client reads beside the design in Figma. Nothing is published until you click Publish."
+- One line: "Notes the client reads beside the design in Figma. They help the client review the design on their own and explain it to their team. Nothing is published until you click Publish."
 - Counts: suggested, approved, and published.
 - **Approve all**, then **Publish approved ([N])** as the primary button.
 - **Check Figma status**, when any comment has a Figma ID or needs a check.
 - "Remove from Figma" also marks the comment Excluded, so a later "Publish approved" never posts it again. The designer can approve it again to republish it.
 - Publish approved skips comments that are already in Figma, still need a check, or have empty wording or wording that looks like a token.
+- The list holds the positive comments and every additional comment the designer added. Counts, Approve all, and Publish approved cover only this list.
 - The note: "Publishing opens a new chat that asks for a Figma token. On a Mac, you can keep it in the Keychain so it never appears in the chat. A pasted token is saved in that chat's transcript, so give it a short expiry and revoke it afterwards."
+
+Below the list, when any suggestions are left, **More comments for client self-review ([N])**:
+
+- One line: "Optional. Each one answers a question the client's team may ask when they review the design without you, so they can check it and explain it instead of asking for a change."
+- A row per suggestion: the question as the title, the story, "On:" the target screen, and the wording.
+- **Add to comments** approves it and moves it into the list above. **Add all** does the same for every suggestion. An additional comment stays in the list above once the designer approves or excludes it, or it has a Figma status. **Move back** returns it here.
+- "Why this one", collapsed, as above.
 
 **Worth keeping**
 
@@ -287,6 +298,7 @@ The designer's choices live in canvas state, not in the data block:
 | `note-texts` | `{ [noteId]: text }`, only for notes the designer edited |
 | `note-requests` | `{ [noteId]: { action, at, stopped? } }`, the latest request per note |
 | `script-edits` | `{ version, stages: { [stageId]: text } }` |
+| `pfr-view` | `"review"` or `"client"`, the open view |
 
 The parent component reads these once and passes them down, so counts, "Approve all", and "Publish approved" always agree with the rows. The state file sits next to the canvas as `[name].canvas.data.json`. Mode chats rely on the prompt, not on that file.
 
@@ -467,6 +479,8 @@ COMMENTS[]
   feature           the feature in words
   target            { label, nodeId }   the most specific node that shows the feature
   text              25 to 45 words
+  additional?       true for an optional self-review comment
+  question?         additional only: the question the client's team may ask
   why               why it is worth highlighting, for the designer
   userNeed?
   businessGoal?     only when a source documents it

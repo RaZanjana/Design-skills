@@ -363,13 +363,15 @@ For Partially supported and Needs attention stories, the talking point covers on
 
 ## Client notes
 
-Three outputs help the designer explain the design: positive Figma comments, beyond-scope annotations, and one walkthrough script. All three reuse the review's evidence. None of them is an issue, and none of them changes a status.
+Three outputs help the designer explain the design: Figma comments, beyond-scope annotations, and one walkthrough script. All three reuse the review's evidence. None of them is an issue, and none of them changes a status.
 
 ### Positive comments
 
-A comment explains why one in-scope design decision works, so the client can read it beside the feature in Figma.
+A comment explains why one in-scope design decision works. The client reads it beside the feature in Figma, often without the designer, so it should help them check the design on their own and explain it to their team. A question answered in Figma is a revision avoided.
 
-**Pick candidates from:** "What works" points, status reasons, and user and business value of Supported and Partially supported stories. Never from Needs attention or Insufficient evidence stories.
+**Pick candidates from:** "What works" points, status reasons, user and business value, and agreed scope decisions of Supported and Partially supported stories. Never from Needs attention or Insufficient evidence stories.
+
+**Rank across the whole review:** first list the strongest candidate from every eligible story, then drop those that break a rule in this section, then rank what is left. Never stop after the first few good ones.
 
 **Where an open issue blocks a note:** a comment or annotation never sits on a screen that an open issue names, including a potential concern, and never praises the behavior the issue is about. Other screens of the same story can still get one. The issue stays in the review and the script, where it is named honestly.
 
@@ -387,11 +389,11 @@ Keep a candidate only when its value is specific, meaningful, and backed by a so
 
 | Limit | Ceiling |
 | --- | --- |
-| Per review, counting every reviewed story | Up to 5 for six stories or fewer. Up to 6 for 9 to 11 stories, 7 for 12 to 14, and 8 for 15 or more. |
-| Per screen | 1. A second only for a separate feature with a different benefit. |
+| Per review, counting every reviewed story | Up to 5 for eight stories or fewer. Up to 6 for 9 to 11 stories, 7 for 12 to 14, and 8 for 15 or more. |
+| Per screen | 1. A second only for a separate feature with a different benefit. Additional comments count toward this. |
 | Per comment | 25 to 45 words, two or three short sentences, one point. Count words by spaces. |
 
-These are ceilings, not quotas. Comments already published from an earlier run count toward them. There is no minimum: 3 is typical, and a small flow may need only 1. When several features show the same benefit, keep the strongest one. When two candidates tie, prefer the one the client is more likely to question.
+These are ceilings, not quotas. Comments already published from an earlier run count toward them. Expect about one for every two or three stories with a clear strength. There is no minimum, and a small flow may need only 1. When several features show the same benefit, keep the strongest one. When two candidates tie, prefer the one the client is more likely to question.
 
 **Each comment:**
 
@@ -404,6 +406,29 @@ These are ceilings, not quotas. Comments already published from an earlier run c
 - Never repeats what the screen already makes obvious, or what another comment says.
 
 Pin it to the most specific node that shows the feature, such as a card or panel. Use the screen when no smaller node fits. Figma does not accept comments on a layer inside a component instance, so Publish mode pins those to the nearest layer it accepts, at the feature's position.
+
+### Additional comments for client self-review
+
+After the positive comments, suggest more that the designer can add from the canvas. Each one answers a question the client's team is likely to ask when they review the design without the designer. With the answer beside the design, they can check the decision and defend it internally, instead of asking for a change that undoes it.
+
+**Good candidates:**
+
+- An agreed scope decision that differs from the original story wording. Say where it was agreed, in plain words.
+- A default or trade-off someone may want to change, such as which period a page opens on.
+- A state that prevents a wrong reading, such as missing data shown as a message instead of a zero.
+- A limit of a source system that explains why something is entered by hand or shown as not available.
+- A role restriction, such as who can change a number.
+
+**Each additional comment:**
+
+- Has a `question`: what the client's team would ask, in their words, such as "Why are targets set per day and not per week?". The canvas shows it to the designer. It is not part of the comment.
+- Answers it in 25 to 45 words: the decision, the reason from a source, and what would go wrong if it changed, when a source supports that.
+- Follows the rules for positive comments: eligible stories only, never on a screen an open issue names, one note per feature, and the same writing rules.
+- Never sounds defensive, never guesses at a reason, and never repeats a point another comment or annotation makes.
+
+**Volume:** up to as many as the ceiling for positive comments. No minimum. Rank them by how likely the client's team is to question the decision, then by the strength of the source.
+
+They stay suggestions until the designer adds them in the canvas. Once added and approved, they are published like any other comment.
 
 ### Beyond-scope elements
 
@@ -442,6 +467,7 @@ Before showing client notes, check each one:
 - **Relevant:** it explains an important decision for this persona and story.
 - **Evidence:** it traces to a requirement, persona need, or documented business goal.
 - **Clear:** a client who has not read the stories understands it.
+- **Answers a real question:** each additional comment answers a question the client's team is likely to ask, from a source.
 - **Unique:** no two comments make the same point, and no two annotations do. No feature gets a second note when it already has one in Figma. The script may cover the same decisions in its own words. Nothing repeats another output word for word.
 - **Still true:** a note already in Figma still describes the current screen. When the design changed, the note gets a `reviewNote`, as `SKILL.md` section 10 describes.
 - **Volume:** the set stays within the limits above.

@@ -1,7 +1,7 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.5.0
+**Version:** 1.6.0
 
 Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
 
@@ -196,10 +196,10 @@ Each story shows, in this order:
 5. **A client talking point**: "Say this in the walkthrough" for Supported stories, "Safe to say now" for stories with gaps
 6. **Evidence and sources**, collapsed until needed
 
-Below the stories, a **Client notes** area has three tabs:
+At the top of the canvas, **Review** and **Client meeting** switch between the story review and everything for the client meeting. A callout under the header shows what is ready and opens the meeting view. It has three tabs:
 
-- **Walkthrough script:** one script in journey order, with stage navigation, edit, copy, and regenerate.
-- **Figma comments:** the suggested positive comments, with approve, exclude, edit wording, approve all, and publish. Each shows its real Figma status.
+- **Walkthrough script:** one script in journey order, with stage navigation, edit, copy, and regenerate. Under each stage are the questions the client may ask, with answers.
+- **Figma comments:** the suggested positive comments, with approve, exclude, edit wording, approve all, and publish. Each shows its real Figma status. Below them, **More comments for client self-review** can be added to the list one at a time or all at once.
 - **Worth keeping:** elements beyond the stories, each with its annotation text, approve, exclude, and edit wording.
 
 Cursor uses an interactive Canvas when available.
@@ -237,11 +237,17 @@ An element that no story asks for is not flagged when it breaks nothing. When it
 
 One script for the whole review, about two to four minutes spoken. It follows the user's journey, explains how the design helps and why the key decisions fit the user, and links each stage to the business objective when a source documents one. It names each open gap in one honest sentence, with the next step, and asks the client to confirm any beyond-scope element.
 
+Open it with **Client meeting** at the top of the canvas. Each stage links to its screen in Figma. Under each stage, the canvas lists the questions the client may ask, with an answer, so you are ready for them. These questions are not copied with the script.
+
 Edit any stage in the canvas. **Regenerate** rewrites it from the current review. If you had edits, you choose whether to keep them.
 
 ### Positive Figma comments
 
-The skill suggests a few comments, usually 3 to 5 per review, each 25 to 45 words. They explain why an important in-scope decision helps the user and the business. They never come from a story that needs attention, never sit on a part of the flow with an open issue, and never claim outcomes no source supports.
+Clients often review a design on their own and share it with their team. The comments help them check it without you and explain it internally, so a misunderstanding doesn't turn into a revision.
+
+The skill ranks candidates across every story and suggests about one comment for every two or three stories with a clear strength: up to 5 for eight stories or fewer, 6 for 9 to 11, 7 for 12 to 14, and 8 for more. Each is 25 to 45 words and explains why an important in-scope decision helps the user and the business. They never come from a story that needs attention, never sit on a part of the flow with an open issue, and never claim outcomes no source supports.
+
+**More comments for client self-review** sit below the list. Each one answers a question the client's team is likely to ask, such as why the screen differs from the story or why something is entered by hand, with the reason from a source. Click **Add to comments**, or **Add all**, to move them into the list. Then they publish like the others.
 
 To publish:
 

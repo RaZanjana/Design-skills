@@ -228,6 +228,30 @@ Two strong comments beat seven weak ones.
 
 ---
 
+## Additional comment for client self-review
+
+### Good
+
+Question: "Why does the list have four exclusion reasons when the story names three?"
+
+> People who unsubscribed get their own reason in this list. The story named three reasons, and this fourth one was agreed in the story comments, so anyone who opted out by email is never contacted again.
+
+It answers the question a reviewer will ask when they compare the screen with the story. It says where the decision was agreed and what it protects, so the client can explain it to their team without asking the designer.
+
+### Avoid
+
+> We know this looks different from the story, but the extra reason is important and the team thought about it carefully.
+
+Why: it sounds defensive, gives no reason or source, and leaves the client nothing to tell their team.
+
+### Avoid: not a real question
+
+> The Continue button is placed at the bottom right, where people expect it.
+
+Why: nobody on the client's team is likely to question it, and it is a generic UX principle with no source.
+
+---
+
 ## Beyond-scope annotation
 
 ### Good

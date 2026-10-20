@@ -149,6 +149,8 @@ type CommentSuggestion = {
   businessGoal?: string;
   evidence: Ref[];
   reviewNote?: string;
+  additional?: boolean;
+  question?: string;
 };
 
 type BeyondScopeItem = {
@@ -463,6 +465,18 @@ const COMMENTS: CommentSuggestion[] = [
     userNeed: "Riley needs to control the pace of sending.",
     businessGoal: "Send outreach at a safe pace that protects the sending domain.",
     evidence: [{ label: "PRD goals", path: "docs/prd.md", line: 44 }],
+  },
+  {
+    id: "c-3",
+    storyId: "S.1",
+    feature: "Unsubscribed as a fourth exclusion reason",
+    target: { label: "Exclusion reasons", nodeId: "20:4" },
+    text: "People who unsubscribed get their own reason in this list. The story named three reasons, and this fourth one was agreed in the story comments, so anyone who opted out by email is never contacted again.",
+    why: "A reviewer comparing the screen with the story will see four reasons instead of three and may ask for one to be removed.",
+    userNeed: "Riley must never message someone who opted out.",
+    evidence: [{ label: "ClickUp comment, 12 Oct 2026", url: "https://app.clickup.com/t/SAMPLE1" }],
+    additional: true,
+    question: "Why does the list have four exclusion reasons when the story names three?",
   },
 ];
 
@@ -1524,9 +1538,11 @@ type NoteRowProps = {
   liveText?: string;
   busy: boolean;
   reviewNote?: string;
+  question?: string;
   body?: UiNode;
   moreLabel: string;
   more: UiNode;
+  onMoveBack?: () => void;
   onDecide: (decision: NoteDecision) => void;
   onText: (text: string | null) => void;
   onUpdate: () => void;
@@ -1556,6 +1572,14 @@ function NoteRow(p: NoteRowProps) {
         {p.status.note && (
           <Text size="small" tone="secondary">
             {p.status.note}
+          </Text>
+        )}
+        {p.question && (
+          <Text size="small" tone="secondary">
+            <Text as="span" size="small" tone="tertiary">
+              Answers:{" "}
+            </Text>
+            {p.question}
           </Text>
         )}
         {p.reviewNote && <Callout tone="warning">{p.reviewNote}</Callout>}
@@ -1631,6 +1655,11 @@ function NoteRow(p: NoteRowProps) {
           {p.busy && (
             <Button variant="ghost" onClick={p.onCancel}>
               Stop waiting
+            </Button>
+          )}
+          {p.onMoveBack && (
+            <Button variant="ghost" onClick={p.onMoveBack}>
+              Move back
             </Button>
           )}
           <Button variant="ghost" onClick={() => setMore(!more)}>
@@ -1711,14 +1740,62 @@ function useNotesState(): NotesState {
   };
 }
 
+function inCommentList(c: CommentSuggestion, decision: NoteDecision, entry?: CommentEntry): boolean {
+  return !c.additional || decision !== "suggested" || !!entry;
+}
+
+function CommentWhy({ c }: { c: CommentSuggestion }) {
+  return (
+    <Stack gap={6}>
+      <Para label="Why highlight it" text={c.why} />
+      {c.userNeed && <Para label="User need" text={c.userNeed} />}
+      {c.businessGoal && <Para label="Business objective" text={c.businessGoal} />}
+      <Text size="small">
+        <Text as="span" size="small" tone="tertiary">
+          Evidence:{" "}
+        </Text>
+        <RefList items={c.evidence} />
+      </Text>
+    </Stack>
+  );
+}
+
+function MoreCommentRow({ c, text, onAdd }: { c: CommentSuggestion; text: string; onAdd: () => void }) {
+  const theme = useHostTheme();
+  const [open, setOpen] = useCanvasState<boolean>(`note-more:${c.id}`, false);
+  return (
+    <div style={{ padding: "12px 0", borderTop: `1px solid ${theme.stroke.tertiary}` }}>
+      <Stack gap={6}>
+        <Text weight="semibold">{c.question ?? c.feature}</Text>
+        <Text size="small" tone="tertiary">
+          Story {c.storyId}. {c.feature}. On:{" "}
+          <Link href={figmaUrl(c.target.nodeId)}>{c.target.label}</Link>
+        </Text>
+        <Text size="small">“{text}”</Text>
+        <Row gap={8} align="center" wrap>
+          <Button variant="secondary" disabled={!canSend(text)} onClick={onAdd}>
+            Add to comments
+          </Button>
+          <Button variant="ghost" onClick={() => setOpen(!open)}>
+            {open ? "Hide details" : "Why this one"}
+          </Button>
+        </Row>
+        {open && <CommentWhy c={c} />}
+      </Stack>
+    </div>
+  );
+}
+
 function CommentsTab({ notes }: { notes: NotesState }) {
-  const rows = COMMENTS.map((c) => {
+  const all = COMMENTS.map((c) => {
     const entry = COMMENT_STATE[c.id];
     const decision = notes.decisionOf(c.id);
     const busy = notes.isBusy(c.id, entry?.updatedAt);
     const stopped = notes.isStopped(c.id, entry?.updatedAt);
     return { c, entry, decision, busy, stopped, text: notes.textOf(c.id, c.text) };
   });
+  const rows = all.filter((r) => inCommentList(r.c, r.decision, r.entry));
+  const moreRows = all.filter((r) => !inCommentList(r.c, r.decision, r.entry));
   const publishable = rows.filter(
     (r) =>
       r.decision === "approved" &&
@@ -1737,8 +1814,8 @@ function CommentsTab({ notes }: { notes: NotesState }) {
   return (
     <Stack gap={10}>
       <Text size="small" tone="secondary">
-        Positive notes the client reads beside the design in Figma. Nothing is published until
-        you click Publish.
+        Notes the client reads beside the design in Figma. They help the client review the design
+        on their own and explain it to their team. Nothing is published until you click Publish.
       </Text>
       <Row justify="space-between" align="center" gap={12} wrap>
         <Text size="small" tone="tertiary">
@@ -1807,19 +1884,11 @@ function CommentsTab({ notes }: { notes: NotesState }) {
             liveText={entry?.publishedText}
             busy={busy}
             reviewNote={c.reviewNote}
+            question={c.additional ? c.question : undefined}
             moreLabel="Why this one"
-            more={
-              <Stack gap={6}>
-                <Para label="Why highlight it" text={c.why} />
-                {c.userNeed && <Para label="User need" text={c.userNeed} />}
-                {c.businessGoal && <Para label="Business objective" text={c.businessGoal} />}
-                <Text size="small">
-                  <Text as="span" size="small" tone="tertiary">
-                    Evidence:{" "}
-                  </Text>
-                  <RefList items={c.evidence} />
-                </Text>
-              </Stack>
+            more={<CommentWhy c={c} />}
+            onMoveBack={
+              c.additional && !entry && !busy ? () => notes.setDecision(c.id, "suggested") : undefined
             }
             onDecide={(d) => notes.setDecision(c.id, d)}
             onText={(t) => notes.setText(c.id, t)}
@@ -1852,6 +1921,30 @@ function CommentsTab({ notes }: { notes: NotesState }) {
         Keychain so it never appears in the chat. A pasted token is saved in that chat's
         transcript, so give it a short expiry and revoke it afterwards.
       </Text>
+      {moreRows.length > 0 && (
+        <Stack gap={6} style={{ marginTop: 10 }}>
+          <Row justify="space-between" align="center" gap={12} wrap>
+            <H3>More comments for client self-review ({moreRows.length})</H3>
+            <Button variant="secondary" onClick={() => notes.approveAll(moreRows.map((r) => r.c.id))}>
+              Add all
+            </Button>
+          </Row>
+          <Text size="small" tone="secondary">
+            Optional. Each one answers a question the client's team may ask when they review the
+            design without you, so they can check it and explain it instead of asking for a change.
+          </Text>
+          <div>
+            {moreRows.map((r) => (
+              <MoreCommentRow
+                key={r.c.id}
+                c={r.c}
+                text={r.text}
+                onAdd={() => notes.setDecision(r.c.id, "approved")}
+              />
+            ))}
+          </div>
+        </Stack>
+      )}
     </Stack>
   );
 }
@@ -1974,7 +2067,7 @@ function KeepTab({ notes }: { notes: NotesState }) {
   );
 }
 
-function ScriptPanel() {
+function ScriptPanel({ notes }: { notes: NotesState }) {
   const theme = useHostTheme();
   const dispatch = useCanvasAction();
   const [stageId, setStageId] = useCanvasState<string>("script-stage", "all");
@@ -2001,6 +2094,8 @@ function ScriptPanel() {
   const selected = stages.find((s) => s.id === stageId);
   const shown = selected ? [selected] : stages;
   const index = selected ? stages.indexOf(selected) : -1;
+  const questionsFor = (s: ScriptStage) =>
+    COMMENTS.filter((c) => c.additional && c.question && s.storyIds.includes(c.storyId));
 
   const setStageText = (id: string, text: string | null) => {
     setCopyState("idle");
@@ -2144,6 +2239,28 @@ function ScriptPanel() {
             ) : (
               <Text style={{ marginTop: 6, lineHeight: 1.6 }}>{textOf(s)}</Text>
             )}
+            {questionsFor(s).length > 0 && (
+              <Stack
+                gap={6}
+                style={{
+                  marginTop: 10,
+                  paddingLeft: 12,
+                  borderLeft: `2px solid ${theme.stroke.tertiary}`,
+                }}
+              >
+                <Text size="small" tone="tertiary">
+                  Questions they may ask
+                </Text>
+                {questionsFor(s).map((c) => (
+                  <Text key={c.id} size="small">
+                    <Text as="span" size="small" weight="semibold">
+                      {c.question}
+                    </Text>{" "}
+                    {notes.textOf(c.id, c.text)}
+                  </Text>
+                ))}
+              </Stack>
+            )}
           </div>
         ))}
       </Stack>
@@ -2170,29 +2287,45 @@ function ScriptPanel() {
       <Text size="small" tone="tertiary">
         About {words} words, roughly {minutes} {minutes === 1 ? "minute" : "minutes"} spoken.
         Open issues are named in the script, so nothing is presented as finished before it is.
+        The questions under each stage are not copied with the script.
       </Text>
     </Stack>
   );
 }
 
 type NotesTab = "script" | "comments" | "keep";
+type View = "review" | "client";
+
+const HAS_CLIENT_NOTES =
+  WALKTHROUGH.stages.length > 0 || COMMENTS.length > 0 || BEYOND_SCOPE.length > 0;
+const EXTRA_COMMENTS = COMMENTS.filter((c) => c.additional).length;
 
 function ClientNotes() {
   const notes = useNotesState();
   const [tab, setTab] = useCanvasState<NotesTab>("notes-tab", "script");
   const tabs: { id: NotesTab; label: string }[] = [];
   if (WALKTHROUGH.stages.length > 0) tabs.push({ id: "script", label: "Walkthrough script" });
-  if (COMMENTS.length > 0) tabs.push({ id: "comments", label: `Figma comments (${COMMENTS.length})` });
+  if (COMMENTS.length > 0) {
+    const core = COMMENTS.length - EXTRA_COMMENTS;
+    tabs.push({
+      id: "comments",
+      label:
+        EXTRA_COMMENTS > 0
+          ? `Figma comments (${core} + ${EXTRA_COMMENTS} more)`
+          : `Figma comments (${core})`,
+    });
+  }
   if (BEYOND_SCOPE.length > 0) tabs.push({ id: "keep", label: `Worth keeping (${BEYOND_SCOPE.length})` });
   if (tabs.length === 0) return null;
   const active = tabs.some((t) => t.id === tab) ? tab : tabs[0].id;
 
   return (
     <section>
-      <H2>Client notes</H2>
+      <H2>Client meeting</H2>
       <Text size="small" tone="secondary" style={{ marginTop: 4 }}>
-        Use these to present the design. The script is for the meeting. Comments and annotations
-        go into Figma only after you approve them.
+        Present the design with the walkthrough script. Comments and annotations help the client
+        review the design on their own and explain it to their team. They go into Figma only
+        after you approve them.
       </Text>
       <Row gap={6} wrap style={{ marginTop: 12 }}>
         {tabs.map((t) => (
@@ -2203,7 +2336,7 @@ function ClientNotes() {
       </Row>
       <Card size="lg" style={{ marginTop: 12 }}>
         <CardBody>
-          {active === "script" && <ScriptPanel />}
+          {active === "script" && <ScriptPanel notes={notes} />}
           {active === "comments" && <CommentsTab notes={notes} />}
           {active === "keep" && <KeepTab notes={notes} />}
         </CardBody>
@@ -2212,15 +2345,46 @@ function ClientNotes() {
   );
 }
 
+function MeetingCallout({ onOpen }: { onOpen: () => void }) {
+  const stages = WALKTHROUGH.stages.length;
+  const minutes = Math.max(1, Math.round(wordCount(WALKTHROUGH.stages.map((s) => s.text).join(" ")) / 140));
+  const core = COMMENTS.length - EXTRA_COMMENTS;
+  const parts: string[] = [];
+  if (stages > 0) {
+    parts.push(
+      `A walkthrough script in ${stages} ${stages === 1 ? "stage" : "stages"}, about ${minutes} ${minutes === 1 ? "minute" : "minutes"} spoken.`,
+    );
+  }
+  if (COMMENTS.length > 0) {
+    parts.push(
+      `${core} Figma ${core === 1 ? "comment" : "comments"}${EXTRA_COMMENTS > 0 ? `, plus ${EXTRA_COMMENTS} more for client self-review` : ""}.`,
+    );
+  }
+  if (BEYOND_SCOPE.length > 0) parts.push(`${BEYOND_SCOPE.length} worth keeping.`);
+  return (
+    <Callout tone="info" title="Ready for the client meeting">
+      <Text size="small">{parts.join(" ")}</Text>
+      <Row style={{ marginTop: 8 }}>
+        <Button variant="secondary" onClick={onOpen}>
+          Open client meeting
+        </Button>
+      </Row>
+    </Callout>
+  );
+}
+
 export default function PersonaFlowReview() {
   const theme = useHostTheme();
   const [filter, setFilter] = useCanvasState<Filter>("pfr-filter", "All");
   const [selectedId, setSelectedId] = useCanvasState<string>("pfr-story", STORIES[0]?.id ?? "");
+  const [view, setView] = useCanvasState<View>("pfr-view", "review");
+  const activeView: View = HAS_CLIENT_NOTES && view === "client" ? "client" : "review";
 
   const count = (s: Assessment) => STORIES.filter((x) => x.assessment === s).length;
   const filters: Filter[] = ["All", ...STATUS_ORDER.filter((s) => count(s) > 0)];
+  const activeFilter: Filter = filters.includes(filter) ? filter : "All";
   const visibleStories =
-    filter === "All" ? STORIES : STORIES.filter((s) => s.assessment === filter);
+    activeFilter === "All" ? STORIES : STORIES.filter((s) => s.assessment === activeFilter);
   const selectedStory =
     visibleStories.find((s) => s.id === selectedId) ?? visibleStories[0];
 
@@ -2256,7 +2420,8 @@ export default function PersonaFlowReview() {
           </Text>
           {(COMMENTS.length > 0 || BEYOND_SCOPE.length > 0) && (
             <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
-              Client notes: {COMMENTS.length} comments suggested,{" "}
+              Client notes: {COMMENTS.length - EXTRA_COMMENTS} comments suggested
+              {EXTRA_COMMENTS > 0 ? `, ${EXTRA_COMMENTS} more for self-review` : ""},{" "}
               {Object.values(COMMENT_STATE).filter((e) => e.status === "published").length}{" "}
               published. {BEYOND_SCOPE.length} worth keeping,{" "}
               {Object.values(ANNOTATION_STATE).filter((e) => e.status === "annotated").length}{" "}
@@ -2278,62 +2443,81 @@ export default function PersonaFlowReview() {
         </Row>
       </Row>
 
-      <section>
-        <H3>What the labels mean</H3>
-        <Grid columns={4} gap={14} style={{ marginTop: 8 }}>
-          {STATUS_ORDER.map((status) => (
-            <div key={status}>
-              <StatusLabel status={status} />
-              <Text size="small" tone="secondary" style={{ marginTop: 3 }}>
-                {STATUS_HELP[status]}
-              </Text>
-            </div>
-          ))}
-        </Grid>
-        <Text size="small" tone="tertiary" style={{ marginTop: 8 }}>
-          These labels describe story support. They are not WCAG or design-quality scores.
-          Not flagged on purpose: English copy (developers handle localization), example
-          figures in mock data, typos, and visual polish. They are raised only when they
-          change what the user can do or break an agreed rule.
-        </Text>
-      </section>
-
-      <SourcesPanel />
-
-      <ProjectIssues />
-
-      <OpenQuestions />
-
-      <Row gap={8} wrap>
-        {filters.map((item) => (
-          <Pill key={item} active={filter === item} onClick={() => setFilter(item)}>
-            {item}
+      {HAS_CLIENT_NOTES && (
+        <Row gap={6} wrap>
+          <Pill active={activeView === "review"} onClick={() => setView("review")}>
+            Review
           </Pill>
-        ))}
-      </Row>
-
-      {selectedStory && (
-        <Grid columns="minmax(240px, 0.7fr) minmax(520px, 1.8fr)" gap={18}>
-          <Stack gap={8}>
-            {visibleStories.map((s) => (
-              <StoryListItem
-                key={s.id}
-                story={s}
-                selected={s.id === selectedStory.id}
-                onSelect={() => setSelectedId(s.id)}
-              />
-            ))}
-          </Stack>
-          <Card size="lg" style={{ alignSelf: "start" }}>
-            <CardHeader trailing={selectedStory.assessment}>Story {selectedStory.id}</CardHeader>
-            <CardBody>
-              <StoryDetail story={selectedStory} />
-            </CardBody>
-          </Card>
-        </Grid>
+          <Pill active={activeView === "client"} onClick={() => setView("client")}>
+            Client meeting
+          </Pill>
+        </Row>
       )}
 
-      <ClientNotes />
+      {activeView === "client" && <ClientNotes />}
+
+      {activeView === "review" && HAS_CLIENT_NOTES && (
+        <MeetingCallout onOpen={() => setView("client")} />
+      )}
+
+      {activeView === "review" && (
+        <>
+          <section>
+            <H3>What the labels mean</H3>
+            <Grid columns={4} gap={14} style={{ marginTop: 8 }}>
+              {STATUS_ORDER.map((status) => (
+                <div key={status}>
+                  <StatusLabel status={status} />
+                  <Text size="small" tone="secondary" style={{ marginTop: 3 }}>
+                    {STATUS_HELP[status]}
+                  </Text>
+                </div>
+              ))}
+            </Grid>
+            <Text size="small" tone="tertiary" style={{ marginTop: 8 }}>
+              These labels describe story support. They are not WCAG or design-quality scores.
+              Not flagged on purpose: English copy (developers handle localization), example
+              figures in mock data, typos, and visual polish. They are raised only when they
+              change what the user can do or break an agreed rule.
+            </Text>
+          </section>
+
+          <SourcesPanel />
+
+          <ProjectIssues />
+
+          <OpenQuestions />
+
+          <Row gap={8} wrap>
+            {filters.map((item) => (
+              <Pill key={item} active={activeFilter === item} onClick={() => setFilter(item)}>
+                {item}
+              </Pill>
+            ))}
+          </Row>
+
+          {selectedStory && (
+            <Grid columns="minmax(240px, 0.7fr) minmax(520px, 1.8fr)" gap={18}>
+              <Stack gap={8}>
+                {visibleStories.map((s) => (
+                  <StoryListItem
+                    key={s.id}
+                    story={s}
+                    selected={s.id === selectedStory.id}
+                    onSelect={() => setSelectedId(s.id)}
+                  />
+                ))}
+              </Stack>
+              <Card size="lg" style={{ alignSelf: "start" }}>
+                <CardHeader trailing={selectedStory.assessment}>Story {selectedStory.id}</CardHeader>
+                <CardBody>
+                  <StoryDetail story={selectedStory} />
+                </CardBody>
+              </Card>
+            </Grid>
+          )}
+        </>
+      )}
 
       <Divider />
       <Text size="small" tone="tertiary">
