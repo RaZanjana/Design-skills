@@ -391,7 +391,7 @@ Keep a candidate only when its value is specific, meaningful, and backed by a so
 | Per screen | 1. A second only for a separate feature with a different benefit. |
 | Per comment | 25 to 45 words, two or three short sentences, one point. Count words by spaces. |
 
-These are ceilings, not quotas. There is no minimum: 3 is typical, and a small flow may need only 1. When several features show the same benefit, keep the strongest one. When two candidates tie, prefer the one the client is more likely to question.
+These are ceilings, not quotas. Comments already published from an earlier run count toward them. There is no minimum: 3 is typical, and a small flow may need only 1. When several features show the same benefit, keep the strongest one. When two candidates tie, prefer the one the client is more likely to question.
 
 **Each comment:**
 
@@ -403,7 +403,7 @@ These are ceilings, not quotas. There is no minimum: 3 is typical, and a small f
 - Never mentions implementation details, generic UX principles, visual polish, or metrics no source states.
 - Never repeats what the screen already makes obvious, or what another comment says.
 
-Pin it to the most specific node that shows the feature, such as a card or panel. Use the screen when no smaller node fits.
+Pin it to the most specific node that shows the feature, such as a card or panel. Use the screen when no smaller node fits. Figma does not accept comments on a layer inside a component instance, so Publish mode pins those to the nearest layer it accepts, at the feature's position.
 
 ### Beyond-scope elements
 
@@ -442,7 +442,8 @@ Before showing client notes, check each one:
 - **Relevant:** it explains an important decision for this persona and story.
 - **Evidence:** it traces to a requirement, persona need, or documented business goal.
 - **Clear:** a client who has not read the stories understands it.
-- **Unique:** no two comments make the same point, and no two annotations do. The script may cover the same decisions in its own words. Nothing repeats another output word for word.
+- **Unique:** no two comments make the same point, and no two annotations do. No feature gets a second note when it already has one in Figma. The script may cover the same decisions in its own words. Nothing repeats another output word for word.
+- **Still true:** a note already in Figma still describes the current screen. When the design changed, the note gets a `reviewNote`, as `SKILL.md` section 10 describes.
 - **Volume:** the set stays within the limits above.
 
 Drop any note that fails. Fewer strong notes beat many weak ones.

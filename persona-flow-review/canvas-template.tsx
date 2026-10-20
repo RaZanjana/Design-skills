@@ -186,6 +186,7 @@ type CommentEntry = {
   fileKey: string;
   publishedText?: string;
   attemptedText?: string;
+  resolvedAt?: string;
   updatedAt: string;
   note?: string;
 };
@@ -541,7 +542,7 @@ const FIX_STATUS_LABEL: Record<FixStatus | "in-progress", string> = {
 };
 
 function figmaUrl(nodeId: string): string {
-  return `https://www.figma.com/design/${REVIEW.figmaFileKey}/${REVIEW.figmaFileName}?node-id=${nodeId.replace(":", "-")}&m=dev`;
+  return `https://www.figma.com/design/${REVIEW.figmaFileKey}/${REVIEW.figmaFileName}?node-id=${encodeURIComponent(nodeId.replace(/:/g, "-"))}&m=dev`;
 }
 
 function fixPrompt(request: FixRequest, issueId: string, instruction?: string): string {
@@ -1458,7 +1459,7 @@ function scriptPrompt(): string {
 }
 
 function shownStatus(
-  entry: { status: string; note?: string } | undefined,
+  entry: { status: string; note?: string; resolvedAt?: string } | undefined,
   labels: Record<string, [string, NoteTone]>,
   decision: NoteDecision,
   busy: boolean,
@@ -1470,6 +1471,13 @@ function shownStatus(
       label: "Needs check",
       tone: "yellow",
       note: "The chat closed before it reported back. Check the status in Figma before trying again.",
+    };
+  }
+  if (entry?.status === "published" && entry.resolvedAt) {
+    return {
+      label: "Resolved in Figma",
+      tone: "green",
+      note: entry.note ?? "Someone resolved this comment in Figma. It is still there, marked resolved.",
     };
   }
   if (entry) {

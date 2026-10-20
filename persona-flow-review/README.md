@@ -1,7 +1,7 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.4.0
+**Version:** 1.5.0
 
 Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
 
@@ -267,13 +267,15 @@ What Figma allows:
 - Comments are posted under the token owner's name.
 - Figma's API cannot edit a comment. **Update in Figma** posts the new wording and removes the old comment, so it gets a new ID. When the comment already has replies, the new wording is posted as a reply instead, so the replies stay.
 - Only the comment's author can remove it.
+- Figma can't pin a comment to a layer inside a component. The skill then pins it to the screen, at the feature's position.
+- A comment stays in Figma when its screen is deleted. A re-run of the review flags it so you can remove it.
 - Before every post, the skill checks the file's comments, so retries and re-runs never create duplicates.
 - A comment shows as published only after Figma confirms it. When the result is unclear, or a chat closed before it reported back, it shows **Needs check**, and **Check Figma status** confirms it.
 - The skill refuses to publish empty wording or wording that looks like a token.
 
 ### Beyond-scope annotations
 
-Some designs include elements no story asks for that are worth keeping. The skill suggests up to about five, each with an annotation that starts "Beyond the story:". After you approve them, **Add approved annotations** writes them through the Figma connector, in a "Beyond scope" annotation category. No token is needed. Annotations can be updated and removed in place, and re-runs update the existing annotation instead of adding another.
+Some designs include elements no story asks for that are worth keeping. The skill suggests up to about five, each with an annotation that starts "Beyond the story:". After you approve them, **Add approved annotations** writes them through the Figma connector, in a "Beyond scope" annotation category. No token is needed. Annotations can be updated and removed in place, and re-runs update the existing annotation instead of adding another. Other annotations on the same screen, in any category, stay exactly as they were.
 
 Annotations show in Figma when annotations are turned on, and in Dev Mode. Check that your client can see them before you rely on them.
 

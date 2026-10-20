@@ -170,7 +170,7 @@ Each comment and annotation shows one status. Take the first that applies:
 
 1. **Working in a new chat:** the designer's latest request is newer than the state entry's `updatedAt`.
 2. **Needs check**, after the designer clicked "Stop waiting" and no newer state entry arrived. Note: "The chat closed before it reported back. Check the status in Figma before trying again."
-3. The state entry from Figma: **Published** or **Annotated** (green), **Needs check** (yellow), **Failed** (red), **Not published** or **Removed** (gray).
+3. The state entry from Figma: **Published**, **Resolved in Figma** (published with `resolvedAt`), or **Annotated** (green), **Needs check** (yellow), **Failed** (red), **Not published** or **Removed** (gray).
 4. The designer's choice: **Approved** (accent), **Suggested** or **Excluded** (gray).
 
 Never show Published or Annotated without a state entry written by Publish or Annotate mode. Show the entry's note under the status. While a note is "Working in a new chat", show "Stop waiting". It marks the request as stopped instead of deleting it, because the chat may still have changed Figma. A stopped comment can be checked but not published until "Check Figma status" reports back. A comment counts as in Figma whenever its entry has a `figmaCommentId` and is not removed, even when it needs a check.
@@ -493,9 +493,9 @@ WALKTHROUGH
   stages[]          { id, title, storyIds[], screen? { label, nodeId }, text }
 ```
 
-Two top-level constants, keyed by note ID. Start them empty. Only Publish mode changes `COMMENT_STATE`, and only Annotate mode changes `ANNOTATION_STATE`. The fields are listed in [publish-comments.md](publish-comments.md#6-update-the-canvas-and-reply) and [annotate-figma.md](annotate-figma.md#3-update-the-canvas-and-reply).
+Two top-level constants, keyed by note ID. Start them empty. Only Publish mode changes `COMMENT_STATE`. Only Annotate mode changes `ANNOTATION_STATE`, except that a re-run may set an entry to `needs-check` when Figma shows the annotation is missing. The fields are listed in [publish-comments.md](publish-comments.md#6-update-the-canvas-and-reply) and [annotate-figma.md](annotate-figma.md#3-update-the-canvas-and-reply).
 
-On a re-run, carry these entries over from the earlier review of the same Figma file, as `SKILL.md` section 11 describes. Keep a published note's suggestion in `COMMENTS` or `BEYOND_SCOPE` with a `reviewNote`, even when it would no longer be suggested, so the designer can still remove it.
+A re-run updates the same canvas and carries these entries over, as `SKILL.md` sections 10 and 11 describe. Keep a published note's suggestion in `COMMENTS` or `BEYOND_SCOPE` with a `reviewNote`, even when it would no longer be suggested, so the designer can still update or remove it.
 
 ## Final chat response
 

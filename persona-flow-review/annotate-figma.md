@@ -57,11 +57,14 @@ if (!cat && items.some(i => i.action !== 'remove')) {
   cat = await figma.annotations.addAnnotationCategoryAsync({ label: CATEGORY, color: 'teal' });
 }
 
+// Figma returns label HTML-escaped: "doesn't" reads back as "doesn&#39;t".
+const decode = s => (s ?? '').replace(/&#39;/g, "'").replace(/&quot;/g, '"')
+  .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 const norm = s => (s ?? '').replace(/\s+/g, ' ').trim();
-const textOf = a => norm(a.label ?? a.labelMarkdown);
-// Figma accepts label or labelMarkdown, not both, so rebuild the annotations we keep.
+const textOf = a => norm(a.labelMarkdown || decode(a.label));
+// Figma accepts label or labelMarkdown, not both. Write labels back decoded, or they are escaped twice.
 const keep = a => ({
-  ...(a.labelMarkdown ? { labelMarkdown: a.labelMarkdown } : a.label ? { label: a.label } : {}),
+  ...(a.labelMarkdown ? { labelMarkdown: a.labelMarkdown } : a.label ? { label: decode(a.label) } : {}),
   ...(a.properties?.length ? { properties: a.properties } : {}),
   ...(a.categoryId ? { categoryId: a.categoryId } : {}),
 });

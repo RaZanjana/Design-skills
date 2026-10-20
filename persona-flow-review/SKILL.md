@@ -397,6 +397,26 @@ Then add, on top of those sentences:
 
 No introduction or closing is needed beyond that.
 
+### Notes already in Figma
+
+On a re-run, the canvas already holds notes from earlier runs (see section 11). Start from them:
+
+1. **One note per feature.** Match each new candidate to the earlier notes by target screen and feature. When it matches, keep the earlier note and its ID. Never add a second note for a feature that already has a comment or annotation in Figma, even with better wording. Give new notes new IDs that continue the numbering.
+2. **The limits include what is in Figma.** Count published comments and annotated items toward the ceilings above.
+3. **Check that each note in Figma still fits.** For every published comment and annotated item:
+   - Confirm its node still exists, and read back each annotation, in one read-only `use_figma` call for all notes. Change nothing. A comment's node is the `nodeId` in `COMMENT_STATE`. Figma returns annotation labels HTML-escaped, so decode them as [annotate-figma.md](annotate-figma.md#2-write-and-verify-in-one-call) does before comparing.
+   - Compare its wording with the current screen and this review. The feature must still be there and still work as described. No open issue may name the screen. Its story must not be Needs attention or Insufficient evidence.
+
+   When a note fails a check, keep it and set its `reviewNote` to say what changed and what to do:
+
+   - "The screen this comment points to is gone. Remove it from Figma."
+   - "The design changed: Continue no longer waits for the confirmation. Update the wording, or remove it."
+   - "An open issue now names this screen. Consider removing this comment until it is fixed."
+   - "Story 2.1 now needs attention. Consider removing this comment."
+   - "This annotation is no longer in Figma. Add it again, or exclude it."
+
+   When the read-back shows an annotation is missing, also set its `ANNOTATION_STATE` entry to `needs-check` with the same reason. Review mode never sets any other status, and never changes Figma. It cannot list comments, because it has no token. The designer confirms comments with "Check Figma status".
+
 The rules for selection, wording, and quality checks are in [methodology.md](methodology.md#client-notes).
 
 ## 11. Produce the review artifact
@@ -431,15 +451,19 @@ The output must include:
 
 Use muted green for Supported, muted yellow for Partially supported, muted red for Needs attention, and neutral gray for Insufficient evidence. Maintain readable contrast.
 
-On a re-run for the same Figma file, look in the canvases folder for the most recent earlier review with the same `figmaFileKey`. Carry over:
+### Re-runs update the same canvas
 
-- Its `COMMENT_STATE` and `ANNOTATION_STATE` entries, with their suggestions and IDs, so nothing is published or annotated twice.
-- For each published comment, set the suggestion's `text` to its `publishedText`. For each annotated item, use its `annotatedText`.
-- `WALKTHROUGH.version`: the earlier version plus one.
+On a re-run for the same Figma file and page, update the most recent earlier canvas in place. Find it in the canvases folder by `REVIEW.figmaFileKey` and `REVIEW.wireflowsPage.nodeId`. Keep its file name and replace only its data block. The designer's approvals, edited wording, and script edits are saved next to the canvas and keyed by note and stage IDs, so they carry over. Use a new canvas only for a different file or page. When the designer wants to keep the earlier review as a record, copy the canvas first.
 
-When a published note no longer fits, for example because its story now needs attention, keep the suggestion and set its `reviewNote`, such as "Story 2.1 now needs attention. Consider removing this comment." Never remove anything from Figma in Review mode.
+Carry over:
 
-Tell the designer to use the new canvas from now on. The earlier one stays as a record. Its buttons still check Figma before posting, so they never create duplicates.
+- `COMMENT_STATE`, `ANNOTATION_STATE`, and `FIX_STATE` entries, unchanged apart from the annotation check in section 10.
+- Every note that has a state entry, with its ID. For a published comment, set `text` to its `publishedText`. For an annotated item, use its `annotatedText`.
+- Every unpublished note that is still a candidate, with its ID, so the designer's approval and edits stay attached.
+- A published note whose story is not part of this review. Set its `reviewNote`: "Story 2.1 is not part of this review. Check this comment still fits."
+- Script stage IDs, when a stage covers the same journey step. Set `WALKTHROUGH.version` to the earlier version plus one.
+
+Never remove anything from Figma in Review mode.
 
 ## 12. Verify before delivery
 
@@ -471,6 +495,8 @@ Tell the designer to use the new canvas from now on. The earlier one stays as a 
 - Every comment and annotation names a real screen, ties to a source, and stays within the volume and length limits.
 - No comment or annotation sits on a screen that an open issue names, and no feature has both.
 - No new comment comes from a Needs attention or Insufficient evidence story. A published comment carried over from an earlier review may stay, with a `reviewNote`.
+- No feature has two notes in Figma, and published comments and annotated items count toward the limits.
+- On a re-run, every published comment and annotated item was checked against the current screen, and each one that no longer fits has a `reviewNote`.
 - The script follows the journey order, matches every story status, and mentions each open journey issue and beyond-scope element.
 - No two comments make the same point, and no two annotations do. The script may cover the same decisions, in its own words. Nothing repeats another output word for word.
 - No sample data from the template remains.

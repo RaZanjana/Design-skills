@@ -122,6 +122,8 @@ Follow `SKILL.md` sections 4 to 9 for this story alone:
   - Rewrite the script stage for this story, raise `WALKTHROUGH.version`, and set `generatedAt`. The gap sentence goes when the gap is fixed.
   - When the fix makes a new strength worth a comment, add it to `COMMENTS` within the volume limits.
   - When the story now needs attention, remove its unpublished comments. For a published one, set `reviewNote` to suggest removing it.
+  - Check every published comment and annotated item on a screen this fix changed, including those of other stories that use the same component. When its wording no longer describes the fixed screen, set `reviewNote`: "The fix changed this screen: [what changed]. Update the wording, or remove it."
+  - A screen that no longer has an open issue can now get a comment. Never add a second note for a feature that already has one in Figma.
   - Never publish, annotate, or remove anything in Figma from this mode.
 
 ## 7. Update Figma and the canvas

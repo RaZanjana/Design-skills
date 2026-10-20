@@ -35,7 +35,30 @@ From the prompt, read each comment ID and its final text. The prompt text is the
 
 Stop and explain when the file key is missing or an ID is not in `COMMENTS`.
 
-For Publish and Update only, confirm each target still exists with the Figma MCP: call `create_session` for the file, then `get_metadata` for the node. This is read-only. When a node is gone, set that comment to `failed` with the note "The screen this comment points to no longer exists." and skip it. Skip this check for Remove and Check: a comment stays in Figma after its screen is deleted.
+For Publish and Update, check every target with the Figma MCP before posting. Call `create_session` for the file, then make one read-only `use_figma` call for the batch. Load the `figma-use` skill first.
+
+Figma refuses comments on a layer inside a component instance, whose node ID starts with `I`. Its answer, "Comment couldn't be saved. Please wait a few minutes and try again", is misleading. So the call pins each comment to the nearest layer Figma accepts, at the feature's position:
+
+```js
+const items = [/* { id: 'c-1', nodeId: '...' }, for each comment in the prompt */];
+const out = [];
+for (const item of items) {
+  const node = await figma.getNodeByIdAsync(item.nodeId);
+  if (!node) { out.push({ id: item.id, found: false }); continue; }
+  let anchor = node;
+  while (anchor.id.startsWith('I') && anchor.parent) anchor = anchor.parent;
+  const a = anchor.absoluteBoundingBox, b = node.absoluteBoundingBox;
+  const pin = anchor !== node && a && b
+    ? { x: Math.round(b.x - a.x) + 16, y: Math.round(b.y - a.y) + 16 }
+    : { x: 16, y: 16 };
+  out.push({ id: item.id, found: true, nodeId: anchor.id, pin });
+}
+return out;
+```
+
+Post each comment on the returned `nodeId` and `pin`, and record that `nodeId` in `COMMENT_STATE`. When a node is not found, set that comment to `failed` with the note "The screen this comment points to no longer exists." and skip it.
+
+Figma accepts a comment on a node that no longer exists, so this check is the only guard. Update reuses the node and position of the comment it replaces, so run the same call for the entry's `nodeId` first. When it is gone, post nothing, keep `published`, and note: "The screen this comment points to is gone. Remove the comment instead." Remove and Check skip this step: a comment stays in Figma after its screen is deleted.
 
 ## 2. Get the token
 
@@ -135,7 +158,7 @@ jq -c --argjson nodes '["20:2","30:2"]' '
   [.comments[] | select((.client_meta.node_id? // null) as $n | $n != null and ($nodes | index($n) != null))] as $top
   | ($top | map(.id)) as $ids
   | [$top[], (.comments[] | select((.parent_id // "") as $p | $p != "" and ($ids | index($p) != null)))]
-  | map({id, parent_id, node: .client_meta.node_id?, user: .user.id, message})' "$LIST"
+  | map({id, parent_id, node: .client_meta.node_id?, user: .user.id, resolved_at, message})' "$LIST"
 ```
 
 Delete the listing with `rm -f "$LIST"` when the run ends. It holds comment text only, never the token.
@@ -167,7 +190,8 @@ TEXT=$(cat <<'PFR_TEXT'
 [final text exactly as in the prompt]
 PFR_TEXT
 )
-NODE_ID='[nodeId]'
+NODE_ID='[nodeId from section 1]'
+PIN='{"x": 16, "y": 16}'   # the pin from section 1
 ```
 
 For each one:
@@ -183,17 +207,19 @@ existing=$(jq -r --arg n "$NODE_ID" --arg m "$TEXT" '
 echo "${existing:-none}"
 ```
 
-   When you find one, record it as `published` with its ID, its author's `user.id`, and its text. Note: "Found in Figma. Not posted again."
+   When you find one, record it as `published` with its ID, its author's `user.id`, its text, and `resolvedAt` when it is resolved. Note: "Found in Figma. Not posted again." The check includes resolved comments, so a comment the client resolved is never posted again.
+
+   Also skip it when another comment in `COMMENT_STATE` is already in Figma on the same node for the same `feature`. Note: "This feature already has a comment in Figma."
 
 3. **Post it:**
 
 ```bash
-payload=$(jq -nc --arg m "$TEXT" --arg n "$NODE_ID" \
-  '{message: $m, client_meta: {node_id: $n, node_offset: {x: 16, y: 16}}}')
+payload=$(jq -nc --arg m "$TEXT" --arg n "$NODE_ID" --argjson p "$PIN" \
+  '{message: $m, client_meta: {node_id: $n, node_offset: $p}}')
 resp=$(fapi POST "/files/$FILE_KEY/comments" "$payload")
 code=${resp##*$'\n'}; out=${resp%$'\n'*}
 echo "$code"
-printf '%s' "$out" | jq -c '{id, user: .user.id?, err}' 2>/dev/null || echo "No readable answer."
+printf '%s' "$out" | jq -c '{id, user: .user.id?, err: (if .id then null else (.err // .message) end)}' 2>/dev/null || echo "No readable answer."
 ```
 
 4. **Record the result:**
@@ -227,9 +253,11 @@ COMMENT_STATE[commentId]
   oldCommentId?   an old comment an update could not delete
   replyIds?[]     corrections posted as replies
   authorId?       the Figma user who posted it
-  nodeId, fileKey
+  nodeId          the node the comment is pinned to: the target, or the layer that holds it
+  fileKey
   publishedText?  the latest wording Figma shows
   attemptedText?  wording sent when Figma did not confirm
+  resolvedAt?     Figma's resolved_at, when someone resolved the comment in Figma
   updatedAt       ISO time in UTC, such as 2026-10-20T14:05:00.000Z
   note?           plain English. Never the token, headers, or raw API output.
 ```
@@ -269,7 +297,7 @@ payload=$(jq -nc --arg m "$TEXT" --arg c "$COMMENT_ID" '{message: $m, comment_id
 
    On 200, add the reply ID to `replyIds`, set `publishedText` to the new wording, and keep `published`. Note: "Posted the new wording as a reply, because the comment already has replies."
 
-3. **When it has no replies:** post the new wording on the same node first, then delete the old comment. Posting first means a failure never leaves the client with no comment. When the new comment's `user.id` differs from `authorId`, delete the new comment, keep the original, and note: "This token belongs to a different Figma account. Nothing changed."
+3. **When it has no replies:** post the new wording on the same node and at the same position first, then delete the old comment. Take both from the old comment in the listing: `NODE_ID=$(jq -r --arg c "$COMMENT_ID" '.comments[] | select(.id == $c) | .client_meta.node_id' "$LIST")` and `PIN=$(jq -c --arg c "$COMMENT_ID" '.comments[] | select(.id == $c) | .client_meta.node_offset // {x: 16, y: 16}' "$LIST")`. Posting first means a failure never leaves the client with no comment. When the new comment's `user.id` differs from `authorId`, delete the new comment, keep the original, and note: "This token belongs to a different Figma account. Nothing changed."
 
 | Result | Status and note |
 | --- | --- |
@@ -305,6 +333,6 @@ Never mark a comment removed unless Figma answered 200 or 404, or a listing that
 
 List the file's comments once. For each comment named in the prompt:
 
-- **With a `figmaCommentId`, found:** keep or set `published`. When `oldCommentId` is set and the old comment still exists, keep `needs-check`. When it is gone, clear `oldCommentId`. Compare `publishedText` with the latest reply in `replyIds` when there is one, otherwise with the comment itself. When they differ, update `publishedText` and note "Edited in Figma."
+- **With a `figmaCommentId`, found:** keep or set `published`. When `oldCommentId` is set and the old comment still exists, keep `needs-check`. When it is gone, clear `oldCommentId`. Compare `publishedText` with the latest reply in `replyIds` when there is one, otherwise with the comment itself. When they differ, update `publishedText` and note "Edited in Figma." Set `resolvedAt` from `resolved_at`, or clear it when the comment is open again.
 - **With a `figmaCommentId`, not found:** set `removed`: "No longer in Figma."
 - **Without a `figmaCommentId`:** run the "Already in Figma" check with `attemptedText`, or the prompt's text. When found, record it as `published`. When not, set `failed`: "Not in Figma. Publish it again."
