@@ -111,7 +111,7 @@ Then:
 
 Follow `SKILL.md` sections 4 to 9 for this story alone:
 
-- Use the source paths from the canvas. Read only this story and its persona.
+- Use the source paths and the story's `scope` record from the canvas. Read only this story and its persona. Do not rerun the intake.
 - Run both review passes against the updated Wireflows flow.
 - Reassign the assessment based on the evidence. Do not upgrade it just because a fix was applied.
 - Move the fixed issue into the story's `resolved` list.
@@ -127,7 +127,7 @@ On the "Fixed issues" page:
 In the attached canvas:
 
 - In `FIX_STATE`, set `status: "applied"`, `appliedAt`, `updatedAt`, and the final `changes[]`. Add `draftComponentNodeId`, and `newScreenNodeId` when a screen was added.
-- Update the story: assessment, observations, `resolved`, rationale, and walkthrough notes.
+- Update the story: assessment, observations with their priority, confidence, and evidence, `resolved`, rationale, and walkthrough notes.
 - Set `reReviewSuggested: true` on each story in `otherStories`.
 - Update the summary counts in the header.
 - Check the canvas TypeScript result.

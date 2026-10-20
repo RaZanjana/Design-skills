@@ -1,9 +1,11 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.1.0
+**Version:** 1.2.0
 
-Persona Flow Review helps product designers evaluate Figma wireflows against approved personas, user stories, and project scope.
+Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
+
+Designers start it with a short prompt. The skill finds what it can in the project and asks only for what is missing.
 
 It produces a lightweight, walkthrough-ready review that explains:
 
@@ -46,6 +48,7 @@ It is separate from a full accessibility or design-quality audit.
 persona-flow-review/
 ├── SKILL.md
 ├── README.md
+├── intake.md
 ├── methodology.md
 ├── canvas-output.md
 ├── fix-mode.md
@@ -54,6 +57,7 @@ persona-flow-review/
 ```
 
 - `SKILL.md` — the workflow followed by the AI, and which mode to use
+- `intake.md` — how the skill collects inputs, finds sources, checks access, and reconciles scope before reviewing
 - `methodology.md` — evidence, assessment, classification, and fix rules
 - `canvas-output.md` — the interactive review structure, including the fix buttons
 - `fix-mode.md` — how one issue is fixed on the "Fixed issues" Figma page
@@ -98,66 +102,79 @@ Do not install it inside `~/.cursor/skills-cursor/`; that folder is reserved for
 
 ## Prerequisites
 
-For the strongest review, provide:
-
-- Approved persona files
-- Current user-story files
-- Approved scope and decision files
-- A Figma design URL
-- The name of the Wireflows page
-
-The AI also needs access to those sources.
-
-For direct Figma inspection, enable the Figma connector or plugin supported by your AI platform. If direct access is unavailable, provide story-grouped screenshots or a PDF export.
+- **Figma connector**, with access to the file. If it is unavailable, provide story-grouped screenshots or a PDF export.
+- **ClickUp connector**, signed in, with access to the stories' tasks and comments. If it is unavailable, you can paste the task descriptions and comments, or continue without ClickUp.
+- **The project open** in your editor, so the skill can read the local story files, persona files, and PRD.
 
 ## How to use
 
-Explicitly ask the AI to use the skill:
+Start with a short prompt:
 
 ```text
-Use the persona-flow-review skill.
-
-Persona files: [path or attached files]
-User stories: [path or attached files]
-Scope decisions: [path or attached files]
-Figma file: [URL]
-Wireflows page: [page name]
-Stories to review: [all or story IDs]
+Use the /persona-flow-review skill to review [story names in Figma]
 ```
 
-The first five inputs are mandatory:
-
-1. Persona source
-2. User-story source
-3. Scope source
-4. Figma file or exported design
-5. Wireflows page name
-
-Story selection is optional. When omitted, the skill reviews all story sections it can reliably map.
-
-## Example request
+For example:
 
 ```text
-Use the persona-flow-review skill to review this project.
+Use the /persona-flow-review skill to review Confirm Suppression Before Sequence and Configure Multi-Step Sequence
+```
+
+The skill then:
+
+1. Takes whatever your prompt already gives, such as story names, URLs, page names, or paths.
+2. Looks in the project for the story files, persona files, and ClickUp links, and asks you to confirm what it found.
+3. Asks only for what is still missing, in one short message.
+4. Finds the PRD through the story files. You never need to provide it.
+5. Reads the ClickUp tasks and every comment, the local story files, the PRD, the personas, and the Figma page you named.
+6. Shows a short summary of the sources it read, the ClickUp decisions that change the local documents, and any question that would change the result.
+7. Runs the review.
+
+### What the skill needs
+
+| Input | How it gets it |
+| --- | --- |
+| Stories to review, by their names in Figma | Your prompt, or it asks |
+| Personas, as details or a file path | Found in the project and confirmed, or it asks |
+| ClickUp URL: a sprint or list URL, or task URLs | Found in the project and confirmed, or it asks |
+| Local user story files or folder | Found in the project and confirmed, or it asks |
+| Figma file URL and exact page name | It asks |
+| PRD | Found through the story files. Never asked. |
+
+You can give everything up front to skip the questions:
+
+```text
+Use the /persona-flow-review skill to review 2.1, 2.5, and 4.4.
 
 Personas: @docs/personas/
 Stories: @docs/stories/
-Scope: @docs/product-decisions/
+ClickUp: https://app.clickup.com/.../v/li/...
 Figma: https://www.figma.com/design/...
-Wireflows page: ⭐️ Wireflows
-Review stories: 2.1, 2.5, 4.4
+Page: ⭐️ Wireflows
 ```
+
+### Which source wins
+
+1. **ClickUp task and comments** decide the agreed scope of each story. The latest explicit decision wins.
+2. **Local story files and decision records** add context, dependencies, and references.
+3. **The PRD** explains product intent and business rules where ClickUp is silent.
+4. **Persona files** describe the target users.
+5. **The Figma page** is the design being reviewed.
+
+When sources disagree and no ClickUp decision settles it, the skill does not choose. It asks you, or lists the conflict under "Open scope questions".
 
 ## What the skill produces
 
 The skill generates:
 
 - An assessment guide
+- Sources checked, including any that could not be accessed
 - Project-wide findings
+- Open scope questions, when sources disagree
 - Story filters
-- Persona and user objective
+- Persona, user objective, and the scope used
 - Supports / Partially supports / Needs attention / Insufficient evidence
-- Up to three evidence-based observations per story
+- Up to three evidence-based observations per story, each with a priority, a confidence label, and its sources
 - Design rationale
 - Consider changing / Keep
 - Walkthrough notes
@@ -233,8 +250,10 @@ The skill will not:
 - Claim WCAG compliance
 - Edit the Figma design during review
 - Change the Draft or Wireflows pages before you approve a fix
-- Edit story, persona, or scope files
+- Edit story, persona, PRD, or ClickUp content
 - Guess when mandatory sources are inaccessible
+- Claim it reviewed a source it could not read
+- Pick silently between conflicting sources
 
 Use a separate accessibility or design-audit workflow for WCAG, visual consistency, component quality, and formal conformance checks.
 

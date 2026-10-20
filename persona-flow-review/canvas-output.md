@@ -16,9 +16,11 @@ Do not require external packages, remote assets, or network requests to render t
 
 - Project or feature name
 - Review date
-- Wireflows page name
+- Reviewed Figma page name
 - Story totals by assessment
 - Issue totals by fix status: open, ready for review, applied
+- Source totals: read, partly read, not accessible, not found
+- "ClickUp scope was not checked" when the designer chose to continue without ClickUp
 
 ### Assessment guide
 
@@ -33,6 +35,17 @@ Add:
 
 > These labels describe story and persona support. They are not WCAG or overall design-quality scores.
 
+### Sources checked
+
+Show a compact panel, collapsed by default when every source was read. Each row shows:
+
+- The source in words, such as "ClickUp task: Confirm suppression" or "PRD"
+- Where it came from: Designer, Discovered, ClickUp, or Figma
+- Its status: Read, Partly read, Not accessible, or Not found
+- What was missing, when anything was
+
+Show a warning callout at the top of the panel when any source is not accessible or not found.
+
 ### Project-wide findings
 
 Use one compact notice for issues affecting several stories. Do not repeat these inside every story.
@@ -42,6 +55,17 @@ Examples:
 - Product language conflicts with the approved language.
 - Story IDs in Figma are out of date.
 - Counts do not remain consistent across a multi-story journey.
+
+### Open scope questions
+
+Show this panel only when there are unresolved conflicts or questions. Each question shows:
+
+- The question in one plain sentence
+- The affected story, when it is not project-wide
+- What each source says, as bullet points
+- Who should decide, when the sources name a product owner
+
+These are not design issues and have no fix button.
 
 ### Story navigation
 
@@ -68,14 +92,16 @@ Use this order:
    - User objective
    - Direct Figma flow link
    - Direct relevant-screen links
+   - **Scope used:** the ClickUp task link, and the ClickUp decisions that override the local story or PRD, one plain line each
 2. **Overall assessment**
 3. **Key observations**
    - Maximum three
    - Plain-language title that states the problem or strength
-   - Small classification tag, such as “Requirement gap”
+   - Small tags: classification, such as “Requirement gap”, priority (High, Medium, Low), and confidence (Confirmed, Potential concern)
    - “What we found”
    - “Why it matters”
    - “Suggested fix”, omitted for strengths
+   - “Evidence”: the sources as named links, such as “ClickUp comment, 12 Oct 2026”
    - Screen name in words, linked to the Figma node
    - Fix status and fix actions, described in [Fixing issues](#fixing-issues)
 4. **Resolved issues**
@@ -92,7 +118,9 @@ Use this order:
    - Two or three short talking points
 8. **References**
    - Persona
-   - User story
+   - ClickUp task
+   - Local user story
+   - PRD section, when directly relevant
    - Scope decision, when directly relevant
    - Figma flow
    - Relevant screens
@@ -213,7 +241,7 @@ All canvas text follows the plain-English rules in `SKILL.md` section 9. In shor
 - Write for someone who has not seen the stories, personas, or Figma file.
 - Use short sentences, everyday words, and active voice.
 - Describe what is on the screen by name: people, buttons, labels, numbers.
-- Keep requirement IDs, node IDs, layer names, and error codes out of sentences. Show them only in links or the References area.
+- Keep requirement IDs, node IDs, ClickUp task IDs, layer names, and error codes out of sentences. Show them only in links or the References area.
 - Explain any product term the first time it appears.
 - Use bullet lists when comparing two things that should match.
 - Do not use arrow chains, `·`-separated fragments, or abbreviations.
@@ -248,9 +276,13 @@ Link both the complete story section and the specific screen supporting a findin
 
 ### Local sources
 
-When the platform can open local files, provide actions for the persona, story, and scope source.
+When the platform can open local files, provide actions for the persona, story, PRD, and decision records.
 
 When it cannot, display the exact supplied path or document name.
+
+### ClickUp
+
+Link each task with its URL. Link a comment with its own URL when the connector returns one. Otherwise link the task and name the comment's author and date in the link label.
 
 ## Data contract
 
@@ -262,8 +294,17 @@ The fix chats need these details, so store them once at the top of the canvas:
 skillDir
 figmaFileKey
 figmaFileName
-wireflowsPage { name, nodeId }
-sources { personas[], stories[], scope[] }
+wireflowsPage { name, nodeId }   the page the designer named
+sources
+  personas[]            { name, path or "Designer (pasted)" }
+  stories[]             local story paths
+  decisionRecords[]
+  prd?                  path, or null when not found
+  clickup               { checked, urls[], tasks[{ id, url, storyId, commentsRead, gaps[] }] }
+sourceLedger[]          { source, origin, status, gap? }
+                        origin: designer | discovered | clickup | figma
+                        status: read | partly-read | not-accessible | not-found
+openQuestions[]         { id, storyId?, question, positions[{ source, says }], decideBy? }
 projectWideFindings[]   same fields as an observation, with issueId "pw-[number]" and affectedScreenNodeIds[]
 ```
 
@@ -278,13 +319,24 @@ assessment
 reReviewSuggested?
 persona
 objective
+scope
+  clickupTaskUrl?   null when ClickUp was not checked
+  localStoryPath
+  prdSections[]
+  requirements[]    { text, source }
+  decisions[]       { text, source, author, date, overrides? }
+  exclusions[]
+  dependencies[]
 observations[]
   issueId           "[story ID]-[number]", never reused
   title
   classification
+  priority          high | medium | low
+  confidence        confirmed | potential
   found
   whyItMatters
   suggestedFix?
+  evidence[]        { label, url or path }
   changeSummary?    one plain sentence on what a fix would change
   fixAction         figma-screen | figma-new-screen | figma-rename | audit-handoff | none
   screenName
@@ -297,6 +349,8 @@ considerChanging?
 keep
 walkthroughNotes[]
 storyReference
+clickupReference?
+prdReference?
 personaReference
 scopeReferences[]
 figmaFlowReference
@@ -337,4 +391,6 @@ Return:
 Created the persona flow review: [Open review]
 
 [N] support · [N] partially support · [N] need attention · [N] insufficient evidence
+
+[Sources that could not be accessed, and the number of open scope questions. Omit when there are none.]
 ```

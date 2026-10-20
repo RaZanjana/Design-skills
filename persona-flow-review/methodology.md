@@ -6,7 +6,7 @@ The review connects four evidence layers:
 
 ```text
 Persona evidence
-→ User-story requirement
+→ Agreed story scope (ClickUp, local story, PRD)
 → Figma design decision
 → Defensible reason or finding
 ```
@@ -42,8 +42,45 @@ The AI is an evidence-constrained reviewer. It is not a synthetic user and does 
 - Success conditions
 - Explicit exclusions
 - Approved decisions and amendments
+- ClickUp task descriptions
+- ClickUp comments that add, remove, change, or clarify behavior, with their author and date
+- Local story requirements and PRD rules that ClickUp does not contradict
 
 Technical criteria are relevant only when they affect visible behavior, timing, permission, data safety, or system feedback.
+
+### Not story decisions
+
+- Unanswered questions in ClickUp comments
+- Status changes, assignments, and reactions
+- Comments about implementation only, with no visible effect
+- PRD statements that a later ClickUp decision explicitly replaced
+
+## Source authority
+
+| Source | Role |
+| --- | --- |
+| ClickUp task and comments | Agreed scope of each story. The latest explicit decision wins. |
+| Local story files and decision records | Context, dependencies, references, and requirements ClickUp does not contradict |
+| PRD and product documents | Product intent and business rules where ClickUp is silent |
+| Persona documents | Target users' goals, needs, constraints, and behavior |
+| Figma page | The design under review |
+
+Authority never hides a conflict. For each difference between sources:
+
+- **An explicit ClickUp decision covers it:** follow ClickUp, and record what it overrides.
+- **ClickUp is silent:** use the local story or PRD requirement, labelled with its source.
+- **No explicit decision covers it, and it would change a verdict:** ask the designer, or list it as an open scope question.
+
+## Source summary
+
+Every review keeps a list of sources with their status:
+
+- **Read:** the contents were opened and inspected.
+- **Partly read:** some contents could not be reached, such as attachments or comment pages.
+- **Not accessible:** the connector or file could not be reached.
+- **Not found:** discovery found no such source, such as a missing PRD.
+
+A source counts as reviewed only when its status is Read or Partly read.
 
 ## Persona selection
 
@@ -126,6 +163,10 @@ A potential barrier connected to an access need or WCAG. Route this to an access
 
 The available material does not support a reliable conclusion.
 
+### Source conflict
+
+ClickUp, the local story, and the PRD disagree, and no explicit decision resolves it. This is a question for the product owner, not a design issue. List it under "Open scope questions" with what each source says.
+
 ## Assessment rubric
 
 ### Supports
@@ -161,7 +202,7 @@ Use when:
 - The flow is incomplete or inaccessible.
 - Sequence cannot be established.
 - Required source documents are missing.
-- Sources conflict without an approved precedence decision.
+- Sources conflict on a core requirement, and the designer has not resolved it.
 
 ## Priority and compression
 
@@ -175,6 +216,17 @@ Rank findings by:
 
 Keep a maximum of three observations per story. Do not create findings to fill the quota.
 
+Show the rank as a priority label:
+
+- **High:** objective blocked, core requirement or scope conflict, or safety or trust risk
+- **Medium:** meaningful task friction
+- **Low:** clarification
+
+Show how certain the finding is:
+
+- **Confirmed:** visible design evidence contradicts or misses a stated requirement.
+- **Potential concern:** a friction hypothesis based on persona evidence. Validate it with users.
+
 Each observation contains:
 
 1. A short, plain-language title that states the problem or strength
@@ -182,6 +234,8 @@ Each observation contains:
 3. **Why it matters:** the effect on the persona or the story goal
 4. **Suggested fix:** one concrete change, omitted for strengths
 5. A screen name in words, linked to the exact Figma node
+6. Priority and confidence labels
+7. **Evidence:** the sources it relies on, as named links, such as "ClickUp comment, 12 Oct 2026" or "Story file"
 
 Write every part in plain English (see `SKILL.md` section 9). Keep requirement IDs, node IDs, and layer names in links, not in sentences.
 
@@ -218,7 +272,7 @@ A review finds issues. Fixing them is a separate, designer-driven step, one issu
 | Scope conflict | `figma-screen` | Removes or changes the unapproved behavior. The note card says this may be a product decision. |
 | Mapping drift | `figma-rename` | Renames the Figma section to match the current story. Story files are never edited. |
 | Accessibility concern | `audit-handoff` | Starts a separate accessibility review |
-| Evidence gap or strength | `none` | Nothing to fix |
+| Evidence gap, source conflict, or strength | `none` | Nothing to fix in Figma. A source conflict needs a scope decision first. |
 
 Use `figma-new-screen` only when the missing behavior needs its own screen or state, such as a missing error state.
 
@@ -241,6 +295,11 @@ Use `figma-new-screen` only when the missing behavior needs its own screen or st
 - No changes to the Draft or Wireflows pages without the designer's approval
 - No WCAG compliance claim
 - No scope claim without an approved scope source
+- No claim that ClickUp, Figma, or a file was reviewed unless its contents were read
+- No silent choice between conflicting sources
+- No generic persona in place of a defined one
+- No PRD content invented when the PRD cannot be found
+- No review of Figma pages other than the one the designer named
 - No flow-order inference from canvas coordinates alone
 - No repeated project-wide finding under every story
 - No jargon, codes, or shorthand that forces the reader to look something up

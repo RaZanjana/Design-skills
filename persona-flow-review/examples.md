@@ -27,6 +27,69 @@ Why: the reader has to decode a layer name and node ID, and the comparison is bu
 
 ---
 
+## Observation with evidence
+
+### Good
+
+**The export button is still on the screen after it was removed from scope**
+
+Tags: High priority, Confirmed
+
+What we found: The campaign overview screen shows an "Export to CSV" button. A ClickUp comment removed export from this story.
+
+Why it matters: Riley may expect an export that the team will not build.
+
+Suggested fix: Remove the "Export to CSV" button from the campaign overview screen.
+
+Evidence: [ClickUp comment, 12 Oct 2026](https://app.clickup.com/t/TASK), [Story file](docs/stories/4-1.md)
+
+### Avoid
+
+Export present but descoped (see ClickUp).
+
+Why: the reader cannot tell which comment removed it, or when.
+
+---
+
+## Source conflict
+
+### Good
+
+**Open scope question: Does Riley approve each lead, or only the whole campaign?**
+
+- The ClickUp task description says Riley approves at campaign level.
+- The PRD says Riley approves each lead before sending.
+- No ClickUp comment settles it.
+
+Who should decide: the product owner.
+
+### Avoid
+
+Requirement gap: per-lead approval missing.
+
+Why: the sources disagree. The design cannot be judged wrong until someone decides which rule applies.
+
+---
+
+## Intake question
+
+### Good
+
+I found the story files in `_bmad-output/epics/` and Riley's persona in `docs/personas/riley.md`. Should I use them?
+
+Two things are still missing:
+
+- What is the ClickUp URL for these stories? A sprint or list URL, or one task URL per story, both work.
+- What is the Figma file URL, and the exact name of the page to review?
+
+### Avoid
+
+Please provide: persona source, user-story source, scope source, Figma file, Wireflows page, story selection, known changes, output name.
+
+Why: it asks for things the skill already found, and it reads like a form.
+
+---
+
 ## Plain-English safety finding
 
 ### Good
@@ -204,15 +267,18 @@ Why: it does not say what changed or what approving would affect.
 Story 4.3 — Configure Multi-Step Sequence
 Persona: Riley the Regisseur
 Objective: Control timing, limits, and mandatory stop conditions.
+Scope used: ClickUp task, plus one comment that added a daily send limit.
 Assessment: Partially supports
 
 1. Riley can see when each message sends and the daily limits
 Why it matters: Riley knows how fast outreach will go before approving it.
 
 2. Unsubscribing does not stop the messages
+Priority: High. Confidence: Confirmed.
 What we found: The stop rules list a sales handoff and the suppression list, but not unsubscribing.
 Why it matters: The story says all three must stop messages to that person.
 Suggested fix: Add "The lead unsubscribes" to the stop rules.
+Evidence: ClickUp task description, story file.
 
 Design rationale
 Keeping timing, limits, review status, and mandatory stops together makes automation inspectable rather than unattended.

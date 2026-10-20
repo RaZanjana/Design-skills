@@ -1,6 +1,6 @@
 ---
 name: persona-flow-review
-description: Reviews Figma wireflows against documented personas, user stories, and approved scope, then produces a concise evidence-linked review with design rationale, walkthrough notes, and direct references. Each issue in the review can then be fixed one at a time on a separate "Fixed issues" Figma page and, after designer approval, applied to the source components. Use when a designer asks for a persona flow review, user-story design validation, evidence-based design rationale, a lightweight pre-walkthrough review, or to fix or apply a fix for an issue from a persona flow review.
+description: Reviews a chosen Figma page's story flows against the project's defined personas, the agreed ClickUp story scope including task comments, local user story files, and the referenced PRD. Starts from a short prompt such as "review [story names]", asks only for missing inputs, checks every source before reviewing, then produces a concise evidence-linked review with design rationale, walkthrough notes, and direct references. Each issue in the review can then be fixed one at a time on a separate "Fixed issues" Figma page and, after designer approval, applied to the source components. Use when a designer asks for a persona flow review, user-story design validation, evidence-based design rationale, a lightweight pre-walkthrough review, or to fix or apply a fix for an issue from a persona flow review.
 disable-model-invocation: true
 ---
 
@@ -18,7 +18,7 @@ This skill has three modes. Pick one from the request before doing anything else
 
 | Request | Mode | Instructions |
 | --- | --- | --- |
-| Review flows, stories, or a Figma file | **Review** | Sections 1 to 11 of this file |
+| Review flows, stories, or a Figma file | **Review** | [intake.md](intake.md), then sections 1 to 11 of this file |
 | "Fix issue [ID]", "Revise fix for issue [ID]", or "Reject fix for issue [ID]" | **Fix** | [fix-mode.md](fix-mode.md) |
 | "Apply approved fix for issue [ID]" | **Apply** | [apply-fix.md](apply-fix.md) |
 
@@ -26,51 +26,49 @@ Fix and Apply requests usually arrive from a button in the review canvas. The ca
 
 Review mode is read-only. Fix mode writes only to the "Fixed issues" Figma page. Only Apply mode changes the Draft and Wireflows pages, and only after the designer approves the fix.
 
-## 1. Gather inputs
+## 1. Run the intake
 
-Request these clearly. Mark the first five as mandatory.
+Designers can start with a short prompt:
 
-1. **Persona source — mandatory**  
-   “Where are the approved persona files?”
-2. **User-story source — mandatory**  
-   “Where are the current user stories?”
-3. **Scope source — mandatory**  
-   “Which files define the approved MVP scope and later decisions?”
-4. **Figma design — mandatory**  
-   “Which Figma file should be reviewed?”
-5. **Wireflows page — mandatory**  
-   “Which page contains the story flows?”  
-   Use `Wireflows` as the default only when the designer confirms it.
-6. **Story selection — optional**  
-   “Should I review every mapped story or specific story IDs?”
-7. **Known changes — optional**  
-   “Are any files or Figma sections outdated or recently changed?”
-8. **Output name — optional**  
-   Default to `[project]-persona-flow-review`.
+> Use the /persona-flow-review skill to review [story names in Figma]
 
-Accept local folders, individual files, Figma URLs, and user-provided exports.
+Follow [intake.md](intake.md) before reviewing. It:
 
-## 2. Validate access before reviewing
+- Reads what the prompt already gives.
+- Finds story files, persona files, and ClickUp links in the project, and asks the designer to confirm them.
+- Asks only for what is still missing: personas, ClickUp URL, local story files, Figma file and page, and the stories to review.
+- Finds the PRD through the story files. It never asks for the PRD.
+- Checks access to Figma, ClickUp (including every comment), and the local files.
+- Builds a scope record for each story and shows a source summary.
 
-- Confirm every mandatory local source exists and is readable.
-- Confirm the Figma file and requested page are accessible.
-- If a mandatory source is unavailable, state exactly what is missing and stop.
-- If Figma access is unavailable, request a PDF or screenshots grouped by story. Do not review an unseen design.
-- Never use an online repository as a substitute for a supplied local source unless the user explicitly permits it.
-- Keep the review read-only. Never edit Figma or source files in Review mode. Fixes happen later, one issue at a time, through Fix mode.
+Do not start the review until intake reaches its source summary and any critical questions are answered.
+
+## 2. Keep Review mode read-only
+
+- Never edit Figma, ClickUp, or project files in Review mode. Fixes happen later, one issue at a time, through Fix mode.
+- Review only the Figma page the designer named.
+- Never claim a source was reviewed unless its contents were read.
+- Never use an online repository as a substitute for a supplied local source unless the designer explicitly permits it.
 
 ## 3. Establish source precedence
 
 Use this order:
 
-1. Approved scope and decision records define what is in or out.
-2. Current user stories define required behavior and outcomes.
-3. Personas define relevant goals, needs, concerns, behavior, and constraints.
-4. Figma shows the design decision being evaluated.
+1. **ClickUp task description and comments** define the agreed scope of each story, including additions, exclusions, and clarifications. The latest explicit decision wins.
+2. **Local user story files and decision records** give project context, relationships, dependencies, and references. Their requirements apply unless ClickUp explicitly contradicts them.
+3. **The PRD and related product documents** give the broader product intent and business rules, where ClickUp is silent.
+4. **Persona documents** give the target users' goals, needs, constraints, and behavior.
+5. **Figma** is the design being evaluated.
+
+This order decides what the review checks against. It never hides a conflict:
+
+- Record every material difference in the story's scope record.
+- Separate confirmed decisions from assumptions and unresolved questions.
+- When a conflict would change a verdict and no explicit decision resolves it, ask the designer. Put minor ones in "Open scope questions".
+
+If the designer chose to continue without ClickUp, the local story files and decision records define scope.
 
 Persona documents may contain proposed product solutions. Treat those as derived statements, not independent user evidence.
-
-If authoritative sources conflict and precedence does not resolve the conflict, ask one focused question. Do not choose silently.
 
 ## 4. Normalize the evidence
 
@@ -96,9 +94,13 @@ For each story, extract:
 - Required states and feedback
 - Success or exit condition
 - Alternative and error paths
-- Dependencies
+- Dependencies on other stories
 - Explicit exclusions and deferred decisions
-- Exact source location
+- ClickUp decisions that override the local story or PRD
+- Open questions from the scope record
+- Exact source location for each item: ClickUp task or comment with its author and date, local file, or PRD section
+
+Take these from the scope record built during intake. Do not re-derive scope from a single source.
 
 Keep technical criteria only when they create visible user behavior or constrain the experience.
 
@@ -138,7 +140,10 @@ Check whether:
 - Every important user-facing requirement appears in a screen, state, or transition.
 - Required loading, empty, success, error, and safety states are represented.
 - The flow includes unapproved behavior or contradicts an exclusion.
+- Every ClickUp decision in the scope record is reflected in the design.
 - Counts, labels, status, and sequence remain consistent across screens.
+- Related stories hand off correctly: the end of one flow matches the start of the next.
+- The flow has no unnecessary steps or dead ends.
 
 ### Pass 2: Persona-constrained walkthrough
 
@@ -167,6 +172,13 @@ Classify findings as:
 - **Mapping drift:** story documents and Figma organization no longer match.
 - **Accessibility concern:** a potential barrier requiring a separate accessibility review.
 - **Evidence gap:** the available sources are insufficient to assess.
+- **Source conflict:** ClickUp, the local story, and the PRD disagree, and no explicit decision resolves it. List it under "Open scope questions", not as a design issue.
+
+Give every observation:
+
+- **Priority:** High for a blocked objective, a core requirement or scope conflict, or a safety or trust problem. Medium for meaningful friction. Low for clarifications.
+- **Confidence:** "Confirmed" when visible design evidence contradicts or misses a stated requirement. "Potential concern" when it is a friction hypothesis to validate.
+- **Evidence:** the exact sources it relies on, such as a ClickUp comment with its date, a story file, a PRD section, or a persona file.
 
 Assign one assessment:
 
@@ -185,7 +197,7 @@ Give every issue a stable ID and a fix action, so the designer can fix it from t
   - Requirement gap, UX friction, scope conflict: `figma-screen`, or `figma-new-screen` when the fix needs a screen or state that does not exist yet.
   - Mapping drift: `figma-rename`, which renames the Figma section only. Story files are never edited.
   - Accessibility concern: `audit-handoff`.
-  - Evidence gap and strengths: `none`.
+  - Evidence gap, source conflict, and strengths: `none`.
 
 See the fix rules in [methodology.md](methodology.md).
 
@@ -241,11 +253,14 @@ Default output:
 The output must include:
 
 - Assessment guide
+- Sources checked, with any source that could not be accessed
 - Project-wide findings
+- Open scope questions
 - Story filters
 - Persona and objective
+- Scope used, with the ClickUp decisions that override local documents
 - Assessment
-- Up to three observations, each with “What we found”, “Why it matters”, and “Suggested fix”
+- Up to three observations, each with “What we found”, “Why it matters”, “Suggested fix”, priority, confidence, and evidence
 - A “Fix issue” button on every fixable issue, with a choice between the suggested fix and the designer's own instruction
 - Fix status for every issue, with Approve, Request changes, and Reject buttons once a fix is ready for review
 - Design rationale
@@ -270,14 +285,20 @@ Use muted green for Supports, muted yellow for Partially supports, muted red for
 - No WCAG conformance claim appears.
 - Every issue has a unique ID and the correct fix action.
 - Every fix prompt names the absolute path of this skill folder, because the skill cannot be invoked automatically in a new chat.
+- Every source marked "Read" was actually opened and inspected.
+- Every finding based on ClickUp cites the task or comment it relies on.
+- Every inaccessible or missing source appears in "Sources checked".
+- Unresolved conflicts appear in "Open scope questions", not as confirmed design issues.
 
 Return only:
 
 1. A link to the review artifact.
 2. A one-sentence summary of how many stories support, partially support, need attention, or lack evidence.
+3. One sentence naming any source that could not be accessed and the number of open scope questions. Omit it when there are none.
 
 ## Additional resources
 
+- Collecting and checking sources: [intake.md](intake.md)
 - Review rules: [methodology.md](methodology.md)
 - Output structure: [canvas-output.md](canvas-output.md)
 - Fixing one issue: [fix-mode.md](fix-mode.md)

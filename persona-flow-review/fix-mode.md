@@ -37,7 +37,9 @@ From the attached canvas file, read:
 - The review details: Figma file key, Wireflows page, and source paths.
 - The current entry for this issue in `FIX_STATE`.
 
-Read the story and persona only for the parts this issue depends on. Do not rerun the review.
+Read the story and persona only for the parts this issue depends on. Do not rerun the review or the intake.
+
+Use the story's `scope` record in the canvas as the agreed scope. It already includes the ClickUp decisions and their sources. Do not fetch ClickUp again unless the fix depends on a decision that is not recorded there.
 
 Stop and explain in plain English when:
 
@@ -187,7 +189,7 @@ Edit only the Fixed copy. Make the smallest change that resolves the issue.
 
 - **Reuse what is there.** To add a row, duplicate a sibling row in the Fixed copy. Use the text styles, color styles, and variables the screen already uses.
 - **New components.** When the fix needs a component the screen does not contain, insert an instance of it from the Draft page or the library. Set its properties, record its source in `addedElements`, then detach it right away.
-- **Copy.** Write interface text in the approved product language, using the words the story and scope use.
+- **Copy.** Write interface text in the approved product language, using the words the story's scope record uses.
 - **Layout.** Keep the screen size unless the fix needs more room. Do not move unrelated layers.
 
 By fix action:
