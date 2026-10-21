@@ -552,8 +552,10 @@ const ANNOTATION_STATE: Record<string, AnnotationEntry> = {};
 
 // ===== REVIEW DATA END =====
 
-// A title beside a status or buttons must fill the row. Unsized, it can shrink to its longest word.
-const HEADER_ROW = { width: "100%" };
+// Row always renders at width 100%. A Row inside another Row must use AUTO_ROW or STATUS_ROW,
+// or it takes the whole line and squeezes the title beside it into one-word lines.
+const AUTO_ROW = { width: "auto" };
+const STATUS_ROW = { width: "auto", flexShrink: 0 };
 const HEADER_TEXT = { flex: 1, minWidth: 0 };
 const WRAPPING_HEADER_TEXT = { flex: "1 1 320px", minWidth: 0 };
 
@@ -678,7 +680,7 @@ function Dot({ color }: { color: string }) {
 function StatusLabel({ status }: { status: Assessment }) {
   const color = useStatusColor(status);
   return (
-    <Row gap={6} align="center">
+    <Row gap={6} align="center" style={STATUS_ROW}>
       <Dot color={color} />
       <Text as="span" size="small" weight="semibold" style={{ color }}>
         {status}
@@ -690,7 +692,7 @@ function StatusLabel({ status }: { status: Assessment }) {
 function FixStatusLabel({ status }: { status: FixStatus | "in-progress" }) {
   const color = useFixStatusColor(status);
   return (
-    <Row gap={6} align="center">
+    <Row gap={6} align="center" style={STATUS_ROW}>
       <Dot color={color} />
       <Text as="span" size="small" tone="secondary">
         {FIX_STATUS_LABEL[status]}
@@ -999,7 +1001,7 @@ function IssueTags({ issue }: { issue: Issue }) {
         : theme.text.tertiary;
   return (
     <Row gap={12} align="center" wrap style={{ marginTop: 3 }}>
-      <Row gap={5} align="center">
+      <Row gap={5} align="center" style={AUTO_ROW}>
         <Dot color={priorityColor} />
         <Text as="span" size="small" tone="secondary">
           {issue.priority} priority
@@ -1242,7 +1244,7 @@ function StoryDetail({
   return (
     <Stack gap={18}>
       <div>
-        <Row justify="space-between" align="start" gap={16} style={HEADER_ROW}>
+        <Row justify="space-between" align="start" gap={16}>
           <div style={HEADER_TEXT}>
             <Text size="small" tone="tertiary">
               STORY {story.id}
@@ -1698,7 +1700,7 @@ function NoteStatusLabel({ status }: { status: ShownStatus }) {
     accent: theme.accent.primary,
   }[status.tone];
   return (
-    <Row gap={6} align="center" style={{ flexShrink: 0 }}>
+    <Row gap={6} align="center" style={STATUS_ROW}>
       <Dot color={color} />
       <Text as="span" size="small" tone="secondary">
         {status.label}
@@ -1747,7 +1749,7 @@ function NoteRow(p: NoteRowProps) {
   return (
     <div style={{ padding: "14px 0", borderTop: `1px solid ${theme.stroke.tertiary}` }}>
       <Stack gap={8}>
-        <Row justify="space-between" align="start" gap={12} style={HEADER_ROW}>
+        <Row justify="space-between" align="start" gap={12}>
           <div style={HEADER_TEXT}>
             <Text weight="semibold">{p.title}</Text>
             <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
@@ -2089,14 +2091,14 @@ function CommentsSection({ notes, comments }: { notes: NotesState; comments: Com
 
   return (
     <section>
-      <Row justify="space-between" align="center" gap={12} wrap style={HEADER_ROW}>
+      <Row justify="space-between" align="center" gap={12} wrap>
         <div style={WRAPPING_HEADER_TEXT}>
           <H3>Figma comments</H3>
           <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
             {rows.length} selected, {approved} approved, {published.length} in Figma.
           </Text>
         </div>
-        <Row gap={8} wrap>
+        <Row gap={8} wrap style={AUTO_ROW}>
           <Button
             variant="ghost"
             disabled={rows.length === 0}
@@ -2270,7 +2272,7 @@ function BeyondScopeSection({ notes, items }: { notes: NotesState; items: Beyond
 
   return (
     <section>
-      <Row justify="space-between" align="center" gap={12} wrap style={HEADER_ROW}>
+      <Row justify="space-between" align="center" gap={12} wrap>
         <div style={WRAPPING_HEADER_TEXT}>
           <H3>Beyond the stories</H3>
           <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
@@ -2279,7 +2281,7 @@ function BeyondScopeSection({ notes, items }: { notes: NotesState; items: Beyond
             {annotated} annotated.
           </Text>
         </div>
-        <Row gap={8} wrap>
+        <Row gap={8} wrap style={AUTO_ROW}>
           <Button
             variant="ghost"
             onClick={() =>
@@ -2467,7 +2469,7 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
   return (
     <Stack gap={14}>
       <Row justify="space-between" align="center" gap={12} wrap>
-        <Row gap={6} wrap>
+        <Row gap={6} wrap style={AUTO_ROW}>
           <Pill active={!selected} onClick={() => setStageId("all")}>
             Whole script
           </Pill>
@@ -2477,7 +2479,7 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
             </Pill>
           ))}
         </Row>
-        <Row gap={8} wrap>
+        <Row gap={8} wrap style={AUTO_ROW}>
           <Button variant="secondary" onClick={copy}>
             {copyState === "copied" ? "Copied" : "Copy script"}
           </Button>
@@ -2792,7 +2794,7 @@ function TalkingPoints() {
       </Text>
       {PRESENTABLE.map((s) => (
         <div key={s.id} style={{ padding: "12px 0", borderTop: `1px solid ${theme.stroke.tertiary}` }}>
-          <Row justify="space-between" align="start" gap={12} style={HEADER_ROW}>
+          <Row justify="space-between" align="start" gap={12}>
             <div style={HEADER_TEXT}>
               <Text weight="semibold">{s.title}</Text>
               <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
@@ -2988,7 +2990,7 @@ export default function PersonaFlowReview() {
             {plural(STORIES.length, "story", "stories")}.
           </Text>
         </div>
-        <Row gap={18}>
+        <Row gap={18} style={AUTO_ROW}>
           <Stat value={String(count("Supported"))} label="Supported" tone="success" />
           <Stat
             value={String(count("Partially supported"))}

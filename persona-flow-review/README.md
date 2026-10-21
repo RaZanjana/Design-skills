@@ -1,7 +1,7 @@
 # Persona Flow Review
 
 **Skill name:** `persona-flow-review`  
-**Version:** 1.9.1
+**Version:** 1.9.2
 
 Persona Flow Review helps product designers evaluate a Figma page's story flows against the project's defined personas, the agreed ClickUp story scope, local user stories, and the PRD.
 
