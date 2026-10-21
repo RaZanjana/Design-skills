@@ -626,12 +626,13 @@ function useFixRequest(issueId: string) {
     setSent({ request, at: new Date().toISOString() });
   };
   const stop = () => setSent((prev) => (prev ? { ...prev, stopped: true } : prev));
-  return { sent, send, stop };
+  const dismiss = () => setSent(null);
+  return { sent, send, stop, dismiss };
 }
 
 function isUnanswered(issueId: string, sent: SentFix | null): sent is SentFix {
   const entry = FIX_STATE[issueId];
-  return !!sent && (!entry || sent.at > entry.updatedAt);
+  return !!sent && (!entry || isAfter(sent.at, entry.updatedAt));
 }
 
 function currentFixStatus(issueId: string, sent: SentFix | null): FixStatus | "in-progress" {
@@ -658,6 +659,9 @@ const STOPPED_FIX_NOTE: Record<FixRequest, string> = {
 
 function waitingSince(at: string): string {
   const time = new Date(at);
+  if (Number.isNaN(time.getTime())) {
+    return "If you closed that chat before it finished, choose Stop waiting.";
+  }
   const today = time.toDateString() === new Date().toDateString();
   const when = time.toLocaleString([], {
     ...(today ? {} : { day: "numeric", month: "short" }),
@@ -879,7 +883,7 @@ function FixPanel({ issue }: { issue: Issue }) {
 
 function FixControls({ issue }: { issue: Issue }) {
   const dispatch = useCanvasAction();
-  const { sent, send, stop } = useFixRequest(issue.issueId);
+  const { sent, send, stop, dismiss } = useFixRequest(issue.issueId);
   const [open, setOpen] = useCanvasState<boolean>(`fix-open:${issue.issueId}`, false);
   const [revising, setRevising] = useCanvasState<boolean>(
     `fix-revise-open:${issue.issueId}`,
@@ -909,7 +913,16 @@ function FixControls({ issue }: { issue: Issue }) {
   const entry = FIX_STATE[issue.issueId];
   const stoppedNote =
     isUnanswered(issue.issueId, sent) && sent.stopped ? (
-      <Callout tone="warning">{STOPPED_FIX_NOTE[sent.request]}</Callout>
+      <Callout tone="warning">
+        <Stack gap={6}>
+          <span>{STOPPED_FIX_NOTE[sent.request]}</span>
+          <Row>
+            <Button variant="ghost" onClick={dismiss}>
+              I have checked, hide this
+            </Button>
+          </Row>
+        </Stack>
+      </Callout>
     ) : null;
 
   if (status === "in-progress" && sent) {
@@ -1702,6 +1715,11 @@ function stageReference(s: ScriptStage): string {
   return [storyList(s.storyIds), figma && `Figma: ${figma}`].filter(Boolean).join(". ");
 }
 
+const STOPPED_COMMENT_NOTE =
+  "You stopped waiting before the chat reported back. Use Check Figma status before trying again.";
+const STOPPED_ANNOTATION_NOTE =
+  "You stopped waiting before the chat reported back. Check the screen in Dev Mode. Adding it again is safe: it updates the existing annotation instead of adding a second one.";
+
 function shownStatus(
   entry: { status: string; note?: string; resolvedAt?: string } | undefined,
   labels: Record<string, [string, NoteTone]>,
@@ -1709,17 +1727,12 @@ function shownStatus(
   busy: boolean,
   stopped: boolean,
   since?: string,
+  stoppedNote = STOPPED_COMMENT_NOTE,
 ): ShownStatus {
   if (busy) {
     return { label: "Working in a new chat", tone: "gray", note: since && waitingSince(since) };
   }
-  if (stopped) {
-    return {
-      label: "Needs check",
-      tone: "yellow",
-      note: "The chat closed before it reported back. Check the status in Figma before trying again.",
-    };
-  }
+  if (stopped) return { label: "Needs check", tone: "yellow", note: stoppedNote };
   if (entry?.status === "published" && entry.resolvedAt) {
     return {
       label: "Resolved in Figma",
@@ -1927,7 +1940,7 @@ type NotesState = {
   approveAll: (ids: string[]) => void;
   setText: (id: string, text: string | null) => void;
   send: (ids: string[], action: string, userPrompt: string) => void;
-  cancel: (id: string) => void;
+  cancel: (ids: string[]) => void;
   requestAt: (id: string) => string | undefined;
 };
 
@@ -1981,8 +1994,14 @@ function useNotesState(): NotesState {
         return next;
       });
     },
-    cancel: (id) =>
-      setRequests((prev) => (prev[id] ? { ...prev, [id]: { ...prev[id], stopped: true } } : prev)),
+    cancel: (ids) =>
+      setRequests((prev) => {
+        const next = { ...prev };
+        ids.forEach((id) => {
+          if (next[id]) next[id] = { ...next[id], stopped: true };
+        });
+        return next;
+      }),
     requestAt: (id) => requests[id]?.at,
   };
 }
@@ -2134,6 +2153,7 @@ function CommentsSection({ notes, comments }: { notes: NotesState; comments: Com
   const checkable = rows.filter(
     (r) => !r.busy && (inFigma(r.entry) || r.entry?.status === "needs-check" || r.stopped),
   );
+  const waiting = all.filter((r) => r.busy);
   const held = rows.filter((r) => r.c.checkFirst && r.decision === "suggested" && !r.entry).length;
   const heldOptional = moreRows.filter((r) => r.c.checkFirst).length;
 
@@ -2158,6 +2178,11 @@ function CommentsSection({ notes, comments }: { notes: NotesState; comments: Com
           >
             Approve all
           </Button>
+          {waiting.length > 1 && (
+            <Button variant="ghost" onClick={() => notes.cancel(waiting.map((r) => r.c.id))}>
+              Stop waiting for all ({waiting.length})
+            </Button>
+          )}
           {checkable.length > 0 && (
             <Button
               variant="secondary"
@@ -2257,7 +2282,7 @@ function CommentsSection({ notes, comments }: { notes: NotesState; comments: Com
                 ]),
               );
             }}
-            onCancel={() => notes.cancel(c.id)}
+            onCancel={() => notes.cancel([c.id])}
           />
           ))}
         </div>
@@ -2317,6 +2342,7 @@ function BeyondScopeSection({ notes, items }: { notes: NotesState; items: Beyond
       r.decision === "approved" && !r.busy && r.entry?.status !== "annotated" && canSend(r.text),
   );
   const annotated = rows.filter((r) => r.entry?.status === "annotated").length;
+  const waiting = rows.filter((r) => r.busy);
 
   return (
     <section>
@@ -2338,6 +2364,11 @@ function BeyondScopeSection({ notes, items }: { notes: NotesState; items: Beyond
           >
             Approve all
           </Button>
+          {waiting.length > 1 && (
+            <Button variant="ghost" onClick={() => notes.cancel(waiting.map((r) => r.b.id))}>
+              Stop waiting for all ({waiting.length})
+            </Button>
+          )}
           <Button
             variant="primary"
             disabled={ready.length === 0}
@@ -2368,11 +2399,29 @@ function BeyondScopeSection({ notes, items }: { notes: NotesState; items: Beyond
             text={text}
             edited={notes.isEdited(b.id)}
             decision={decision}
-            status={shownStatus(entry, ANNOTATION_STATUS, decision, busy, stopped, notes.requestAt(b.id))}
+            status={shownStatus(
+              entry,
+              ANNOTATION_STATUS,
+              decision,
+              busy,
+              stopped,
+              notes.requestAt(b.id),
+              STOPPED_ANNOTATION_NOTE,
+            )}
             live={entry?.status === "annotated"}
             liveText={entry?.annotatedText}
             busy={busy}
-            figmaLink={busy ? undefined : annotationLink(entry)}
+            figmaLink={
+              busy
+                ? undefined
+                : stopped
+                  ? {
+                      href: figmaNodeLink(entry?.nodeId || b.target.nodeId, REVIEW.figmaFileKey, true),
+                      label: "Check in Figma",
+                      hint: "Opens the screen in Dev Mode, where annotations show.",
+                    }
+                  : annotationLink(entry)
+            }
             reviewNote={b.reviewNote}
             body={
               <Grid columns={2} gap={14}>
@@ -2416,7 +2465,7 @@ function BeyondScopeSection({ notes, items }: { notes: NotesState; items: Beyond
                 ]),
               );
             }}
-            onCancel={() => notes.cancel(b.id)}
+            onCancel={() => notes.cancel([b.id])}
           />
         ))}
       </div>

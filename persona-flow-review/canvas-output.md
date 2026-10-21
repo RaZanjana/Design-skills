@@ -170,7 +170,9 @@ What the designer says. Two pills: **Talking points ([N])** and **Walkthrough sc
 Each comment and annotation shows one status. Take the first that applies:
 
 1. **Working in a new chat:** the designer's latest request is newer than the state entry's `updatedAt`.
-2. **Needs check**, after the designer clicked "Stop waiting" and no newer state entry arrived. Note: "The chat closed before it reported back. Check the status in Figma before trying again."
+2. **Needs check**, after the designer clicked "Stop waiting" and no newer state entry arrived. The note says how to check:
+   - Comment: "You stopped waiting before the chat reported back. Use Check Figma status before trying again."
+   - Annotation: "You stopped waiting before the chat reported back. Check the screen in Dev Mode. Adding it again is safe: it updates the existing annotation instead of adding a second one." Link "Check in Figma" to the target screen in Dev Mode, even when there is no state entry yet.
 3. The state entry from Figma: **Published**, **Resolved in Figma** (published with `resolvedAt`), or **Annotated** (green), **Needs check** (yellow), **Failed** (red), **Not published** or **Removed** (gray).
 4. The designer's choice: **Approved** (accent), **Suggested** or **Excluded** (gray).
 
@@ -223,6 +225,8 @@ After Stop waiting, show the status from before the request, with a warning abov
 - Apply: "It may already have changed the Draft or Wireflows page, so check them in Figma before you approve and apply again."
 - Reject: "Reject the fix again if you still want to."
 
+The warning ends with **I have checked, hide this** (ghost). It clears the recorded request, so the warning stays gone. Starting a new request also clears it.
+
 **Ready for review**
 
 - A link: "Open fix in Figma", pointing to the issue row on the "Fixed issues" page.
@@ -272,7 +276,7 @@ Each button dispatches `{ type: "newComposerChat", userPrompt }` and records the
 
 Show the status like this:
 
-- When the recorded request is later than `FIX_STATE[issueId].updatedAt`, or there is no entry, show the in-progress text, unless the request is marked `stopped`.
+- When the recorded request is later than `FIX_STATE[issueId].updatedAt`, or there is no entry, show the in-progress text, unless the request is marked `stopped`. Compare timestamps as dates, never as strings: `2026-10-21T05:46:53.500Z` sorts before `2026-10-21T05:46:53Z` as text.
 - Otherwise, show `FIX_STATE[issueId].status`, with the stopped warning when the unanswered request is marked `stopped`.
 - Stop waiting marks the request `stopped` instead of deleting it. A newer `FIX_STATE` entry from the chat still wins, so a chat that finishes late still shows its result.
 - Keep each designer's own instruction in `useCanvasState` under `fix-instruction:[issueId]`.
@@ -290,8 +294,9 @@ Never show a fix as started or done when the environment could not start it.
 
 Canvas actions are fire and forget. The canvas never learns that a chat finished, failed, or was deleted. It only sees what the chat writes back into the data block. So every state that waits on a chat must give the designer a way out:
 
-- Show when it started, under the status: "Started at 13:46. If you closed that chat before it finished, choose Stop waiting." Use the date as well when it was not today. The canvas cannot run a timer, so this line shows from the start instead of after a delay.
+- Show when it started, under the status: "Started at 13:46. If you closed that chat before it finished, choose Stop waiting." Use the date as well when it was not today. When the recorded time cannot be read, drop the "Started" part instead of showing "Invalid Date". The canvas cannot run a timer, so this line shows from the start instead of after a delay.
 - Offer **Stop waiting**. It marks the request `stopped` and never deletes it, because the chat may already have changed Figma.
+- When two or more comments, or two or more annotations, are waiting, also show **Stop waiting for all ([N])** (ghost) in that section's header. One deleted chat often carries a whole batch.
 - After stopping, say what the chat may already have done, and how to check it. Never show the work as done or as never started.
 - Never reset a wait on its own after a time limit. A long fix is normal, and an automatic reset invites a second chat on the same item.
 
