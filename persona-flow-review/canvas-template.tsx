@@ -552,6 +552,11 @@ const ANNOTATION_STATE: Record<string, AnnotationEntry> = {};
 
 // ===== REVIEW DATA END =====
 
+// A title beside a status or buttons must fill the row. Unsized, it can shrink to its longest word.
+const HEADER_ROW = { width: "100%" };
+const HEADER_TEXT = { flex: 1, minWidth: 0 };
+const WRAPPING_HEADER_TEXT = { flex: "1 1 320px", minWidth: 0 };
+
 const STATUS_ORDER: Assessment[] = [
   "Needs attention",
   "Partially supported",
@@ -1237,8 +1242,8 @@ function StoryDetail({
   return (
     <Stack gap={18}>
       <div>
-        <Row justify="space-between" align="start" gap={16}>
-          <div>
+        <Row justify="space-between" align="start" gap={16} style={HEADER_ROW}>
+          <div style={HEADER_TEXT}>
             <Text size="small" tone="tertiary">
               STORY {story.id}
             </Text>
@@ -1742,8 +1747,8 @@ function NoteRow(p: NoteRowProps) {
   return (
     <div style={{ padding: "14px 0", borderTop: `1px solid ${theme.stroke.tertiary}` }}>
       <Stack gap={8}>
-        <Row justify="space-between" align="start" gap={12}>
-          <div>
+        <Row justify="space-between" align="start" gap={12} style={HEADER_ROW}>
+          <div style={HEADER_TEXT}>
             <Text weight="semibold">{p.title}</Text>
             <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
               {p.meta ? `${p.meta}. ` : ""}On: <Link href={figmaUrl(p.target.nodeId)}>{p.target.label}</Link>
@@ -2084,8 +2089,8 @@ function CommentsSection({ notes, comments }: { notes: NotesState; comments: Com
 
   return (
     <section>
-      <Row justify="space-between" align="center" gap={12} wrap>
-        <div>
+      <Row justify="space-between" align="center" gap={12} wrap style={HEADER_ROW}>
+        <div style={WRAPPING_HEADER_TEXT}>
           <H3>Figma comments</H3>
           <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
             {rows.length} selected, {approved} approved, {published.length} in Figma.
@@ -2265,8 +2270,8 @@ function BeyondScopeSection({ notes, items }: { notes: NotesState; items: Beyond
 
   return (
     <section>
-      <Row justify="space-between" align="center" gap={12} wrap>
-        <div>
+      <Row justify="space-between" align="center" gap={12} wrap style={HEADER_ROW}>
+        <div style={WRAPPING_HEADER_TEXT}>
           <H3>Beyond the stories</H3>
           <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
             No story asks for these, but they look worth keeping. Approved ones go into Figma as
@@ -2787,8 +2792,8 @@ function TalkingPoints() {
       </Text>
       {PRESENTABLE.map((s) => (
         <div key={s.id} style={{ padding: "12px 0", borderTop: `1px solid ${theme.stroke.tertiary}` }}>
-          <Row justify="space-between" align="start" gap={12}>
-            <div>
+          <Row justify="space-between" align="start" gap={12} style={HEADER_ROW}>
+            <div style={HEADER_TEXT}>
               <Text weight="semibold">{s.title}</Text>
               <Text size="small" tone="tertiary" style={{ marginTop: 2 }}>
                 Story {s.id}. {s.assessment === "Supported" ? "Say this" : "Safe to say now"}.{" "}
