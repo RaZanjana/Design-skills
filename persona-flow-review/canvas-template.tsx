@@ -616,26 +616,55 @@ function auditPrompt(issue: Issue): string {
   ].join("\n");
 }
 
+type SentFix = { request: FixRequest; at: string; stopped?: boolean };
+
 function useFixRequest(issueId: string) {
   const dispatch = useCanvasAction();
-  const [sent, setSent] = useCanvasState<{ request: FixRequest; at: string } | null>(
-    `fix-request:${issueId}`,
-    null,
-  );
+  const [sent, setSent] = useCanvasState<SentFix | null>(`fix-request:${issueId}`, null);
   const send = (request: FixRequest, instruction?: string) => {
     dispatch({ type: "newComposerChat", userPrompt: fixPrompt(request, issueId, instruction) });
     setSent({ request, at: new Date().toISOString() });
   };
-  return { sent, send };
+  const stop = () => setSent((prev) => (prev ? { ...prev, stopped: true } : prev));
+  return { sent, send, stop };
 }
 
-function currentFixStatus(
-  issueId: string,
-  sent: { at: string } | null,
-): FixStatus | "in-progress" {
+function isUnanswered(issueId: string, sent: SentFix | null): sent is SentFix {
   const entry = FIX_STATE[issueId];
-  if (sent && (!entry || sent.at > entry.updatedAt)) return "in-progress";
-  return entry?.status ?? "open";
+  return !!sent && (!entry || sent.at > entry.updatedAt);
+}
+
+function currentFixStatus(issueId: string, sent: SentFix | null): FixStatus | "in-progress" {
+  if (isUnanswered(issueId, sent) && !sent.stopped) return "in-progress";
+  return FIX_STATE[issueId]?.status ?? "open";
+}
+
+const WORKING_FIX_LABEL: Record<FixRequest, string> = {
+  fix: "Making the fix",
+  revise: "Revising the fix",
+  apply: "Applying the fix",
+  reject: "Rejecting the fix",
+};
+
+const STOPPED_FIX_NOTE: Record<FixRequest, string> = {
+  fix: "You stopped waiting before the fix chat reported back. If it already made a copy on the Fixed issues page, delete that copy, or start the fix again.",
+  revise:
+    "You stopped waiting before the revision chat reported back. The fix on the Fixed issues page may be half changed, so check it before you request changes again.",
+  apply:
+    "You stopped waiting before the apply chat reported back. It may already have changed the Draft or Wireflows page, so check them in Figma before you approve and apply again.",
+  reject:
+    "You stopped waiting before the reject chat reported back. Reject the fix again if you still want to.",
+};
+
+function waitingSince(at: string): string {
+  const time = new Date(at);
+  const today = time.toDateString() === new Date().toDateString();
+  const when = time.toLocaleString([], {
+    ...(today ? {} : { day: "numeric", month: "short" }),
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `Started ${today ? "at " : ""}${when}. If you closed that chat before it finished, choose Stop waiting.`;
 }
 
 function isOpenIssue(issue: Issue): boolean {
@@ -850,7 +879,7 @@ function FixPanel({ issue }: { issue: Issue }) {
 
 function FixControls({ issue }: { issue: Issue }) {
   const dispatch = useCanvasAction();
-  const { sent, send } = useFixRequest(issue.issueId);
+  const { sent, send, stop } = useFixRequest(issue.issueId);
   const [open, setOpen] = useCanvasState<boolean>(`fix-open:${issue.issueId}`, false);
   const [revising, setRevising] = useCanvasState<boolean>(
     `fix-revise-open:${issue.issueId}`,
@@ -878,14 +907,26 @@ function FixControls({ issue }: { issue: Issue }) {
 
   const status = currentFixStatus(issue.issueId, sent);
   const entry = FIX_STATE[issue.issueId];
+  const stoppedNote =
+    isUnanswered(issue.issueId, sent) && sent.stopped ? (
+      <Callout tone="warning">{STOPPED_FIX_NOTE[sent.request]}</Callout>
+    ) : null;
 
-  if (status === "in-progress") {
+  if (status === "in-progress" && sent) {
     return (
-      <Stack gap={4}>
+      <Stack gap={6}>
         <FixStatusLabel status={status} />
         <Text size="small" tone="secondary">
-          Fix in progress in a new chat. This updates when the fix is ready.
+          {WORKING_FIX_LABEL[sent.request]} in a new chat. This updates when the chat reports back.
         </Text>
+        <Text size="small" tone="tertiary">
+          {waitingSince(sent.at)}
+        </Text>
+        <Row>
+          <Button variant="ghost" onClick={stop}>
+            Stop waiting
+          </Button>
+        </Row>
       </Stack>
     );
   }
@@ -893,6 +934,7 @@ function FixControls({ issue }: { issue: Issue }) {
   if (status === "ready-for-review" && entry) {
     return (
       <Stack gap={8}>
+        {stoppedNote}
         <FixStatusLabel status={status} />
         <Link href={figmaUrl(entry.fixedSectionNodeId)}>Open fix in Figma</Link>
         <div>
@@ -969,6 +1011,7 @@ function FixControls({ issue }: { issue: Issue }) {
 
   return (
     <Stack gap={8}>
+      {stoppedNote}
       {(status === "rejected" || status === "needs-decision") && (
         <Stack gap={4}>
           <FixStatusLabel status={status} />
@@ -1665,8 +1708,11 @@ function shownStatus(
   decision: NoteDecision,
   busy: boolean,
   stopped: boolean,
+  since?: string,
 ): ShownStatus {
-  if (busy) return { label: "Working in a new chat", tone: "gray" };
+  if (busy) {
+    return { label: "Working in a new chat", tone: "gray", note: since && waitingSince(since) };
+  }
   if (stopped) {
     return {
       label: "Needs check",
@@ -1882,6 +1928,7 @@ type NotesState = {
   setText: (id: string, text: string | null) => void;
   send: (ids: string[], action: string, userPrompt: string) => void;
   cancel: (id: string) => void;
+  requestAt: (id: string) => string | undefined;
 };
 
 function useNotesState(): NotesState {
@@ -1936,6 +1983,7 @@ function useNotesState(): NotesState {
     },
     cancel: (id) =>
       setRequests((prev) => (prev[id] ? { ...prev, [id]: { ...prev[id], stopped: true } } : prev)),
+    requestAt: (id) => requests[id]?.at,
   };
 }
 
@@ -2174,7 +2222,7 @@ function CommentsSection({ notes, comments }: { notes: NotesState; comments: Com
             text={text}
             edited={notes.isEdited(c.id)}
             decision={decision}
-            status={shownStatus(entry, COMMENT_STATUS, decision, busy, stopped)}
+            status={shownStatus(entry, COMMENT_STATUS, decision, busy, stopped, notes.requestAt(c.id))}
             live={inFigma(entry)}
             liveText={entry?.publishedText}
             busy={busy}
@@ -2320,7 +2368,7 @@ function BeyondScopeSection({ notes, items }: { notes: NotesState; items: Beyond
             text={text}
             edited={notes.isEdited(b.id)}
             decision={decision}
-            status={shownStatus(entry, ANNOTATION_STATUS, decision, busy, stopped)}
+            status={shownStatus(entry, ANNOTATION_STATUS, decision, busy, stopped, notes.requestAt(b.id))}
             live={entry?.status === "annotated"}
             liveText={entry?.annotatedText}
             busy={busy}
@@ -2462,6 +2510,11 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
             </Button>
           )}
         </Row>
+        {regenerating && regenAt && (
+          <Text size="small" tone="tertiary">
+            {waitingSince(regenAt)}
+          </Text>
+        )}
       </Stack>
     );
   }
@@ -2496,6 +2549,11 @@ function ScriptPanel({ notes }: { notes: NotesState }) {
           )}
         </Row>
       </Row>
+      {regenerating && regenAt && (
+        <Text size="small" tone="tertiary">
+          {waitingSince(regenAt)}
+        </Text>
+      )}
 
       {stale && (
         <Callout tone="warning" title="The script was regenerated after you edited it">

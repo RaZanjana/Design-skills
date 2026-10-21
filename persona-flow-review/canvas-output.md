@@ -210,9 +210,18 @@ Place fix actions at the end of the issue. Use at most one primary button per is
 
 **Fix in progress**
 
-Show this from the moment the designer clicks until the chat writes a newer status:
+Show this from the moment the designer clicks until the chat writes a newer status, or the designer stops waiting:
 
-- "Fix in progress in a new chat. This updates when the fix is ready."
+- What is happening, by request: "Making the fix", "Revising the fix", "Applying the fix", or "Rejecting the fix", then "in a new chat. This updates when the chat reports back."
+- When it started, as described in [Every wait has a way out](#every-wait-has-a-way-out).
+- **Stop waiting** (ghost).
+
+After Stop waiting, show the status from before the request, with a warning above it that says what the chat may already have done:
+
+- Fix: "If it already made a copy on the Fixed issues page, delete that copy, or start the fix again."
+- Revise: "The fix on the Fixed issues page may be half changed, so check it before you request changes again."
+- Apply: "It may already have changed the Draft or Wireflows page, so check them in Figma before you approve and apply again."
+- Reject: "Reject the fix again if you still want to."
 
 **Ready for review**
 
@@ -263,8 +272,9 @@ Each button dispatches `{ type: "newComposerChat", userPrompt }` and records the
 
 Show the status like this:
 
-- When the recorded request is later than `FIX_STATE[issueId].updatedAt`, or there is no entry, show the in-progress text.
-- Otherwise, show `FIX_STATE[issueId].status`.
+- When the recorded request is later than `FIX_STATE[issueId].updatedAt`, or there is no entry, show the in-progress text, unless the request is marked `stopped`.
+- Otherwise, show `FIX_STATE[issueId].status`, with the stopped warning when the unanswered request is marked `stopped`.
+- Stop waiting marks the request `stopped` instead of deleting it. A newer `FIX_STATE` entry from the chat still wins, so a chat that finishes late still shows its result.
 - Keep each designer's own instruction in `useCanvasState` under `fix-instruction:[issueId]`.
 
 The fix chat edits only the `FIX_STATE` entry for its issue. Keep `FIX_STATE` as one top-level constant with one entry per issue, so each entry can be replaced on its own.
@@ -275,6 +285,17 @@ The fix chat edits only the `FIX_STATE` entry for its issue. Keep `FIX_STATE` as
 - **Markdown:** under each fixable issue, show its fix prompt in a code block.
 
 Never show a fix as started or done when the environment could not start it.
+
+## Every wait has a way out
+
+Canvas actions are fire and forget. The canvas never learns that a chat finished, failed, or was deleted. It only sees what the chat writes back into the data block. So every state that waits on a chat must give the designer a way out:
+
+- Show when it started, under the status: "Started at 13:46. If you closed that chat before it finished, choose Stop waiting." Use the date as well when it was not today. The canvas cannot run a timer, so this line shows from the start instead of after a delay.
+- Offer **Stop waiting**. It marks the request `stopped` and never deletes it, because the chat may already have changed Figma.
+- After stopping, say what the chat may already have done, and how to check it. Never show the work as done or as never started.
+- Never reset a wait on its own after a time limit. A long fix is normal, and an automatic reset invites a second chat on the same item.
+
+This applies to Fix now, Request changes, Approve and apply, Reject, every comment and annotation request, and the walkthrough script. Any new button that opens a chat follows the same rule.
 
 ## Client note buttons
 

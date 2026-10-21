@@ -441,6 +441,7 @@ Never remove anything from Figma in Review mode.
 - No WCAG conformance claim appears.
 - Every issue has a unique ID and the correct fix action.
 - Every fix prompt names the absolute path of this skill folder, because the skill cannot be invoked automatically in a new chat.
+- Every state that waits on a chat shows when it started and offers Stop waiting, because the canvas cannot tell when a chat is closed or deleted.
 - Every source marked "Read" was actually opened and inspected.
 - Every finding based on ClickUp cites the task or comment it relies on.
 - Every inaccessible or missing source appears in "Sources checked".
